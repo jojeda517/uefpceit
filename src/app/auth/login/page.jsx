@@ -15,15 +15,32 @@ import Typography from "@mui/material/Typography";
 import { ThemeProvider } from "@mui/material/styles";
 import Copyright from "@/app/components/Copyright";
 import theme from "@/app/theme";
+import {signIn} from 'next-auth/react';
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const handleSubmit = (event) => {
+  const router = useRouter();
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    // no permitir datos vacios
+    if (data.get("email") === "" || data.get("password") === "") {
+      alert("Por favor, ingrese su correo y contraseña");
+    } else {
+      alert(`Correo: ${data.get("email")} Contraseña: ${data.get("password")}`);
+      const res = await signIn('credentials',{
+        email: data.get("email"),
+        password: data.get("password"),
+        redirect: false
+      
+      });
+      if (res.error) {
+        alert(res.error);
+      }else{
+        router.push('/docente');
+      
+      }
+    }
   };
 
   return (

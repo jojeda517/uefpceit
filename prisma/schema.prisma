@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  ID_USU     Int      @id @default(autoincrement()) @map(name: "ID_USU")
+  ID_CAM_PER Int      @map(name: "ID_CAM_PER")
+  NOM1_USU   String?  @map(name: "NOM1_USU") @db.VarChar(50)
+  NOM2_USU   String?  @map(name: "NOM2_USU") @db.VarChar(50)
+  APE1_USU   String?  @map(name: "APE1_USU") @db.VarChar(50)
+  APE2_USU   String?  @map(name: "APE2_USU") @db.VarChar(50)
+  COR_USU    String?  @unique @map(name: "COR_USU") @db.VarChar(100)
+  CON_USU    String?  @map(name: "CON_USU") @db.VarChar(255)
+  CED_USU    String?  @map(name: "CED_USU") @db.VarChar(10)
+  EST_USU    Boolean?
+}
+
+model Campus {
+  ID_CAM  Int     @id @default(autoincrement()) @map(name: "ID_CAM")
+  NOM_CAM String? @map(name: "NOM_CAM") @db.VarChar(50)
+  DIR_CAM String? @map(name: "DIR_CAM") @db.VarChar(100)
+}
+
+model Rol {
+  ID_ROL Int     @id @default(autoincrement()) @map(name: "ID_ROL")
+  ROL    String? @map(name: "ROL") @db.VarChar(50)
+}
+
+model Detalle_rol {
+  ID_DET_ROL Int @id @default(autoincrement())
+  ID_USU_PER Int @map(name: "ID_USU_PER")
+  ID_ROL_PER Int @map(name: "ID_ROL_PER")
+}
