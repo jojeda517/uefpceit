@@ -13,32 +13,191 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuario {
-  ID_USU     Int      @id @default(autoincrement()) @map(name: "ID_USU")
-  ID_CAM_PER Int      @map(name: "ID_CAM_PER")
-  NOM1_USU   String?  @map(name: "NOM1_USU") @db.VarChar(50)
-  NOM2_USU   String?  @map(name: "NOM2_USU") @db.VarChar(50)
-  APE1_USU   String?  @map(name: "APE1_USU") @db.VarChar(50)
-  APE2_USU   String?  @map(name: "APE2_USU") @db.VarChar(50)
-  COR_USU    String?  @unique @map(name: "COR_USU") @db.VarChar(100)
-  CON_USU    String?  @map(name: "CON_USU") @db.VarChar(255)
-  CED_USU    String?  @map(name: "CED_USU") @db.VarChar(10)
-  EST_USU    Boolean?
+model ROL {
+  id          Int           @id @default(autoincrement())
+  rol         String        @db.VarChar(255)
+  DETALLE_ROL DETALLE_ROL[]
 }
 
-model Campus {
-  ID_CAM  Int     @id @default(autoincrement()) @map(name: "ID_CAM")
-  NOM_CAM String? @map(name: "NOM_CAM") @db.VarChar(50)
-  DIR_CAM String? @map(name: "DIR_CAM") @db.VarChar(100)
+model DETALLE_ROL {
+  idRolPertenece     Int
+  idUsuarioPertenece Int
+  ROL                ROL     @relation(fields: [idRolPertenece], references: [id])
+  USUARIO            USUARIO @relation(fields: [idUsuarioPertenece], references: [id])
+
+  @@id([idRolPertenece, idUsuarioPertenece])
 }
 
-model Rol {
-  ID_ROL Int     @id @default(autoincrement()) @map(name: "ID_ROL")
-  ROL    String? @map(name: "ROL") @db.VarChar(50)
+model USUARIO {
+  id          Int           @id @default(autoincrement())
+  correo      String        @unique @db.VarChar(255)
+  contrasena  String        @db.VarChar(255)
+  DETALLE_ROL DETALLE_ROL[]
 }
 
-model Detalle_rol {
-  ID_DET_ROL Int @id @default(autoincrement())
-  ID_USU_PER Int @map(name: "ID_USU_PER")
-  ID_ROL_PER Int @map(name: "ID_ROL_PER")
+model PERSONA {
+  id                Int         @id @default(autoincrement())
+  idCampusPertenece Int
+  nombre            String      @db.VarChar(50)
+  apellido          String      @db.VarChar(50)
+  cedula            String      @unique @db.VarChar(10)
+  estado            Boolean?
+  direccion         String?     @db.VarChar(100)
+  fechaNacimiento   DateTime?
+  nacionalidad      String?     @db.VarChar(100)
+  paisOrigen        String?     @db.VarChar(100)
+  telefono          String?     @db.VarChar(10)
+  CAMPUS            CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
+  ESTUDIANTE        ESTUDIANTE?
+  DOCENTE           DOCENTE?
+}
+
+model CAMPUS {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @db.VarChar(255)
+  direccion String?   @db.VarChar(255)
+  PERSONA   PERSONA[]
+}
+
+model ESTADO_CIVIL {
+  id          Int          @id @default(autoincrement())
+  estadoCivil String       @db.VarChar(255)
+  ESTUDIANTE  ESTUDIANTE[]
+}
+
+model ETNIA {
+  id         Int          @id @default(autoincrement())
+  etnia      String       @db.VarChar(255)
+  ESTUDIANTE ESTUDIANTE[]
+}
+
+model Discapacidad {
+  id                   Int                    @id @default(autoincrement())
+  tipo                 String                 @unique @db.VarChar(50)
+  porcentaje           Int?
+  DETALLE_DISCAPACIDAD DETALLE_DISCAPACIDAD[]
+}
+
+model DETALLE_DISCAPACIDAD {
+  idDiscapacidadPertenece Int
+  idEstudiantePertenece   Int
+  Discapacidad            Discapacidad @relation(fields: [idDiscapacidadPertenece], references: [id])
+  ESTUDIANTE              ESTUDIANTE   @relation(fields: [idEstudiantePertenece], references: [id])
+
+  @@id([idDiscapacidadPertenece, idEstudiantePertenece])
+}
+
+model ESTUDIANTE {
+  id                       Int                    @id @default(autoincrement())
+  idPersonaPertenece       Int                    @unique
+  idEstadoCivilPertenece   Int
+  idEtniaPertenece         Int
+  idRepresentantePertenece Int
+  trabaja                  Boolean
+  nombreTrabajo            String?                @db.VarChar(255)
+  tieneHijo                Boolean
+  rangoEdadHijo            String?                @db.VarChar(50)
+  bonoMies                 Boolean
+  numeroCarnetDiscapacidad String?                @unique @db.VarChar(50)
+  ESTADO_CIVIL             ESTADO_CIVIL           @relation(fields: [idEstadoCivilPertenece], references: [id])
+  ETNIA                    ETNIA                  @relation(fields: [idEtniaPertenece], references: [id])
+  REPRESENTANTE            REPRESENTANTE          @relation(fields: [idRepresentantePertenece], references: [id])
+  PERSONA                  PERSONA                @relation(fields: [idPersonaPertenece], references: [id])
+  DETALLE_DISCAPACIDAD     DETALLE_DISCAPACIDAD[]
+  CALIFICACION             CALIFICACION[]
+}
+
+model REPRESENTANTE {
+  id         Int          @id @default(autoincrement())
+  cedula     String       @unique @db.VarChar(10)
+  nombre     String       @db.VarChar(50)
+  apellido   String       @db.VarChar(50)
+  direccion  String?      @db.VarChar(100)
+  telefono   String?      @db.VarChar(10)
+  ESTUDIANTE ESTUDIANTE[]
+}
+
+model DOCENTE {
+  id                         Int                          @id @default(autoincrement())
+  idPersonaPertenece         Int                          @unique
+  titulo                     String?                      @db.VarChar(100)
+  fechaIngreso               DateTime?
+  fechaSalida                DateTime?
+  PERSONA                    PERSONA                      @relation(fields: [idPersonaPertenece], references: [id])
+  DETALLECURSOMATERIADOCENTE DETALLECURSOMATERIADOCENTE[]
+}
+
+model tipoPeriodo {
+  id          Int       @id @default(autoincrement())
+  tipoPeriodo String    @unique @db.VarChar(100)
+  PERIODO     PERIODO[]
+}
+
+model modalidad {
+  id        Int    @id @default(autoincrement())
+  modalidad String @unique @db.VarChar(100)
+}
+
+model PERIODO {
+  id                     Int         @id @default(autoincrement())
+  idTipoPeriodoPertenece Int
+  nombre                 String      @unique @db.VarChar(100)
+  descripcion            String?     @db.VarChar(255)
+  estado                 Boolean?
+  tipoPeriodo            tipoPeriodo @relation(fields: [idTipoPeriodoPertenece], references: [id])
+}
+
+model CURSO {
+  id                         Int                          @id @default(autoincrement())
+  nombre                     String                       @unique @db.VarChar(100)
+  descripcion                String?                      @db.VarChar(100)
+  DETALLECURSOMATERIADOCENTE DETALLECURSOMATERIADOCENTE[]
+  DETALLEESPECIALIDADCURSO   DETALLEESPECIALIDADCURSO[]
+  CALIFICACION               CALIFICACION[]
+}
+
+model MATERIA {
+  id                         Int                          @id @default(autoincrement())
+  nombre                     String                       @unique @db.VarChar(100)
+  descripcion                String?                      @db.VarChar(100)
+  DETALLECURSOMATERIADOCENTE DETALLECURSOMATERIADOCENTE[]
+  CALIFICACION               CALIFICACION[]
+}
+
+model DETALLECURSOMATERIADOCENTE {
+  idCursoPertenece   Int
+  idMateriaPertenece Int
+  idDocentePertenece Int
+  CURSO              CURSO   @relation(fields: [idCursoPertenece], references: [id])
+  MATERIA            MATERIA @relation(fields: [idMateriaPertenece], references: [id])
+  DOCENTE            DOCENTE @relation(fields: [idDocentePertenece], references: [id])
+
+  @@id([idCursoPertenece, idMateriaPertenece, idDocentePertenece])
+}
+
+model DETALLEESPECIALIDADCURSO {
+  idEspecialidadPertenece Int
+  idCursoPertenece        Int
+  ESPECIALIDAD            ESPECIALIDAD @relation(fields: [idEspecialidadPertenece], references: [id])
+  CURSO                   CURSO        @relation(fields: [idCursoPertenece], references: [id])
+
+  @@id([idEspecialidadPertenece, idCursoPertenece])
+}
+
+model ESPECIALIDAD {
+  id                       Int                        @id @default(autoincrement())
+  nombre                   String                     @unique @db.VarChar(100)
+  descripcion              String?                    @db.VarChar(100)
+  DETALLEESPECIALIDADCURSO DETALLEESPECIALIDADCURSO[]
+}
+
+model CALIFICACION {
+  id                    Int        @id @default(autoincrement())
+  idEstudiantePertenece Int
+  idCursoPertenece      Int
+  idMateriaPertenece    Int
+  calificacion          Float
+  ESTUDIANTE            ESTUDIANTE @relation(fields: [idEstudiantePertenece], references: [id])
+  CURSO                 CURSO      @relation(fields: [idCursoPertenece], references: [id])
+  MATERIA               MATERIA    @relation(fields: [idMateriaPertenece], references: [id])
 }

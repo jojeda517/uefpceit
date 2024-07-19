@@ -17,9 +17,11 @@ import Copyright from "@/app/components/Copyright";
 import theme from "@/app/theme";
 import {signIn} from 'next-auth/react';
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
+  const [usuario, setUsuario] = useState("");
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -27,18 +29,18 @@ export default function Login() {
     if (data.get("email") === "" || data.get("password") === "") {
       alert("Por favor, ingrese su correo y contraseña");
     } else {
-      alert(`Correo: ${data.get("email")} Contraseña: ${data.get("password")}`);
+      //alert(`Correo: ${data.get("email")} Contraseña: ${data.get("password")}`);
       const res = await signIn('credentials',{
-        email: data.get("email"),
-        password: data.get("password"),
+        correo: data.get("email"),
+        contrasena: data.get("password"),
         redirect: false
       
       });
       if (res.error) {
         alert(res.error);
       }else{
-        router.push('/docente');
-      
+        console.log("Correo del usuario: ")
+        console.log(data.get("email"));
       }
     }
   };

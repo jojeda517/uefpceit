@@ -6,13 +6,13 @@ export async function GET(request, { params }) {
   console.log(params);
   const usuario = await prisma.usuario.findMany({
     where: {
-      CON_USU: params.contrasena,
+      contrasena: params.contrasena,
     },
   });
 
   const detalle = await prisma.detalle_rol.findMany({
     where: {
-      ID_USU_PER: usuario[0].ID_USU,
+      idUsuarioPertenece: usuario[0].id,
     },
   });
 
@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
 
   const rol = await prisma.rol.findMany({
     where: {
-      ID_ROL: detalle[0].ID_ROL_PER,
+      id: detalle[0].idRolPertenece,
     },
   });
 
