@@ -8,7 +8,11 @@ export const authOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        correo: { label: "Email", type: "text", placeholder: "jsmith" },
+        correo: {
+          label: "Email",
+          type: "text",
+          placeholder: "jsmith@example.com",
+        },
         contrasena: {
           label: "Password",
           type: "password",
@@ -16,25 +20,63 @@ export const authOptions = {
         },
       },
       async authorize(credentials, req) {
-        const userFound = await prisma.USUARIO.findUnique({
+        const user = await prisma.USUARIO.findUnique({
           where: {
             correo: credentials.correo,
-            contrasena: credentials.contrasena,
+          },
+          include: {
+            DETALLE_ROL: {
+              include: {
+                ROL: true,
+              },
+            },
           },
         });
 
-        //if (!userFound.length) throw new Error("User not found");
-        if (!userFound) throw new Error("User not found");
+        if (!user) {
+          throw new Error("User not found");
+        }
 
-        //const matchPassword = await bcrypt.compare(credentials.password, userFound.password)
+        // Verificar la contraseña
+        if (credentials.contrasena !== user.contrasena) {
+          throw new Error("Incorrect password");
+        }
+        console.log(user);
+        /* const isMatch = await bcrypt.compare(
+          credentials.contrasena,
+          user.contrasena
+        );
+        if (!isMatch) {
+          throw new Error("Incorrect password");
+        } */
 
-        //if (!matchPassword) throw new Error('Wrong password')
-        return userFound;
+        // Construir el objeto de sesión
+        return {
+          id: user.id,
+          correo: user.correo,
+          roles: user.DETALLE_ROL.map((detail) => detail.ROL.rol), // Obtener los roles del usuario
+        };
       },
     }),
   ],
   pages: {
     signIn: "/auth/login",
+  },
+  callbacks: {
+    async session({ session, token }) {
+      // Añadir roles a la sesión
+      if (token) {
+        session.user.roles = token.roles;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      // Añadir roles al token
+      if (user) {
+        token.roles = user.roles;
+      }
+      return token;
+    },
   },
 };
 

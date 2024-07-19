@@ -15,32 +15,55 @@ import Typography from "@mui/material/Typography";
 import { ThemeProvider } from "@mui/material/styles";
 import Copyright from "@/app/components/Copyright";
 import theme from "@/app/theme";
-import {signIn} from 'next-auth/react';
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export default function Login() {
   const router = useRouter();
-  const [usuario, setUsuario] = useState("");
+  const { data: session } = useSession();
+  const [error, setError] = useState("");
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // no permitir datos vacios
+
+    // No permitir datos vacíos
     if (data.get("email") === "" || data.get("password") === "") {
       alert("Por favor, ingrese su correo y contraseña");
+      return;
+    }
+
+    // Autenticación
+    const res = await signIn("credentials", {
+      correo: data.get("email"),
+      contrasena: data.get("password"),
+      redirect: false,
+    });
+
+    if (res.error) {
+      setError(res.error);
     } else {
-      //alert(`Correo: ${data.get("email")} Contraseña: ${data.get("password")}`);
-      const res = await signIn('credentials',{
-        correo: data.get("email"),
-        contrasena: data.get("password"),
-        redirect: false
-      
-      });
-      if (res.error) {
-        alert(res.error);
-      }else{
-        console.log("Correo del usuario: ")
-        console.log(data.get("email"));
+      // Manejar la redirección según los roles del usuario
+      if (res.ok) {
+        // Re-fetch the session to get updated user roles
+        const session = await fetch("/api/auth/session").then((res) =>
+          res.json()
+        );
+
+        const roles = session.user?.roles || [];
+
+        if (roles.includes("Administrador")) {
+          router.push("/administrador");
+          //console.log(session);
+        } else if (roles.includes("Docente")) {
+          router.push("/docente");
+        } else if (roles.includes("Estudiante")) {
+          router.push("/estudiante");
+        } else {
+          router.push("/");
+        }
       }
     }
   };
