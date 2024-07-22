@@ -29,13 +29,11 @@ export default function Login() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    // No permitir datos vacíos
     if (data.get("email") === "" || data.get("password") === "") {
       alert("Por favor, ingrese su correo y contraseña");
       return;
     }
 
-    // Autenticación
     const res = await signIn("credentials", {
       correo: data.get("email"),
       contrasena: data.get("password"),
@@ -45,9 +43,7 @@ export default function Login() {
     if (res.error) {
       setError(res.error);
     } else {
-      // Manejar la redirección según los roles del usuario
       if (res.ok) {
-        // Re-fetch the session to get updated user roles
         const session = await fetch("/api/auth/session").then((res) =>
           res.json()
         );
@@ -56,7 +52,6 @@ export default function Login() {
 
         if (roles.includes("Administrador")) {
           router.push("/administrador");
-          //console.log(session);
         } else if (roles.includes("Docente")) {
           router.push("/docente");
         } else if (roles.includes("Estudiante")) {
@@ -150,9 +145,9 @@ export default function Login() {
               <Copyright
                 sx={{
                   position: "absolute",
-                  bottom: 2, // Colocar en el borde inferior
-                  ml: 2, // Margen izquierdo
-                  mr: 2, // Margen derecho
+                  bottom: 2,
+                  ml: 2,
+                  mr: 2,
                 }}
               />
             </Box>

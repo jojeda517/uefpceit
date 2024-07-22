@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import {
   IconButton,
@@ -7,45 +7,64 @@ import {
   ListItem,
   ListItemPrefix,
   ListItemSuffix,
-  Chip,
   Accordion,
   AccordionHeader,
   AccordionBody,
-  Alert,
   Input,
   Drawer,
   Card,
 } from "@material-tailwind/react";
 import {
   PresentationChartBarIcon,
-  ShoppingBagIcon,
   UserCircleIcon,
-  Cog6ToothIcon,
   InboxIcon,
   PowerIcon,
+  BookOpenIcon,
+  ClipboardDocumentListIcon,
+  DocumentTextIcon,
+  ClipboardDocumentCheckIcon,
+  PuzzlePieceIcon,
+  FolderArrowDownIcon,
+  TagIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/solid";
 import {
-  ChevronRightIcon,
   ChevronDownIcon,
-  CubeTransparentIcon,
   MagnifyingGlassIcon,
   Bars3Icon,
   XMarkIcon,
+  UserGroupIcon,
+  AcademicCapIcon,
+  DocumentCheckIcon,
+  BuildingLibraryIcon,
+  StarIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+  CheckBadgeIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
-import { createContext, useState } from "react";
- 
-export default function Sidebar() {
+import { useState } from "react";
+import { signOut } from "next-auth/react";
+
+export default function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
-  const [openAlert, setOpenAlert] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
- 
+
   const handleOpen = (value) => {
     setOpen(open === value ? 0 : value);
   };
- 
+
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
- 
+
+  const handleSignOut = () => {
+    const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: baseUrl });
+  };
+
+  // Función para verificar si el usuario tiene un rol específico
+  const hasRole = (role) => roles.includes(role);
+
   return (
     <>
       <IconButton variant="text" size="lg" onClick={openDrawer}>
@@ -62,178 +81,297 @@ export default function Sidebar() {
           className="h-[calc(100vh-2rem)] w-full p-4"
         >
           <div className="mb-2 flex items-center gap-4 p-4">
-            <img
-              src="https://docs.material-tailwind.com/img/logo-ct-dark.png"
-              alt="brand"
-              className="h-8 w-8"
-            />
+            <img src="/logo.png" alt="brand" className="h-8 w-8" />
             <Typography variant="h5" color="blue-gray">
-              Sidebar
+              Menú
             </Typography>
           </div>
           <div className="p-2">
             <Input
               icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              label="Search"
+              label="Buscar"
             />
           </div>
-          <List>
-            <Accordion
-              open={open === 1}
-              icon={
-                <ChevronDownIcon
-                  strokeWidth={2.5}
-                  className={`mx-auto h-4 w-4 transition-transform ${
-                    open === 1 ? "rotate-180" : ""
-                  }`}
-                />
-              }
-            >
-              <ListItem className="p-0" selected={open === 1}>
-                <AccordionHeader
-                  onClick={() => handleOpen(1)}
-                  className="border-b-0 p-3"
-                >
+          <div className="overflow-y-auto h-[calc(100vh-10rem)]">
+            <List>
+              {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
+              {hasRole("Administrador") && (
+                <>
+                  <ListItem>
+                    <ListItemPrefix>
+                      <InboxIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Periodos
+                    <ListItemSuffix />
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <UserCircleIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Perfil
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <BookOpenIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Materias
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <ClipboardDocumentListIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Matriculas
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <DocumentTextIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Actas de Grado
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <ClipboardDocumentCheckIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Tipos de matricula
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <PuzzlePieceIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Especialidades
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <FolderArrowDownIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Retiro de carpeta
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <TagIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Asignar docentes a materias
+                  </ListItem>
+
+                  <ListItem>
+                    <ListItemPrefix>
+                      <LockClosedIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Cerrar periodo
+                  </ListItem>
+                </>
+              )}
+
+              {/* OPCIONES DEL ROL DOCENTE */}
+              {hasRole("Docente") && (
+                <ListItem>
                   <ListItemPrefix>
-                    <PresentationChartBarIcon className="h-5 w-5" />
+                    <LockClosedIcon className="h-5 w-5" />
                   </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    Dashboard
-                  </Typography>
-                </AccordionHeader>
-              </ListItem>
-              <AccordionBody className="py-1">
-                <List className="p-0">
+                  Calificar
+                </ListItem>
+              )}
+
+              {/* OPCIONES DEL ROL ESTUDIANTE */}
+              {hasRole("Estudiante") && (
+                <>
                   <ListItem>
                     <ListItemPrefix>
-                      <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
+                      <LockClosedIcon className="h-5 w-5" />
                     </ListItemPrefix>
-                    Analytics
+                    Notas actuales
                   </ListItem>
+
                   <ListItem>
                     <ListItemPrefix>
-                      <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
+                      <LockClosedIcon className="h-5 w-5" />
                     </ListItemPrefix>
-                    Reporting
+                    Horario
                   </ListItem>
-                  <ListItem>
-                    <ListItemPrefix>
-                      <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
-                    </ListItemPrefix>
-                    Projects
-                  </ListItem>
-                </List>
-              </AccordionBody>
-            </Accordion>
-            <Accordion
-              open={open === 2}
-              icon={
-                <ChevronDownIcon
-                  strokeWidth={2.5}
-                  className={`mx-auto h-4 w-4 transition-transform ${
-                    open === 2 ? "rotate-180" : ""
-                  }`}
-                />
-              }
-            >
-              <ListItem className="p-0" selected={open === 2}>
-                <AccordionHeader
-                  onClick={() => handleOpen(2)}
-                  className="border-b-0 p-3"
-                >
-                  <ListItemPrefix>
-                    <ShoppingBagIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    E-Commerce
-                  </Typography>
-                </AccordionHeader>
-              </ListItem>
-              <AccordionBody className="py-1">
-                <List className="p-0">
-                  <ListItem>
-                    <ListItemPrefix>
-                      <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
-                    </ListItemPrefix>
-                    Orders
-                  </ListItem>
-                  <ListItem>
-                    <ListItemPrefix>
-                      <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
-                    </ListItemPrefix>
-                    Products
-                  </ListItem>
-                </List>
-              </AccordionBody>
-            </Accordion>
-            <hr className="my-2 border-blue-gray-50" />
-            <ListItem>
-              <ListItemPrefix>
-                <InboxIcon className="h-5 w-5" />
-              </ListItemPrefix>
-              Inbox
-              <ListItemSuffix>
-                <Chip
-                  value="14"
-                  size="sm"
-                  variant="ghost"
-                  color="blue-gray"
-                  className="rounded-full"
-                />
-              </ListItemSuffix>
-            </ListItem>
-            <ListItem>
-              <ListItemPrefix>
-                <UserCircleIcon className="h-5 w-5" />
-              </ListItemPrefix>
-              Profile
-            </ListItem>
-            <ListItem>
-              <ListItemPrefix>
-                <Cog6ToothIcon className="h-5 w-5" />
-              </ListItemPrefix>
-              Settings
-            </ListItem>
-            <ListItem>
-              <ListItemPrefix>
-                <PowerIcon className="h-5 w-5" />
-              </ListItemPrefix>
-              Log Out
-            </ListItem>
-          </List>
-          <Alert
-            open={openAlert}
-            className="mt-auto"
-            onClose={() => setOpenAlert(false)}
-          >
-            <CubeTransparentIcon className="mb-4 h-12 w-12" />
-            <Typography variant="h6" className="mb-1">
-              Upgrade to PRO
-            </Typography>
-            <Typography variant="small" className="font-normal opacity-80">
-              Upgrade to Material Tailwind PRO and get even more components,
-              plugins, advanced features and premium.
-            </Typography>
-            <div className="mt-4 flex gap-3">
-              <Typography
-                as="a"
-                href="#"
-                variant="small"
-                className="font-medium opacity-80"
-                onClick={() => setOpenAlert(false)}
+                </>
+              )}
+
+              <hr className="my-2 border-blue-gray-50" />
+              <Accordion
+                open={open === 1}
+                icon={
+                  <ChevronDownIcon
+                    strokeWidth={2.5}
+                    className={`mx-auto h-4 w-4 transition-transform ${
+                      open === 1 ? "rotate-180" : ""
+                    }`}
+                  />
+                }
               >
-                Dismiss
-              </Typography>
-              <Typography
-                as="a"
-                href="#"
-                variant="small"
-                className="font-medium"
-              >
-                Upgrade Now
-              </Typography>
-            </div>
-          </Alert>
+                {/* REPORTES */}
+                {(hasRole("Administrador") || hasRole("Docente")) && (
+                  <>
+                    <ListItem className="p-0" selected={open === 1}>
+                      <AccordionHeader
+                        onClick={() => handleOpen(1)}
+                        className="border-b-0 p-3"
+                      >
+                        <ListItemPrefix>
+                          <PresentationChartBarIcon className="h-5 w-5" />
+                        </ListItemPrefix>
+                        <Typography
+                          color="blue-gray"
+                          className="mr-auto font-normal"
+                        >
+                          Reportes
+                        </Typography>
+                      </AccordionHeader>
+                    </ListItem>
+
+                    <AccordionBody className="py-1">
+                      <List className="p-0">
+                        {hasRole("Administrador") && (
+                          <>
+                            <ListItem>
+                              <ListItemPrefix>
+                                <UserGroupIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Docentes
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <AcademicCapIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Estudiantes
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <DocumentCheckIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Matriculas
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <BuildingLibraryIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Cursos
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <StarIcon strokeWidth={3} className="h-3 w-5" />
+                              </ListItemPrefix>
+                              Notas
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <ExclamationTriangleIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Estudiantes perdidos
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <ArrowPathIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Estudiantes en supletorio
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <ChartBarIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Boletín
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <CheckBadgeIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Certificado de matricula
+                            </ListItem>
+                          </>
+                        )}
+
+                        {hasRole("Docente") && (
+                          <>
+                            <ListItem>
+                              <ListItemPrefix>
+                                <CheckBadgeIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Calificaciones
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <CheckBadgeIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Alumnos
+                            </ListItem>
+
+                            <ListItem>
+                              <ListItemPrefix>
+                                <CheckBadgeIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Materias
+                            </ListItem>
+                          </>
+                        )}
+                      </List>
+                    </AccordionBody>
+                  </>
+                )}
+              </Accordion>
+
+              <hr className="my-2 border-blue-gray-50" />
+              <ListItem onClick={handleSignOut} className="cursor-pointer">
+                <ListItemPrefix>
+                  <PowerIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                Cerrar sesión
+              </ListItem>
+            </List>
+          </div>
         </Card>
       </Drawer>
     </>

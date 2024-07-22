@@ -1,24 +1,19 @@
-"use client"
-import { signOut } from "next-auth/react"
-import { useState, useEffect } from "react"
+"use client";
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import { useSession } from "next-auth/react";
 
 function Docente() {
-  const [email, setEmail] = useState(null);
-  useEffect(()=>{
-    const email = localStorage.getItem('email');
+  const { data: session } = useSession();
+  const roles = session?.user?.roles || [];
 
-    setEmail(email);
-  })
-
+  // Contenido de la página de administrador
   return (
-    <div>
-      <h1>Docente</h1>
-      <p>Bienvenido {email}</p>
-      <button onClick={() => signOut(
-        { callbackUrl: 'http://localhost:3000/' }
-      )}>Cerrar sesión</button>
+    <div className="bg-pink-500 w-full h-full">
+      <Sidebar roles={roles} />
+      <h1 className="text-blue-600">Página de Docente</h1>
     </div>
-  )
+  );
 }
 
-export default Docente
+export default Docente;
