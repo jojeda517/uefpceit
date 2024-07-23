@@ -160,7 +160,8 @@ function Header() {
             type="button"
             onClick={toggleDropdown}
             className="w-10 h-10 rounded-full cursor-pointer"
-            src="/logo.png"
+            /* src="/logo.png" */
+            src={persona?.foto || "/logo.png"}
             alt="User dropdown"
           />
 
