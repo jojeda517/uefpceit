@@ -1,13 +1,41 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Sidebar from "../components/Sidebar";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 function Header() {
   const { data: session } = useSession();
   const roles = session?.user?.roles || [];
+  const idPersonaPertenece = session?.user?.idPersonaPertenece || null;
+  const correo = session?.user?.correo || null;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [persona, setPersona] = useState(null);
+
+  const handleSignOut = () => {
+    const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: baseUrl });
+  };
+
+  const fetchPersona = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/persona/${idPersonaPertenece}`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setPersona(data);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  }, [idPersonaPertenece]);
+
+  useEffect(() => {
+    if (idPersonaPertenece) {
+      fetchPersona();
+    }
+  }, [fetchPersona, idPersonaPertenece]);
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
@@ -122,8 +150,11 @@ function Header() {
             }`}
           >
             <div className="px-4 py-3 text-sm text-white">
-              <div>Bonnie Green</div>
-              <div className="font-medium truncate">name@flowbite.com</div>
+              {/* nombre de la persona */}
+              <div className="font-bold">
+                {persona?.nombre} {persona?.apellido}
+              </div>
+              <div className="font-medium truncate">{correo}</div>
             </div>
             <ul
               className="py-2 text-sm text-white"
@@ -155,12 +186,12 @@ function Header() {
               </li>
             </ul>
             <div className="py-1">
-              <a
-                href="#"
-                className="block px-4 py-2 text-sm text-white hover:bg-blue-gray-100 hover:text-black"
-              >
+              <div
+                onClick={handleSignOut}
+                className="cursor-pointer block px-4 py-2 text-sm text-white hover:bg-blue-gray-100 hover:text-black"
+              >{/*  */}
                 Cerrar Sesión
-              </a>
+              </div>
             </div>
           </div>
         </div>

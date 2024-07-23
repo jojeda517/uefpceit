@@ -71,7 +71,7 @@ export default function Sidebar({ roles }) {
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />
         ) : (
-          <Bars3Icon className="h-8 w-8 stroke-2 text-white"/>
+          <Bars3Icon className="h-8 w-8 stroke-2 text-white" />
         )}
       </IconButton>
       <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900">
