@@ -71,10 +71,10 @@ export default function Sidebar({ roles }) {
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />
         ) : (
-          <Bars3Icon className="h-8 w-8 stroke-2" />
+          <Bars3Icon className="h-8 w-8 stroke-2 text-white"/>
         )}
       </IconButton>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer}>
+      <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900">
         <Card
           color="transparent"
           shadow={false}
@@ -82,22 +82,23 @@ export default function Sidebar({ roles }) {
         >
           <div className="mb-2 flex items-center gap-4 p-4">
             <img src="/logo.png" alt="brand" className="h-8 w-8" />
-            <Typography variant="h5" color="blue-gray">
+            <Typography variant="h5" color="white">
               Menú
             </Typography>
           </div>
-          <div className="p-2">
+          <div className="p-2 text-white">
             <Input
-              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              icon={<MagnifyingGlassIcon className="h-5 w-5 " />}
               label="Buscar"
+              className="text-white placeholder:text-white"
             />
           </div>
           <div className="overflow-y-auto h-[calc(100vh-10rem)]">
-            <List>
+            <List className="text-white">
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
-                  <ListItem>
+                  <ListItem className="text-white">
                     <ListItemPrefix>
                       <InboxIcon className="h-5 w-5" />
                     </ListItemPrefix>
@@ -220,10 +221,10 @@ export default function Sidebar({ roles }) {
                         className="border-b-0 p-3"
                       >
                         <ListItemPrefix>
-                          <PresentationChartBarIcon className="h-5 w-5" />
+                          <PresentationChartBarIcon className="h-5 w-5 text-white" />
                         </ListItemPrefix>
                         <Typography
-                          color="blue-gray"
+                          color="white"
                           className="mr-auto font-normal"
                         >
                           Reportes
@@ -232,7 +233,7 @@ export default function Sidebar({ roles }) {
                     </ListItem>
 
                     <AccordionBody className="py-1">
-                      <List className="p-0">
+                      <List className="p-0 text-white">
                         {hasRole("Administrador") && (
                           <>
                             <ListItem>

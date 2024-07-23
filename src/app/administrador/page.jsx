@@ -1,6 +1,7 @@
 "use client"
 import React from 'react';
 import Sidebar from '../components/Sidebar'
+import Header from '../components/Header';
 import { useSession } from 'next-auth/react';
 
 function Admin() {
@@ -9,9 +10,10 @@ function Admin() {
   
     // Contenido de la página de administrador
     return (
-      <div className='bg-pink-500 w-full h-full'>
-        <Sidebar roles={roles} />
-        <h1 className='text-blue-600'>Página de Administrador</h1>
+      <div >
+        {/* <Sidebar roles={roles} /> */}
+        <Header></Header>
+        {/* <h1 className='text-blue-600'>Página de Administrador</h1> */}
       </div>
     );
   }
