@@ -29,10 +29,12 @@ model DETALLE_ROL {
 }
 
 model USUARIO {
-  id          Int           @id @default(autoincrement())
-  correo      String        @unique @db.VarChar(255)
-  contrasena  String        @db.VarChar(255)
-  DETALLE_ROL DETALLE_ROL[]
+  id                 Int           @id @default(autoincrement())
+  idPersonaPertenece Int?          @unique
+  correo             String        @unique @db.VarChar(255)
+  contrasena         String        @db.VarChar(255)
+  DETALLE_ROL        DETALLE_ROL[]
+  PERSONA            PERSONA?      @relation(fields: [idPersonaPertenece], references: [id])
 }
 
 model PERSONA {
@@ -47,9 +49,11 @@ model PERSONA {
   nacionalidad      String?     @db.VarChar(100)
   paisOrigen        String?     @db.VarChar(100)
   telefono          String?     @db.VarChar(10)
-  CAMPUS            CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
-  ESTUDIANTE        ESTUDIANTE?
-  DOCENTE           DOCENTE?
+  foto              String?     @db.VarChar(255)
+  campus            CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
+  estudiante        ESTUDIANTE? @relation
+  docente           DOCENTE?    @relation
+  usuario           USUARIO?    @relation
 }
 
 model CAMPUS {

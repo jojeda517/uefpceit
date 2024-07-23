@@ -1,86 +1,30 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `ROL` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `rol` VARCHAR(255) NOT NULL,
 
-  - The primary key for the `campus` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `DIR_CAM` on the `campus` table. All the data in the column will be lost.
-  - You are about to drop the column `ID_CAM` on the `campus` table. All the data in the column will be lost.
-  - You are about to drop the column `NOM_CAM` on the `campus` table. All the data in the column will be lost.
-  - The primary key for the `detalle_rol` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `ID_DET_ROL` on the `detalle_rol` table. All the data in the column will be lost.
-  - You are about to drop the column `ID_ROL_PER` on the `detalle_rol` table. All the data in the column will be lost.
-  - You are about to drop the column `ID_USU_PER` on the `detalle_rol` table. All the data in the column will be lost.
-  - The primary key for the `rol` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `ID_ROL` on the `rol` table. All the data in the column will be lost.
-  - You are about to drop the column `ROL` on the `rol` table. All the data in the column will be lost.
-  - The primary key for the `usuario` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `APE1_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `APE2_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `CED_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `CON_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `COR_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `EST_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `ID_CAM_PER` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `ID_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `NOM1_USU` on the `usuario` table. All the data in the column will be lost.
-  - You are about to drop the column `NOM2_USU` on the `usuario` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[correo]` on the table `USUARIO` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `id` to the `CAMPUS` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `nombre` to the `CAMPUS` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `idRolPertenece` to the `DETALLE_ROL` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `idUsuarioPertenece` to the `DETALLE_ROL` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `id` to the `ROL` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `rol` to the `ROL` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `contrasena` to the `USUARIO` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `correo` to the `USUARIO` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `id` to the `USUARIO` table without a default value. This is not possible if the table is not empty.
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-*/
--- DropIndex
-DROP INDEX `Usuario_COR_USU_key` ON `usuario`;
+-- CreateTable
+CREATE TABLE `DETALLE_ROL` (
+    `idRolPertenece` INTEGER NOT NULL,
+    `idUsuarioPertenece` INTEGER NOT NULL,
 
--- AlterTable
-ALTER TABLE `campus` DROP PRIMARY KEY,
-    DROP COLUMN `DIR_CAM`,
-    DROP COLUMN `ID_CAM`,
-    DROP COLUMN `NOM_CAM`,
-    ADD COLUMN `direccion` VARCHAR(255) NULL,
-    ADD COLUMN `id` INTEGER NOT NULL AUTO_INCREMENT,
-    ADD COLUMN `nombre` VARCHAR(255) NOT NULL,
-    ADD PRIMARY KEY (`id`);
+    PRIMARY KEY (`idRolPertenece`, `idUsuarioPertenece`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AlterTable
-ALTER TABLE `detalle_rol` DROP PRIMARY KEY,
-    DROP COLUMN `ID_DET_ROL`,
-    DROP COLUMN `ID_ROL_PER`,
-    DROP COLUMN `ID_USU_PER`,
-    ADD COLUMN `idRolPertenece` INTEGER NOT NULL,
-    ADD COLUMN `idUsuarioPertenece` INTEGER NOT NULL,
-    ADD PRIMARY KEY (`idRolPertenece`, `idUsuarioPertenece`);
+-- CreateTable
+CREATE TABLE `USUARIO` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `idPersonaPertenece` INTEGER NULL,
+    `correo` VARCHAR(255) NOT NULL,
+    `contrasena` VARCHAR(255) NOT NULL,
 
--- AlterTable
-ALTER TABLE `rol` DROP PRIMARY KEY,
-    DROP COLUMN `ID_ROL`,
-    DROP COLUMN `ROL`,
-    ADD COLUMN `id` INTEGER NOT NULL AUTO_INCREMENT,
-    ADD COLUMN `rol` VARCHAR(255) NOT NULL,
-    ADD PRIMARY KEY (`id`);
-
--- AlterTable
-ALTER TABLE `usuario` DROP PRIMARY KEY,
-    DROP COLUMN `APE1_USU`,
-    DROP COLUMN `APE2_USU`,
-    DROP COLUMN `CED_USU`,
-    DROP COLUMN `CON_USU`,
-    DROP COLUMN `COR_USU`,
-    DROP COLUMN `EST_USU`,
-    DROP COLUMN `ID_CAM_PER`,
-    DROP COLUMN `ID_USU`,
-    DROP COLUMN `NOM1_USU`,
-    DROP COLUMN `NOM2_USU`,
-    ADD COLUMN `contrasena` VARCHAR(255) NOT NULL,
-    ADD COLUMN `correo` VARCHAR(255) NOT NULL,
-    ADD COLUMN `id` INTEGER NOT NULL AUTO_INCREMENT,
-    ADD PRIMARY KEY (`id`);
+    UNIQUE INDEX `USUARIO_idPersonaPertenece_key`(`idPersonaPertenece`),
+    UNIQUE INDEX `USUARIO_correo_key`(`correo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `PERSONA` (
@@ -95,8 +39,18 @@ CREATE TABLE `PERSONA` (
     `nacionalidad` VARCHAR(100) NULL,
     `paisOrigen` VARCHAR(100) NULL,
     `telefono` VARCHAR(10) NULL,
+    `foto` VARCHAR(255) NULL,
 
     UNIQUE INDEX `PERSONA_cedula_key`(`cedula`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CAMPUS` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nombre` VARCHAR(255) NOT NULL,
+    `direccion` VARCHAR(255) NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -261,19 +215,29 @@ CREATE TABLE `CALIFICACION` (
     `idEstudiantePertenece` INTEGER NOT NULL,
     `idCursoPertenece` INTEGER NOT NULL,
     `idMateriaPertenece` INTEGER NOT NULL,
-    `calificacion` DOUBLE NOT NULL,
+    `idPeriodoPertenece` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateIndex
-CREATE UNIQUE INDEX `USUARIO_correo_key` ON `USUARIO`(`correo`);
+-- CreateTable
+CREATE TABLE `APORTE` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `idCalificacionPertenece` INTEGER NOT NULL,
+    `tipoAporte` VARCHAR(100) NOT NULL,
+    `valor` DOUBLE NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
 ALTER TABLE `DETALLE_ROL` ADD CONSTRAINT `DETALLE_ROL_idRolPertenece_fkey` FOREIGN KEY (`idRolPertenece`) REFERENCES `ROL`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `DETALLE_ROL` ADD CONSTRAINT `DETALLE_ROL_idUsuarioPertenece_fkey` FOREIGN KEY (`idUsuarioPertenece`) REFERENCES `USUARIO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `USUARIO` ADD CONSTRAINT `USUARIO_idPersonaPertenece_fkey` FOREIGN KEY (`idPersonaPertenece`) REFERENCES `PERSONA`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `PERSONA` ADD CONSTRAINT `PERSONA_idCampusPertenece_fkey` FOREIGN KEY (`idCampusPertenece`) REFERENCES `CAMPUS`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -325,3 +289,9 @@ ALTER TABLE `CALIFICACION` ADD CONSTRAINT `CALIFICACION_idCursoPertenece_fkey` F
 
 -- AddForeignKey
 ALTER TABLE `CALIFICACION` ADD CONSTRAINT `CALIFICACION_idMateriaPertenece_fkey` FOREIGN KEY (`idMateriaPertenece`) REFERENCES `MATERIA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CALIFICACION` ADD CONSTRAINT `CALIFICACION_idPeriodoPertenece_fkey` FOREIGN KEY (`idPeriodoPertenece`) REFERENCES `PERIODO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `APORTE` ADD CONSTRAINT `APORTE_idCalificacionPertenece_fkey` FOREIGN KEY (`idCalificacionPertenece`) REFERENCES `CALIFICACION`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

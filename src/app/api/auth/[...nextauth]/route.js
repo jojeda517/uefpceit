@@ -22,7 +22,7 @@ export const authOptions = {
       async authorize(credentials, req) {
         const user = await prisma.USUARIO.findUnique({
           where: {
-            correo: credentials.correo,
+            correo: credentials.correo
           },
           include: {
             DETALLE_ROL: {
