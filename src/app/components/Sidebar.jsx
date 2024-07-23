@@ -45,10 +45,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOpen = (value) => {
     setOpen(open === value ? 0 : value);
@@ -58,6 +60,7 @@ export default function Sidebar({ roles }) {
   const closeDrawer = () => setIsDrawerOpen(false);
 
   const handleSignOut = () => {
+    setIsLoading(true);
     const baseUrl = process.env.NEXTAUTH_URL;
     signOut({ callbackUrl: baseUrl });
   };
@@ -67,6 +70,24 @@ export default function Sidebar({ roles }) {
 
   return (
     <>
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress size={50} />
+        </div>
+      )}
       <IconButton variant="text" size="lg" onClick={openDrawer}>
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />

@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function Header() {
   const { data: session } = useSession();
@@ -12,8 +13,10 @@ function Header() {
   const correo = session?.user?.correo || null;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [persona, setPersona] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
 
   const handleSignOut = () => {
+    setIsLoading(true); // Establece el estado de carga a true
     const baseUrl = process.env.NEXTAUTH_URL;
     signOut({ callbackUrl: baseUrl });
   };
@@ -59,6 +62,24 @@ function Header() {
 
   return (
     <div className="bg-blue-900 w-full h-12 flex justify-between items-center">
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress size={50} />
+        </div>
+      )}
       <div>
         <Sidebar roles={roles} />
       </div>
@@ -150,7 +171,6 @@ function Header() {
             }`}
           >
             <div className="px-4 py-3 text-sm text-white">
-              {/* nombre de la persona */}
               <div className="font-bold">
                 {persona?.nombre} {persona?.apellido}
               </div>
@@ -189,7 +209,7 @@ function Header() {
               <div
                 onClick={handleSignOut}
                 className="cursor-pointer block px-4 py-2 text-sm text-white hover:bg-blue-gray-100 hover:text-black"
-              >{/*  */}
+              >
                 Cerrar Sesión
               </div>
             </div>
