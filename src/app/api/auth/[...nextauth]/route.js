@@ -22,7 +22,7 @@ export const authOptions = {
       async authorize(credentials, req) {
         const user = await prisma.USUARIO.findUnique({
           where: {
-            correo: credentials.correo
+            correo: credentials.correo,
           },
           include: {
             DETALLE_ROL: {
@@ -55,6 +55,7 @@ export const authOptions = {
           id: user.id,
           correo: user.correo,
           roles: user.DETALLE_ROL.map((detail) => detail.ROL.rol), // Obtener los roles del usuario
+          idPersonaPertenece: user.idPersonaPertenece,
         };
       },
     }),
@@ -66,14 +67,18 @@ export const authOptions = {
     async session({ session, token }) {
       // Añadir roles a la sesión
       if (token) {
+        session.user.correo = token.correo;
         session.user.roles = token.roles;
+        session.user.idPersonaPertenece = token.idPersonaPertenece;
       }
       return session;
     },
     async jwt({ token, user }) {
       // Añadir roles al token
       if (user) {
+        token.correo = user.correo;
         token.roles = user.roles;
+        token.idPersonaPertenece = user.idPersonaPertenece;
       }
       return token;
     },

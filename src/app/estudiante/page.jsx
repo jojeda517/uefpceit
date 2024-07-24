@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import { useSession } from "next-auth/react";
 
 function Estudiante() {
@@ -9,9 +9,8 @@ function Estudiante() {
 
   // Contenido de la página de administrador
   return (
-    <div className="bg-pink-500 w-full h-full">
-      <Sidebar roles={roles} />
-      <h1 className="text-blue-600">Página de Estudiante</h1>
+    <div>
+      <Header />
     </div>
   );
 }

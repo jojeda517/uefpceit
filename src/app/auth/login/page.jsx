@@ -11,28 +11,33 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import MeetingRoomTwoToneIcon from "@mui/icons-material/MeetingRoomTwoTone";
+import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { ThemeProvider } from "@mui/material/styles";
 import Copyright from "@/app/components/Copyright";
 import theme from "@/app/theme";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 export default function Login() {
   const router = useRouter();
   const { data: session } = useSession();
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
     if (data.get("email") === "" || data.get("password") === "") {
-      alert("Por favor, ingrese su correo y contraseña");
+      setError("Por favor, ingrese su correo y contraseña");
+      setIsLoading(false);
       return;
     }
+
+    setIsLoading(true);
 
     const res = await signIn("credentials", {
       correo: data.get("email"),
@@ -41,7 +46,8 @@ export default function Login() {
     });
 
     if (res.error) {
-      setError(res.error);
+      setError("Credenciales incorrectas. Inténtelo de nuevo.");
+      setIsLoading(false);
     } else {
       if (res.ok) {
         const session = await fetch("/api/auth/session").then((res) =>
@@ -49,7 +55,7 @@ export default function Login() {
         );
 
         const roles = session.user?.roles || [];
-
+        setIsLoading(false);
         if (roles.includes("Administrador")) {
           router.push("/administrador");
         } else if (roles.includes("Docente")) {
@@ -62,6 +68,16 @@ export default function Login() {
       }
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -99,6 +115,38 @@ export default function Login() {
             <Typography component="h1" variant="h5">
               Iniciar Sesión
             </Typography>
+            {error && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 16,
+                  left: 16,
+                  zIndex: 1000,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "16px",
+                  backgroundColor: "#f8d7da",
+                  color: "#721c24",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                }}
+                role="alert"
+              >
+                <svg
+                  style={{ marginRight: "8px" }}
+                  className="flex-shrink-0 inline w-4 h-4"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <div>
+                  <span style={{ fontWeight: "bold" }}>Error:</span> {error}
+                </div>
+              </div>
+            )}
             <Box
               component="form"
               noValidate
@@ -129,14 +177,35 @@ export default function Login() {
                 control={<Checkbox value="remember" color="primary" />}
                 label="Recordar mis datos"
               />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Ingresar
-              </Button>
+              <Box sx={{ position: "relative" }}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  disabled={isLoading}
+                >
+                  Ingresar
+                </Button>
+                {isLoading && (
+                  <Box
+                    sx={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)", // Semi-transparent background
+                      zIndex: 9999,
+                    }}
+                  >
+                    <CircularProgress size={50} />
+                  </Box>
+                )}
+              </Box>
               <Grid textAlign={"end"}>
                 <Link href="#" variant="body2">
                   ¿Olvidó su contraseña?

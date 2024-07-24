@@ -1,22 +1,19 @@
-"use client"
-import React from 'react';
-import Sidebar from '../components/Sidebar'
-import Header from '../components/Header';
-import { useSession } from 'next-auth/react';
+"use client";
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import { useSession } from "next-auth/react";
 
 function Admin() {
   const { data: session } = useSession();
   const roles = session?.user?.roles || [];
-  
-    // Contenido de la página de administrador
-    return (
-      <div >
-        {/* <Sidebar roles={roles} /> */}
-        <Header></Header>
-        {/* <h1 className='text-blue-600'>Página de Administrador</h1> */}
-      </div>
-    );
-  }
-  
+
+  // Contenido de la página de administrador
+  return (
+    <div>
+      <Header />
+    </div>
+  );
+}
 
 export default Admin;
