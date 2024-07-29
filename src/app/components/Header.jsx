@@ -61,7 +61,7 @@ function Header() {
   }, []);
 
   return (
-    <div className="bg-blue-900 w-full h-12 flex justify-between items-center">
+    <div className="z-30 fixed bg-blue-900 w-full h-12 flex justify-between items-center">
       {isLoading && (
         <div
           style={{
@@ -191,7 +191,7 @@ function Header() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/administrador/datos"
                   className="block px-4 py-2 hover:bg-blue-gray-100 hover:text-black"
                 >
                   Settings
