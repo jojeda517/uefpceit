@@ -42,10 +42,12 @@ import {
   ArrowPathIcon,
   CheckBadgeIcon,
   ChartBarIcon,
+  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import CircularProgress from "@mui/material/CircularProgress";
+import Link from "next/link";
 
 export default function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
@@ -126,13 +128,62 @@ export default function Sidebar({ roles }) {
                     Periodos
                     <ListItemSuffix />
                   </ListItem>
+                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
+                  <Accordion
+                    open={open === 1}
+                    icon={
+                      <ChevronDownIcon
+                        strokeWidth={2.5}
+                        className={`mx-auto h-4 w-4 transition-transform ${
+                          open === 1 ? "rotate-180" : ""
+                        }`}
+                      />
+                    }
+                  >
+                    <ListItem className="p-0" selected={open === 1}>
+                      <AccordionHeader
+                        onClick={() => handleOpen(1)}
+                        className="border-b-0 p-3"
+                      >
+                        <ListItemPrefix>
+                          <UserCircleIcon className="h-5 w-5 text-white" />
+                        </ListItemPrefix>
+                        <Typography
+                          color="white"
+                          className="mr-auto font-normal"
+                        >
+                          Perfiles
+                        </Typography>
+                      </AccordionHeader>
+                    </ListItem>
 
-                  <ListItem>
-                    <ListItemPrefix>
-                      <UserCircleIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Perfil
-                  </ListItem>
+                    <AccordionBody className="py-1">
+                      <List className="p-0 text-white">
+                        <ListItem>
+                          <ListItemPrefix>
+                            <BriefcaseIcon
+                              strokeWidth={3}
+                              className="h-3 w-5"
+                            />
+                          </ListItemPrefix>
+                          Docentes
+                        </ListItem>
+
+                        <Link href="/administrador/datos">
+                          <ListItem>
+                            <ListItemPrefix>
+                              <AcademicCapIcon
+                                strokeWidth={3}
+                                className="h-3 w-5"
+                              />
+                            </ListItemPrefix>
+                            Estudiantes
+                          </ListItem>
+                        </Link>
+                      </List>
+                    </AccordionBody>
+                  </Accordion>
+                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
 
                   <ListItem>
                     <ListItemPrefix>
