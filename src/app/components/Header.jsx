@@ -167,7 +167,7 @@ function Header() {
 
           <div
             id="userDropdown"
-            className={`absolute right-0 mt-2 w-44 bg-blue-900 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 ${
+            className={`absolute right-0 mt-2 w-44 bg-blue-900 divide-y divide-gray-100 rounded-lg shadow ${
               isDropdownOpen ? "block" : "hidden"
             }`}
           >
