@@ -62,11 +62,6 @@ function Datos() {
         const response = await fetch("/api/provincia");
         const data = await response.json();
         setProvincias(data);
-        setCantones([]); // Reset cantones when provincia changes
-        setParroquias([]); // Reset parroquias when provincia changes
-        setSelectedProvincia(null); // Reset selected provincia when changes
-        setSelectedCanton(null); // Reset selected canton when changes
-        setSelectedParroquia(null); // Reset selected parroquia when changes
       } catch (error) {
         console.error("Error fetching provincias:", error);
       }
@@ -86,9 +81,14 @@ function Datos() {
           const response = await fetch(`/api/canton/${selectedProvincia.id}`);
           const data = await response.json();
           setCantones(data);
-          setParroquias([]); // Reset parroquias when provincia changes
-          setSelectedCanton(null); // Reset selected canton when provincia changes
-          setSelectedParroquia(null); // Reset selected parroquia when provincia changes
+
+          // Selecciona automáticamente el cantón si es parte de los datos del usuario
+          if (formData && formData.parroquia) {
+            const selectedCanton = data.find(
+              (canton) => canton.id === formData.parroquia.CANTON.id
+            );
+            setSelectedCanton(selectedCanton);
+          }
         } catch (error) {
           console.error("Error fetching cantones:", error);
         }
@@ -96,6 +96,7 @@ function Datos() {
     };
 
     fetchCantones();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvincia]);
 
   const handleSelectCanton = (canton) => {
@@ -109,6 +110,14 @@ function Datos() {
           const response = await fetch(`/api/parroquia/${selectedCanton.id}`);
           const data = await response.json();
           setParroquias(data);
+
+          // Selecciona automáticamente la parroquia si es parte de los datos del usuario
+          if (formData && formData.parroquia) {
+            const selectedParroquia = data.find(
+              (parroquia) => parroquia.id === formData.parroquia.id
+            );
+            setSelectedParroquia(selectedParroquia);
+          }
         } catch (error) {
           console.error("Error fetching parroquias:", error);
         }
@@ -116,6 +125,7 @@ function Datos() {
     };
 
     fetchParroquias();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCanton]);
 
   const handleSelectParroquia = (parroquia) => {
@@ -134,16 +144,13 @@ function Datos() {
   // Manejar el cambio en el campo de cédula
   const handleCedulaChange = async (event) => {
     try {
-      // Hacer la petición al endpoint
       const response = await fetch(`/api/persona/docente/${cedula}`);
       const data = await response.json();
 
-      // Verificar si se recibieron datos y actualizar el estado del formulario
       if (data) {
         const roles = data.usuario.roles.reduce(
           (acc, role) => {
             acc[role.rol.toLowerCase()] = true;
-            console.log(acc);
             return acc;
           },
           {
@@ -166,23 +173,63 @@ function Datos() {
         });
         setRoles(roles);
 
-        // Seleccionar automáticamente el campus
         const selectedCampus = campuses.find(
           (campus) => campus.id === data.idCampusPertenece
         );
         setSelectedCampus(selectedCampus);
-        console.log(data);
+
+        const selectedProvincia = provincias.find(
+          (provincia) => provincia.id === data.parroquia.CANTON.PROVINCIA.id
+        );
+        setSelectedProvincia(selectedProvincia);
+
+        if (selectedProvincia) {
+          const cantonesResponse = await fetch(
+            `/api/canton/${selectedProvincia.id}`
+          );
+          const cantonesData = await cantonesResponse.json();
+          setCantones(cantonesData);
+
+          const selectedCanton = cantonesData.find(
+            (canton) => canton.id === data.parroquia.idCantonPertenece
+          );
+          setSelectedCanton(selectedCanton);
+
+          if (selectedCanton) {
+            const parroquiasResponse = await fetch(
+              `/api/parroquia/${selectedCanton.id}`
+            );
+            const parroquiasData = await parroquiasResponse.json();
+            setParroquias(parroquiasData);
+
+            const selectedParroquia = parroquiasData.find(
+              (parroquia) => parroquia.id === data.idParroquiaPertenece
+            );
+            setSelectedParroquia(selectedParroquia);
+          }
+        }
       } else {
-        setFormData(null); // Limpiar datos si no se encuentra la cédula
+        setFormData(null);
         setRoles({
           administrador: false,
-          docente: true, // Deja el rol de docente marcado por defecto
+          docente: true,
         });
-        setSelectedCampus(null); // Limpiar el campus seleccionado
+        setSelectedCampus(null);
+        setSelectedProvincia(null);
+        setSelectedCanton(null);
+        setSelectedParroquia(null);
       }
     } catch (error) {
       console.error("Error fetching data:");
-      setFormData(null); // Limpiar datos en caso de error
+      setFormData(null);
+      setRoles({
+        administrador: false,
+        docente: true,
+      });
+      setSelectedCampus(null);
+      setSelectedProvincia(null);
+      setSelectedCanton(null);
+      setSelectedParroquia(null);
     }
   };
 
