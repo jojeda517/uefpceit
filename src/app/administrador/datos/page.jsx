@@ -5,7 +5,10 @@ import {
   EyeIcon,
   EyeSlashIcon,
   MagnifyingGlassIcon,
+  MapIcon,
 } from "@heroicons/react/24/outline";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 function Datos() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -16,6 +19,11 @@ function Datos() {
     apellido: "",
     correo: "",
     contrasena: "",
+    nacionalidad: "",
+    direccion: "",
+    telefono: "",
+    fechaNacimiento: "",
+    genero: "",
   });
   const [roles, setRoles] = useState({
     administrador: false,
@@ -46,6 +54,13 @@ function Datos() {
           apellido: data.apellido,
           correo: data.usuario.correo,
           contrasena: data.usuario.contrasena,
+          nacionalidad: data.nacionalidad,
+          direccion: data.direccion,
+          telefono: data.telefono,
+          fechaNacimiento: new Date(data.fechaNacimiento)
+            .toISOString()
+            .split("T")[0],
+          genero: data.sexo,
         });
         console.log(data);
       } else {
@@ -122,7 +137,7 @@ function Datos() {
                   <img
                     src={selectedImage}
                     alt="Selected"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover w-52 h-52 rounded-full"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -194,32 +209,80 @@ function Datos() {
                 <div
                   /* enviar el valor de cedula en el oncklick */
                   onClick={handleCedulaChange}
-                  className=" px-3 text-sm bg-blue-900 hover:bg-blue-gray-100 hover:text-blue-900 text-white border border-blue-900 rounded-e-lg cursor-pointer flex items-center justify-center"
+                  className="ml-2 px-3 text-sm bg-blue-900 hover:bg-blue-gray-100 hover:text-blue-900 text-white border border-blue-900 rounded-lg cursor-pointer flex items-center justify-center"
                 >
                   <MagnifyingGlassIcon className="w-5 h-5" />
                 </div>
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="countries"
-                className="block mb-2 text-sm font-medium text-blue-900"
-              >
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900">
                 Campus
               </label>
-              <select
-                id="countries"
-                className="bg-white border border-blue-900 text-black text-sm rounded-lg focus:ring-blue-900 focus:border-blue-900 block w-full p-2.5"
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
               >
-                <option defaultValue={"Selecciona"}>
-                  Selecciona el Campus
-                </option>
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="FR">France</option>
-                <option value="DE">Germany</option>
-              </select>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"
+                      />
+                    </svg>
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                    <p className="p-2.5">Seleccione un campus</p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-gray-900"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                >
+                  <div className="py-1">
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Campus 1
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Campus 2
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Campus 3
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Campus 4
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Campus 5
+                      </a>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </Menu>
             </div>
 
             <div>
@@ -403,8 +466,11 @@ function Datos() {
                 <input
                   type="text"
                   id="nacionalidad"
+                  name="nacionalidad"
                   className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
                   placeholder="Ecuatoriana"
+                  value={formData.nacionalidad}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -436,10 +502,220 @@ function Datos() {
                 <input
                   type="date"
                   id="fechaNacimiento"
+                  name="fechaNacimiento"
                   className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
                   placeholder="dd/mm/aaaa"
+                  value={formData.fechaNacimiento}
+                  onChange={handleChange}
                 />
               </div>
+            </div>
+
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900">
+                Provincia
+              </label>
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
+              >
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                    <p className="p-2.5">Seleccione una provincia</p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-gray-900"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                >
+                  <div className="py-1">
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Provincia 1
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Provincia 2
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Provincia 3
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Provincia 4
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Provincia 5
+                      </a>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </Menu>
+            </div>
+
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900">
+                Cantón
+              </label>
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
+              >
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
+                      />
+                    </svg>
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                    <p className="p-2.5">Seleccione un cantón</p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-gray-900"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                >
+                  <div className="py-1">
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Cantón 1
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Cantón 2
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Cantón 3
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Cantón 4
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Cantón 5
+                      </a>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </Menu>
+            </div>
+
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900">
+                Parroquia
+              </label>
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
+              >
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      />
+                    </svg>
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                    <p className="p-2.5">Seleccione una parroquia</p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-gray-900"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                >
+                  <div className="py-1">
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Parroquia 1
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Parroquia 2
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Parroquia 3
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Parroquia 4
+                      </a>
+                    </MenuItem>
+                    <MenuItem>
+                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        Parroquia 5
+                      </a>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </Menu>
             </div>
 
             <div>
@@ -455,7 +731,7 @@ function Datos() {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth="1.5"
+                    strokeWidth={1.5}
                     stroke="currentColor"
                     className="size-6"
                   >
@@ -474,8 +750,11 @@ function Datos() {
                 <input
                   type="text"
                   id="direccion"
+                  name="direccion"
                   className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
                   placeholder="Calle S/N"
+                  value={formData.direccion}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -507,48 +786,73 @@ function Datos() {
                 <input
                   type="tel"
                   id="telefono"
+                  name="telefono"
                   className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
                   placeholder="0999999999"
+                  value={formData.telefono}
+                  onChange={handleChange}
                 />
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="genero"
-                className="block mb-2 text-sm font-medium text-blue-900"
-              >
-                Genero
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900">
+                Género
               </label>
-              <select
-                id="genero"
-                className="bg-white cursor-pointer border border-blue-900 text-black text-sm rounded-lg focus:ring-blue-900 focus:border-blue-900 block w-full p-2.5"
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
               >
-                <option
-                  defaultValue={"Selecciona"}
-                  className="bg-blue-900 text-white hover:bg-blue-gray-100 cursor-pointer"
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                    <p className="p-2.5">
+                      {formData.genero || "Seleccione un género"}
+                    </p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-gray-900"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
                 >
-                  Selecciona el Genero
-                </option>
-                <option
-                  value="M"
-                  className="bg-blue-900 text-white hover:bg-blue-gray-100"
-                >
-                  Masculino
-                </option>
-                <option
-                  value="F"
-                  className="bg-blue-900 text-white hover:bg-blue-gray-100"
-                >
-                  Femenino
-                </option>
-                <option
-                  value="O"
-                  className="bg-blue-900 text-white hover:bg-blue-gray-100"
-                >
-                  Otro
-                </option>
-              </select>
+                  <div className="py-1 cursor-pointer">
+                    {["Masculino", "Femenino", "Otro"].map((option) => (
+                      <MenuItem key={option}>
+                        <a
+                          onClick={() =>
+                            setFormData({ ...formData, genero: option })
+                          }
+                          className={`data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900 ${
+                            formData.genero === option ? "bg-blue-100" : ""
+                          }`}
+                        >
+                          {option}
+                        </a>
+                      </MenuItem>
+                    ))}
+                  </div>
+                </MenuItems>
+              </Menu>
             </div>
 
             {/* Add role checkboxes */}
