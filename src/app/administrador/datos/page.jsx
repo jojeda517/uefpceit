@@ -17,9 +17,11 @@ function Datos() {
   const [campuses, setCampuses] = useState([]);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [provincias, setProvincias] = useState([]);
-  const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [cantones, setCantones] = useState([]);
+  const [parroquias, setParroquias] = useState([]);
+  const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
+  const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -50,12 +52,21 @@ function Datos() {
     fetchCampuses();
   }, []);
 
+  const handleSelectCampus = (campus) => {
+    setSelectedCampus(campus);
+  };
+
   useEffect(() => {
     const fetchProvincias = async () => {
       try {
         const response = await fetch("/api/provincia");
         const data = await response.json();
         setProvincias(data);
+        setCantones([]); // Reset cantones when provincia changes
+        setParroquias([]); // Reset parroquias when provincia changes
+        setSelectedProvincia(null); // Reset selected provincia when changes
+        setSelectedCanton(null); // Reset selected canton when changes
+        setSelectedParroquia(null); // Reset selected parroquia when changes
       } catch (error) {
         console.error("Error fetching provincias:", error);
       }
@@ -64,12 +75,51 @@ function Datos() {
     fetchProvincias();
   }, []);
 
-  const handleSelectCampus = (campus) => {
-    setSelectedCampus(campus);
-  };
-
   const handleSelectProvincia = (provincia) => {
     setSelectedProvincia(provincia);
+  };
+
+  useEffect(() => {
+    const fetchCantones = async () => {
+      if (selectedProvincia) {
+        try {
+          const response = await fetch(`/api/canton/${selectedProvincia.id}`);
+          const data = await response.json();
+          setCantones(data);
+          setParroquias([]); // Reset parroquias when provincia changes
+          setSelectedCanton(null); // Reset selected canton when provincia changes
+          setSelectedParroquia(null); // Reset selected parroquia when provincia changes
+        } catch (error) {
+          console.error("Error fetching cantones:", error);
+        }
+      }
+    };
+
+    fetchCantones();
+  }, [selectedProvincia]);
+
+  const handleSelectCanton = (canton) => {
+    setSelectedCanton(canton);
+  };
+
+  useEffect(() => {
+    const fetchParroquias = async () => {
+      if (selectedCanton) {
+        try {
+          const response = await fetch(`/api/parroquia/${selectedCanton.id}`);
+          const data = await response.json();
+          setParroquias(data);
+        } catch (error) {
+          console.error("Error fetching parroquias:", error);
+        }
+      }
+    };
+
+    fetchParroquias();
+  }, [selectedCanton]);
+
+  const handleSelectParroquia = (parroquia) => {
+    setSelectedParroquia(parroquia);
   };
 
   // Maneja los cambios en los campos del formulario
@@ -600,11 +650,9 @@ function Datos() {
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
                     <p className="p-2.5">
-                      {selectedProvincia ? (
-                        <>{selectedProvincia.provincia}</>
-                      ) : (
-                        "Seleccione un campus"
-                      )}
+                      {selectedProvincia
+                        ? selectedProvincia.provincia
+                        : "Seleccione una provincia"}
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
@@ -612,7 +660,6 @@ function Datos() {
                     />
                   </MenuButton>
                 </div>
-
                 <MenuItems
                   transition
                   className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
@@ -659,44 +706,32 @@ function Datos() {
                     </svg>
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
-                    <p className="p-2.5">Seleccione un cantón</p>
+                    <p className="p-2.5">
+                      {selectedCanton
+                        ? selectedCanton.canton
+                        : "Seleccione un cantón"}
+                    </p>
                     <ChevronDownIcon
                       aria-hidden="true"
                       className="mx-1.5 h-5 w-5 text-gray-900"
                     />
                   </MenuButton>
                 </div>
-
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
-                  <div className="py-1">
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Cantón 1
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Cantón 2
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Cantón 3
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Cantón 4
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Cantón 5
-                      </a>
-                    </MenuItem>
+                  <div className="py-1 cursor-pointer">
+                    {cantones.map((canton) => (
+                      <MenuItem
+                        key={canton.id}
+                        onClick={() => handleSelectCanton(canton)}
+                      >
+                        <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                          {canton.canton}
+                        </a>
+                      </MenuItem>
+                    ))}
                   </div>
                 </MenuItems>
               </Menu>
@@ -728,44 +763,32 @@ function Datos() {
                     </svg>
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
-                    <p className="p-2.5">Seleccione una parroquia</p>
+                    <p className="p-2.5">
+                      {selectedParroquia
+                        ? selectedParroquia.parroquia
+                        : "Seleccione una parroquia"}
+                    </p>
                     <ChevronDownIcon
                       aria-hidden="true"
                       className="mx-1.5 h-5 w-5 text-gray-900"
                     />
                   </MenuButton>
                 </div>
-
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
-                  <div className="py-1">
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Parroquia 1
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Parroquia 2
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Parroquia 3
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Parroquia 4
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Parroquia 5
-                      </a>
-                    </MenuItem>
+                  <div className="py-1 cursor-pointer">
+                    {parroquias.map((parroquia) => (
+                      <MenuItem
+                        key={parroquia.id}
+                        onClick={() => handleSelectParroquia(parroquia)}
+                      >
+                        <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                          {parroquia.parroquia}
+                        </a>
+                      </MenuItem>
+                    ))}
                   </div>
                 </MenuItems>
               </Menu>
