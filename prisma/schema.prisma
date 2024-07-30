@@ -38,22 +38,46 @@ model USUARIO {
 }
 
 model PERSONA {
-  id                Int         @id @default(autoincrement())
-  idCampusPertenece Int
-  nombre            String      @db.VarChar(50)
-  apellido          String      @db.VarChar(50)
-  cedula            String      @unique @db.VarChar(10)
-  estado            Boolean?
-  direccion         String?     @db.VarChar(100)
-  fechaNacimiento   DateTime?
-  nacionalidad      String?     @db.VarChar(100)
-  telefono          String?     @db.VarChar(10)
-  sexo              String?     @db.VarChar(50)
-  foto              String?     @db.VarChar(255)
-  campus            CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
-  estudiante        ESTUDIANTE? @relation
-  docente           DOCENTE?    @relation
-  usuario           USUARIO?    @relation
+  id                   Int         @id @default(autoincrement())
+  idCampusPertenece    Int
+  idParroquiaPertenece Int?
+  nombre               String      @db.VarChar(50)
+  apellido             String      @db.VarChar(50)
+  cedula               String      @unique @db.VarChar(10)
+  estado               Boolean?
+  direccion            String?     @db.VarChar(100)
+  fechaNacimiento      DateTime?
+  nacionalidad         String?     @db.VarChar(100)
+  telefono             String?     @db.VarChar(10)
+  sexo                 String?     @db.VarChar(50)
+  foto                 String?     @db.VarChar(255)
+  campus               CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
+  estudiante           ESTUDIANTE? @relation
+  docente              DOCENTE?    @relation
+  usuario              USUARIO?    @relation
+  parroquia            PARROQUIA?  @relation(fields: [idParroquiaPertenece], references: [id])
+}
+
+model PROVINCIA {
+  id        Int      @id @default(autoincrement())
+  provincia String   @unique @db.VarChar(255)
+  CANTON    CANTON[]
+}
+
+model CANTON {
+  id                   Int         @id @default(autoincrement())
+  canton               String      @db.VarChar(255)
+  idProvinciaPertenece Int
+  PROVINCIA            PROVINCIA   @relation(fields: [idProvinciaPertenece], references: [id])
+  PARROQUIA            PARROQUIA[]
+}
+
+model PARROQUIA {
+  id                Int       @id @default(autoincrement())
+  parroquia         String    @db.VarChar(255)
+  idCantonPertenece Int
+  CANTON            CANTON    @relation(fields: [idCantonPertenece], references: [id])
+  PERSONA           PERSONA[]
 }
 
 model CAMPUS {

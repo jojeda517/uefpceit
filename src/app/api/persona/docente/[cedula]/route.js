@@ -20,6 +20,15 @@ export async function GET(request, { params }) {
           },
         },
         campus: true, // Incluye la información del campus
+        parroquia: {
+          include: {
+            CANTON: {
+              include: {
+                PROVINCIA: true, // Incluye la información de la provincia
+              },
+            },
+          },
+        },
         docente: {
           include: {
             DETALLEDOCENTETITULO: {
@@ -45,7 +54,8 @@ export async function GET(request, { params }) {
     }
 
     // Obtener los roles del usuario
-    const roles = persona.usuario?.DETALLE_ROL.map((detalleRol) => detalleRol.ROL) || [];
+    const roles =
+      persona.usuario?.DETALLE_ROL.map((detalleRol) => detalleRol.ROL) || [];
 
     // Añadir los roles al objeto de persona
     persona.usuario = {
@@ -57,11 +67,17 @@ export async function GET(request, { params }) {
     if (persona.docente) {
       persona.docente = {
         ...persona.docente,
-        titulos: persona.docente.DETALLEDOCENTETITULO?.map((detalleTitulo) => detalleTitulo.TITULO) || null,
-        experiencias: persona.docente.DETALLEDOCENTEEXPERIENCIA?.map((detalleExperiencia) => ({
-          cargo: detalleExperiencia.cargo,
-          experiencia: detalleExperiencia.EXPERIENCIA,
-        })) || null,
+        titulos:
+          persona.docente.DETALLEDOCENTETITULO?.map(
+            (detalleTitulo) => detalleTitulo.TITULO
+          ) || null,
+        experiencias:
+          persona.docente.DETALLEDOCENTEEXPERIENCIA?.map(
+            (detalleExperiencia) => ({
+              cargo: detalleExperiencia.cargo,
+              experiencia: detalleExperiencia.EXPERIENCIA,
+            })
+          ) || null,
       };
     }
 
