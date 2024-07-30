@@ -16,6 +16,10 @@ function Datos() {
   const [cedula, setCedula] = useState("");
   const [campuses, setCampuses] = useState([]);
   const [selectedCampus, setSelectedCampus] = useState(null);
+  const [provincias, setProvincias] = useState([]);
+  const [selectedProvincia, setSelectedProvincia] = useState(null);
+  const [cantones, setCantones] = useState([]);
+  const [selectedCanton, setSelectedCanton] = useState(null);
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -46,8 +50,26 @@ function Datos() {
     fetchCampuses();
   }, []);
 
+  useEffect(() => {
+    const fetchProvincias = async () => {
+      try {
+        const response = await fetch("/api/provincia");
+        const data = await response.json();
+        setProvincias(data);
+      } catch (error) {
+        console.error("Error fetching provincias:", error);
+      }
+    };
+
+    fetchProvincias();
+  }, []);
+
   const handleSelectCampus = (campus) => {
     setSelectedCampus(campus);
+  };
+
+  const handleSelectProvincia = (provincia) => {
+    setSelectedProvincia(provincia);
   };
 
   // Maneja los cambios en los campos del formulario
@@ -306,7 +328,7 @@ function Datos() {
 
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {campuses.map((campus) => (
@@ -577,7 +599,13 @@ function Datos() {
                     </svg>
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
-                    <p className="p-2.5">Seleccione una provincia</p>
+                    <p className="p-2.5">
+                      {selectedProvincia ? (
+                        <>{selectedProvincia.provincia}</>
+                      ) : (
+                        "Seleccione un campus"
+                      )}
+                    </p>
                     <ChevronDownIcon
                       aria-hidden="true"
                       className="mx-1.5 h-5 w-5 text-gray-900"
@@ -587,34 +615,19 @@ function Datos() {
 
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
-                  <div className="py-1">
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Provincia 1
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Provincia 2
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Provincia 3
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Provincia 4
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Provincia 5
-                      </a>
-                    </MenuItem>
+                  <div className="py-1 cursor-pointer">
+                    {provincias.map((provincia) => (
+                      <MenuItem
+                        key={provincia.id}
+                        onClick={() => handleSelectProvincia(provincia)}
+                      >
+                        <a className="data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900">
+                          {provincia.provincia}
+                        </a>
+                      </MenuItem>
+                    ))}
                   </div>
                 </MenuItems>
               </Menu>
