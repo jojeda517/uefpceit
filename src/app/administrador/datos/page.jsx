@@ -14,6 +14,8 @@ function Datos() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [cedula, setCedula] = useState("");
+  const [campuses, setCampuses] = useState([]);
+  const [selectedCampus, setSelectedCampus] = useState(null);
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -29,6 +31,24 @@ function Datos() {
     administrador: false,
     docente: true,
   });
+
+  useEffect(() => {
+    const fetchCampuses = async () => {
+      try {
+        const response = await fetch("/api/campus");
+        const data = await response.json();
+        setCampuses(data);
+      } catch (error) {
+        console.error("Error fetching campuses:", error);
+      }
+    };
+
+    fetchCampuses();
+  }, []);
+
+  const handleSelectCampus = (campus) => {
+    setSelectedCampus(campus);
+  };
 
   // Maneja los cambios en los campos del formulario
   const handleChange = (e) => {
@@ -73,6 +93,12 @@ function Datos() {
           genero: data.sexo,
         });
         setRoles(roles);
+
+        // Seleccionar automáticamente el campus
+        const selectedCampus = campuses.find(
+          (campus) => campus.id === data.idCampusPertenece
+        );
+        setSelectedCampus(selectedCampus);
         console.log(data);
       } else {
         setFormData(null); // Limpiar datos si no se encuentra la cédula
@@ -80,6 +106,7 @@ function Datos() {
           administrador: false,
           docente: true, // Deja el rol de docente marcado por defecto
         });
+        setSelectedCampus(null); // Limpiar el campus seleccionado
       }
     } catch (error) {
       console.error("Error fetching data:");
@@ -260,7 +287,16 @@ function Datos() {
                     </svg>
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
-                    <p className="p-2.5">Seleccione un campus</p>
+                    <p className="p-2.5">
+                      {selectedCampus ? (
+                        <>
+                          <strong>{selectedCampus.nombre}</strong> - (
+                          {selectedCampus.direccion})
+                        </>
+                      ) : (
+                        "Seleccione un campus"
+                      )}
+                    </p>
                     <ChevronDownIcon
                       aria-hidden="true"
                       className="mx-1.5 h-5 w-5 text-gray-900"
@@ -272,32 +308,18 @@ function Datos() {
                   transition
                   className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
                 >
-                  <div className="py-1">
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Campus 1
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Campus 2
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Campus 3
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Campus 4
-                      </a>
-                    </MenuItem>
-                    <MenuItem>
-                      <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
-                        Campus 5
-                      </a>
-                    </MenuItem>
+                  <div className="py-1 cursor-pointer">
+                    {campuses.map((campus) => (
+                      <MenuItem
+                        key={campus.id}
+                        onClick={() => handleSelectCampus(campus)}
+                      >
+                        <a className="data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900">
+                          <strong>{campus.nombre}</strong> - ({campus.direccion}
+                          )
+                        </a>
+                      </MenuItem>
+                    ))}
                   </div>
                 </MenuItems>
               </Menu>
