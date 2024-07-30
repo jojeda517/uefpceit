@@ -48,7 +48,17 @@ function Datos() {
 
       // Verificar si se recibieron datos y actualizar el estado del formulario
       if (data) {
-        //setFormData(data);
+        const roles = data.usuario.roles.reduce(
+          (acc, role) => {
+            acc[role.rol.toLowerCase()] = true;
+            console.log(acc);
+            return acc;
+          },
+          {
+            administrador: false,
+            docente: false,
+          }
+        );
         setFormData({
           nombre: data.nombre,
           apellido: data.apellido,
@@ -62,9 +72,14 @@ function Datos() {
             .split("T")[0],
           genero: data.sexo,
         });
+        setRoles(roles);
         console.log(data);
       } else {
         setFormData(null); // Limpiar datos si no se encuentra la cédula
+        setRoles({
+          administrador: false,
+          docente: true, // Deja el rol de docente marcado por defecto
+        });
       }
     } catch (error) {
       console.error("Error fetching data:");
@@ -107,9 +122,12 @@ function Datos() {
     event.stopPropagation();
   };
 
-  const handleRoleChange = (event) => {
-    const { name, checked } = event.target;
-    setRoles((prevRoles) => ({ ...prevRoles, [name]: checked }));
+  const handleRoleChange = (e) => {
+    const { name, checked } = e.target;
+    setRoles({
+      ...roles,
+      [name]: checked,
+    });
   };
 
   return (
