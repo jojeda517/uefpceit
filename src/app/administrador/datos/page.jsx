@@ -11,14 +11,17 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 function Datos() {
-  const [selectedImage, setSelectedImage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [cedula, setCedula] = useState("");
   const [campuses, setCampuses] = useState([]);
-  const [selectedCampus, setSelectedCampus] = useState(null);
   const [provincias, setProvincias] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
+  const [foto, setFoto] = useState(null);
+  const [titulos, setTitulos] = useState([]);
+  const [experiencias, setExperiencias] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
@@ -173,6 +176,8 @@ function Datos() {
         });
         setRoles(roles);
 
+        setSelectedImage(data.foto);
+
         const selectedCampus = campuses.find(
           (campus) => campus.id === data.idCampusPertenece
         );
@@ -207,9 +212,28 @@ function Datos() {
             );
             setSelectedParroquia(selectedParroquia);
           }
+
+          if (data.docente) {
+            if (data.docente.titulos) {
+              setTitulos(data.docente.titulos);
+            }
+            if (data.docente.experiencias) {
+              setExperiencias(data.docente.experiencias);
+            }
+          }
         }
       } else {
-        setFormData(null);
+        setFormData({
+          nombre: "",
+          apellido: "",
+          correo: "",
+          contrasena: "",
+          nacionalidad: "",
+          direccion: "",
+          telefono: "",
+          fechaNacimiento: "",
+          genero: "",
+        });
         setRoles({
           administrador: false,
           docente: true,
@@ -218,10 +242,22 @@ function Datos() {
         setSelectedProvincia(null);
         setSelectedCanton(null);
         setSelectedParroquia(null);
+        setSelectedImage(null);
       }
     } catch (error) {
       console.error("Error fetching data:");
       setFormData(null);
+      setFormData({
+        nombre: "",
+        apellido: "",
+        correo: "",
+        contrasena: "",
+        nacionalidad: "",
+        direccion: "",
+        telefono: "",
+        fechaNacimiento: "",
+        genero: "",
+      });
       setRoles({
         administrador: false,
         docente: true,
@@ -230,6 +266,7 @@ function Datos() {
       setSelectedProvincia(null);
       setSelectedCanton(null);
       setSelectedParroquia(null);
+      setSelectedImage(null);
     }
   };
 
@@ -1025,31 +1062,18 @@ function Datos() {
               </label>
             </div>
 
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <p className="text-white font-serif text-2xl text-center">
-                Ingeniero en Software
-              </p>
-            </div>
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <p className="text-white font-serif text-2xl text-center">
-                Ingeniero en Software
-              </p>
-            </div>
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <p className="text-white font-serif text-2xl text-center">
-                Ingeniero en Software
-              </p>
-            </div>
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <p className="text-white font-serif text-2xl text-center">
-                Ingeniero en Software
-              </p>
-            </div>
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <p className="text-white font-serif text-2xl text-center">
-                Ingeniero en Software
-              </p>
-            </div>
+            {titulos.map((titulo) => (
+              <div
+                key={titulo.id}
+                className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+              >
+                <div className="text-center">
+                  <p className="text-white font-serif text-2xl mb-2">
+                    {titulo.titulo}
+                  </p>
+                </div>
+              </div>
+            ))}
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
@@ -1059,60 +1083,21 @@ function Datos() {
               </label>
             </div>
 
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <div className="text-center">
-                <p className="text-white font-serif text-2xl mb-2">
-                  Universidad Nacional
-                </p>
-                <p className="text-cyan-500 font-sans text-lg">
-                  Profesor de Programación
-                </p>
+            {experiencias.map((experiencia) => (
+              <div
+                key={experiencia.experiencia.id}
+                className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+              >
+                <div className="text-center">
+                  <p className="text-white font-serif text-2xl mb-2">
+                    {experiencia.experiencia.institucion}
+                  </p>
+                  <p className="text-cyan-500 font-sans text-lg">
+                    {experiencia.cargo}
+                  </p>
+                </div>
               </div>
-            </div>
-
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <div className="text-center">
-                <p className="text-white font-serif text-2xl mb-2">
-                  Universidad Nacional
-                </p>
-                <p className="text-cyan-500 font-sans text-lg">
-                  Profesor de Programación
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <div className="text-center">
-                <p className="text-white font-serif text-2xl mb-2">
-                  Universidad Nacional
-                </p>
-                <p className="text-cyan-500 font-sans text-lg">
-                  Profesor de Programación
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <div className="text-center">
-                <p className="text-white font-serif text-2xl mb-2">
-                  Universidad Nacional
-                </p>
-                <p className="text-cyan-500 font-sans text-lg">
-                  Profesor de Programación
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300">
-              <div className="text-center">
-                <p className="text-white font-serif text-2xl mb-2">
-                  Universidad Nacional
-                </p>
-                <p className="text-cyan-500 font-sans text-lg">
-                  Profesor de Programación
-                </p>
-              </div>
-            </div>
+            ))}
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
