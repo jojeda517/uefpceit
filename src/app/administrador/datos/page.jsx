@@ -5,10 +5,11 @@ import {
   EyeIcon,
   EyeSlashIcon,
   MagnifyingGlassIcon,
-  MapIcon,
+  PlusCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +26,7 @@ function Datos() {
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -35,6 +37,7 @@ function Datos() {
     telefono: "",
     fechaNacimiento: "",
     genero: "",
+    experiencia: "",
   });
   const [roles, setRoles] = useState({
     administrador: false,
@@ -147,6 +150,7 @@ function Datos() {
   // Manejar el cambio en el campo de cédula
   const handleCedulaChange = async (event) => {
     try {
+      setIsLoading(true); // Establece el estado de carga a true
       const response = await fetch(`/api/persona/docente/${cedula}`);
       const data = await response.json();
 
@@ -219,9 +223,19 @@ function Datos() {
             }
             if (data.docente.experiencias) {
               setExperiencias(data.docente.experiencias);
+              setFormData({
+                experiencia: data.docente.tiempoExperiencia,
+              });
             }
+          } else {
+            setTitulos([]);
+            setExperiencias([]);
+            setFormData({
+              experiencia: "",
+            });
           }
         }
+        setIsLoading(false); // Establece el estado de carga a false
       } else {
         setFormData({
           nombre: "",
@@ -233,16 +247,20 @@ function Datos() {
           telefono: "",
           fechaNacimiento: "",
           genero: "",
+          experiencia: "",
         });
         setRoles({
           administrador: false,
           docente: true,
         });
+        setTitulos([]);
+        setExperiencias([]);
         setSelectedCampus(null);
         setSelectedProvincia(null);
         setSelectedCanton(null);
         setSelectedParroquia(null);
         setSelectedImage(null);
+        setIsLoading(false); // Establece el estado de carga a false
       }
     } catch (error) {
       console.error("Error fetching data:");
@@ -257,16 +275,20 @@ function Datos() {
         telefono: "",
         fechaNacimiento: "",
         genero: "",
+        experiencia: "",
       });
       setRoles({
         administrador: false,
         docente: true,
       });
+      setTitulos([]);
+      setExperiencias([]);
       setSelectedCampus(null);
       setSelectedProvincia(null);
       setSelectedCanton(null);
       setSelectedParroquia(null);
       setSelectedImage(null);
+      setIsLoading(false); // Establece el estado de carga a false
     }
   };
 
@@ -315,6 +337,24 @@ function Datos() {
 
   return (
     <div className="bg-gray-100 w-full flex justify-center pt-24 pb-10">
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
+            zIndex: 9999,
+          }}
+        >
+          <CircularProgress size={50} />
+        </div>
+      )}
       <div className="w-full">
         <form className="px-10">
           <div className="grid grid-cols-1 gap-2 pb-5">
@@ -1015,6 +1055,44 @@ function Datos() {
               </Menu>
             </div>
 
+            <div>
+              <label
+                htmlFor="experiencia"
+                className="block mb-2 text-sm font-medium text-blue-900"
+              >
+                Años de Experiencia
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  id="experiencia"
+                  name="experiencia"
+                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  placeholder="1"
+                  value={formData.experiencia}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
             {/* Add role checkboxes */}
             <div className="">
               <label className="block mb-2 text-sm font-medium text-blue-900">
@@ -1056,10 +1134,14 @@ function Datos() {
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
-            <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+            <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
               <label className="font-light text-lg text-black">
                 Titulos Academicos
               </label>
+
+              <div className="ml-3 inline-flex items-center text-sm text-blue-900 cursor-pointer animate-pulse">
+                <PlusCircleIcon className="h-6 w-6 transform hover:scale-105 transition-transform duration-300 hover:text-green-600" />
+              </div>
             </div>
 
             {titulos.map((titulo) => (
@@ -1076,11 +1158,15 @@ function Datos() {
             ))}
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
-
-            <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+            
+            <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
               <label className="font-light text-lg text-black">
                 Historial de Empleo
               </label>
+
+              <div className="ml-3 inline-flex items-center text-sm text-blue-900 cursor-pointer animate-pulse">
+                <PlusCircleIcon className="h-6 w-6 transform hover:scale-105 transition-transform duration-300 hover:text-green-600" />
+              </div>
             </div>
 
             {experiencias.map((experiencia) => (
