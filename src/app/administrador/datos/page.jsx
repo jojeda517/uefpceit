@@ -28,6 +28,7 @@ function Datos() {
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [formData, setFormData] = useState({
+    id: "",
     nombre: "",
     apellido: "",
     correo: "",
@@ -37,12 +38,66 @@ function Datos() {
     telefono: "",
     fechaNacimiento: "",
     genero: "",
-    experiencia: "",
+    experiencia: 0,
   });
   const [roles, setRoles] = useState({
     administrador: false,
     docente: true,
   });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setIsLoading(true);
+      const formPOST = new FormData();
+      // Agregar los datos del formulario
+      // Si id no esta vacio se añade al formData
+      if (formData.id) {
+        console.log("ID:", formData.id);
+        formPOST.append("id", formData.id);
+      } else {
+        console.log("ID: Vacio");
+      }
+      formPOST.append("nombre", formData.nombre);
+      formPOST.append("apellido", formData.apellido);
+      formPOST.append("correo", formData.correo);
+      formPOST.append("contrasena", formData.contrasena);
+      formPOST.append("nacionalidad", formData.nacionalidad);
+      formPOST.append("direccion", formData.direccion);
+      formPOST.append("telefono", formData.telefono);
+      formPOST.append("fechaNacimiento", "1999-01-24T12:08:43.000Z");
+      formPOST.append("sexo", formData.genero);
+      formPOST.append("tiempoExperiencia", formData.experiencia);
+      formPOST.append("idCampusPertenece", selectedCampus.id);
+      formPOST.append("idParroquiaPertenece", selectedParroquia.id);
+      formPOST.append("cedula", cedula);
+
+      // Agregar foto
+      if (selectedImage) {
+        const response = await fetch(selectedImage);
+        const blob = await response.blob();
+        formPOST.append("foto", blob);
+      }
+
+      const response = await fetch("/api/persona/docente", {
+        method: "POST",
+        body: formPOST,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Datos enviados:", result);
+      } else {
+        const error = await response.json();
+        console.error("Error al enviar datos:", error);
+      }
+    } catch (error) {
+      console.error("Error al enviar datos:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCampuses = async () => {
@@ -166,6 +221,7 @@ function Datos() {
           }
         );
         setFormData({
+          id: data.id,
           nombre: data.nombre,
           apellido: data.apellido,
           correo: data.usuario.correo,
@@ -177,7 +233,16 @@ function Datos() {
             .toISOString()
             .split("T")[0],
           genero: data.sexo,
+          // si data.docente existe, se añade la experiencia
+          experiencia: data.docente
+            ? data.docente.tiempoExperiencia
+              ? data.docente.tiempoExperiencia
+              : 0
+            : 0,
         });
+
+        console.log("Docente: ", data.docente);
+        console.log("Experiencias: ", data.docente.experiencias);
         setRoles(roles);
 
         setSelectedImage(data.foto);
@@ -223,21 +288,21 @@ function Datos() {
             }
             if (data.docente.experiencias) {
               setExperiencias(data.docente.experiencias);
-              setFormData({
+              /* setFormData({
                 experiencia: data.docente.tiempoExperiencia,
-              });
+              }); */
             }
           } else {
             setTitulos([]);
             setExperiencias([]);
-            setFormData({
-              experiencia: "",
-            });
+            /* setFormData({
+              experiencia: 0,
+            }); */
           }
         }
-        setIsLoading(false); // Establece el estado de carga a false
       } else {
         setFormData({
+          id: "",
           nombre: "",
           apellido: "",
           correo: "",
@@ -247,7 +312,7 @@ function Datos() {
           telefono: "",
           fechaNacimiento: "",
           genero: "",
-          experiencia: "",
+          experiencia: 0,
         });
         setRoles({
           administrador: false,
@@ -260,12 +325,12 @@ function Datos() {
         setSelectedCanton(null);
         setSelectedParroquia(null);
         setSelectedImage(null);
-        setIsLoading(false); // Establece el estado de carga a false
       }
     } catch (error) {
       console.error("Error fetching data:");
       setFormData(null);
       setFormData({
+        id: "",
         nombre: "",
         apellido: "",
         correo: "",
@@ -275,7 +340,7 @@ function Datos() {
         telefono: "",
         fechaNacimiento: "",
         genero: "",
-        experiencia: "",
+        experiencia: 0,
       });
       setRoles({
         administrador: false,
@@ -288,9 +353,15 @@ function Datos() {
       setSelectedCanton(null);
       setSelectedParroquia(null);
       setSelectedImage(null);
-      setIsLoading(false); // Establece el estado de carga a false
+    } finally {
+      setIsLoading(false); // Establece el estado de carga
     }
   };
+
+  // Efecto secundario para depurar los datos de formData
+  useEffect(() => {
+    console.log("FormData actualizado:", formData);
+  }, [formData]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -356,7 +427,7 @@ function Datos() {
         </div>
       )}
       <div className="w-full">
-        <form className="px-10">
+        <form className="px-10" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-2 pb-5">
             <h2 className="font-extrabold text-3xl text-blue-900">
               Actualizar Perfil
@@ -1158,7 +1229,7 @@ function Datos() {
             ))}
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
-            
+
             <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
               <label className="font-light text-lg text-black">
                 Historial de Empleo
@@ -1188,7 +1259,10 @@ function Datos() {
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
             {/* botones: cancelar, dar de baja al usuario, guardar */}
-            <button className="bg-blue-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <button
+              className="bg-blue-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
+              type="submit"
+            >
               Guardar
             </button>
             <button className="bg-red-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">

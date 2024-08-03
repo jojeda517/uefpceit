@@ -65,7 +65,6 @@ export async function POST(request) {
   const persona = await prisma.pERSONA.upsert({
     where: { id: id || 0 }, // Utilizar 0 si id es null para la creación
     update: {
-      id: id, // Este campo generalmente no debe ser actualizado
       cedula: body.cedula,
       nombre: body.nombre,
       apellido: body.apellido,
@@ -79,12 +78,15 @@ export async function POST(request) {
       foto: fotoPath,
     },
     create: {
-      id: id, // Este campo generalmente no debe ser creado
       cedula: body.cedula,
       nombre: body.nombre,
       apellido: body.apellido,
-      idCampusPertenece: parseInt(body.idCampusPertenece, 10),
-      idParroquiaPertenece: parseInt(body.idParroquiaPertenece, 10),
+      campus: {
+        connect: { id: parseInt(body.idCampusPertenece, 10) },
+      },
+      parroquia: {
+        connect: { id: parseInt(body.idParroquiaPertenece, 10) },
+      },
       direccion: body.direccion,
       fechaNacimiento: new Date(body.fechaNacimiento),
       nacionalidad: body.nacionalidad,
@@ -130,7 +132,7 @@ export async function POST(request) {
     },
   });
 
-  // Crear o actualizar detalles de rol
+  /* // Crear o actualizar detalles de rol
   if (body.roles) {
     await prisma.dETALLEROL.deleteMany({
       where: { idUsuarioPertenece: usuario.id },
@@ -189,7 +191,7 @@ export async function POST(request) {
         },
       });
     }
-  }
+  } */
 
   // Retornar la respuesta
   return NextResponse.json(persona, { status: 201 });

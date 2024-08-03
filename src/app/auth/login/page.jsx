@@ -29,6 +29,7 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
     const data = new FormData(event.currentTarget);
 
     if (data.get("email") === "" || data.get("password") === "") {
@@ -36,8 +37,6 @@ export default function Login() {
       setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
 
     const res = await signIn("credentials", {
       correo: data.get("email"),
