@@ -132,6 +132,26 @@ export async function POST(request) {
     },
   });
 
+  // Crear o actualizar detalles de docente título
+  await prisma.dETALLEDOCENTETITULO.deleteMany({
+    where: { idDocentePertenece: docente.id },
+  });
+
+  if (body.titulos) {
+    for (const titulo of JSON.parse(body.titulos)) {
+      await prisma.dETALLEDOCENTETITULO.create({
+        data: {
+          DOCENTE: {
+            connect: { id: docente.id },
+          },
+          TITULO: {
+            connect: { id: titulo.id },
+          },
+        },
+      });
+    }
+  }
+
   /* // Crear o actualizar detalles de rol
   if (body.roles) {
     await prisma.dETALLEROL.deleteMany({
@@ -146,26 +166,6 @@ export async function POST(request) {
           },
           ROL: {
             connect: { id: rol.id },
-          },
-        },
-      });
-    }
-  }
-
-  // Crear o actualizar detalles de docente título
-  if (body.titulos) {
-    await prisma.dETALLEDOCENTETITULO.deleteMany({
-      where: { idDocentePertenece: docente.id },
-    });
-
-    for (const titulo of JSON.parse(body.titulos)) {
-      await prisma.dETALLEDOCENTETITULO.create({
-        data: {
-          DOCENTE: {
-            connect: { id: docente.id },
-          },
-          TITULO: {
-            connect: { id: titulo.id },
           },
         },
       });

@@ -108,6 +108,45 @@ function Datos() {
     docente: true,
   });
 
+  const handleAddTitulo = async () => {
+    try {
+      setIsLoading(true);
+      if (addTitulo) {
+        const response = await fetch("/api/titulo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ titulo: addTitulo }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (titulos.find((titulo) => titulo.id === result.titulo.id)) {
+        } else {
+          const newTitulo = {
+            id: result.titulo.id,
+            titulo: result.titulo.titulo,
+          };
+          //setTitulos((prevTitulos) => [...prevTitulos, newTitulo]);
+          setTitulos([...titulos, newTitulo]);
+        }
+      }
+    } catch (error) {
+      console.error("Error al añadir título:", error);
+    } finally {
+      setAddTitulo("");
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloseTitulo = (tituloToRemove) => {
+    setTitulos(titulos.filter((titulo) => titulo !== tituloToRemove));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -139,6 +178,11 @@ function Datos() {
         const response = await fetch(selectedImage);
         const blob = await response.blob();
         formPOST.append("foto", blob);
+      }
+
+      // Agregar Títulos
+      if (titulos.length > 0) {
+        formPOST.append("titulos", JSON.stringify(titulos));
       }
 
       const response = await fetch("/api/persona/docente", {
@@ -1124,7 +1168,7 @@ function Datos() {
               {titulos.map((titulo) => (
                 <Chip
                   key={titulo.id}
-                  onClose={() => console.log("close")}
+                  onClose={() => handleCloseTitulo(titulo)}
                   variant="shadow"
                   classNames={{
                     base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
@@ -1209,11 +1253,9 @@ function Datos() {
                             Cerrar
                           </Button>
                           <Button
-                            color="primary"
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onPress={() => {
-                              console.log("Añadir");
-                              console.log(addTitulo);
+                              handleAddTitulo();
                               onClose();
                             }}
                           >
