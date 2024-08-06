@@ -8,7 +8,14 @@ import {
   PlusCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronDownIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  BriefcaseIcon,
+  SparklesIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/20/solid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Chip } from "@nextui-org/chip";
 import {
@@ -24,8 +31,9 @@ import {
   useDisclosure,
   Autocomplete,
   AutocompleteItem,
-  AutocompleteSection,
+  Input,
 } from "@nextui-org/react";
+import { Alert } from "@material-tailwind/react";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +45,7 @@ function Datos() {
   const [foto, setFoto] = useState(null);
   const [titulos, setTitulos] = useState([]);
   const [searchTitulos, setSearchTitulos] = useState([]);
+  const [searchExperiencias, setSearchExperiencias] = useState([]);
   const [experiencias, setExperiencias] = useState([]);
   const [addTitulo, setAddTitulo] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -45,7 +54,28 @@ function Datos() {
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [notificacion, setNotificacion] = useState(""); // Estado de error
+
+  useEffect(() => {
+    if (notificacion) {
+      const timer = setTimeout(() => {
+        setNotificacion("");
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [notificacion]);
+
+  const {
+    isOpen: isOpenTitulo,
+    onOpen: onOpenTitulo,
+    onOpenChange: onOpenChangeTitulo,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenExperiencia,
+    onOpen: onOpenExperiencia,
+    onOpenChange: onOpenChangeExperiencia,
+  } = useDisclosure();
   const [formData, setFormData] = useState({
     id: "",
     nombre: "",
@@ -104,13 +134,14 @@ function Datos() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Datos enviados:", result);
+        setNotificacion("Datos actualizados correctamente");
       } else {
         const error = await response.json();
-        console.error("Error al enviar datos:", error);
+        setNotificacion("Error al actualizar los datos");
       }
     } catch (error) {
       console.error("Error al enviar datos:", error);
+      setNotificacion("Error al actualizar los datos");
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +158,19 @@ function Datos() {
       }
     };
     fetchTitulos();
+  }, []);
+
+  useEffect(() => {
+    const fetchExperiencias = async () => {
+      try {
+        const response = await fetch("/api/experiencia");
+        const data = await response.json();
+        setSearchExperiencias(data);
+      } catch (error) {
+        console.error("Error fetching experiencias:", error);
+      }
+    };
+    fetchExperiencias();
   }, []);
 
   useEffect(() => {
@@ -459,6 +503,23 @@ function Datos() {
         >
           <CircularProgress size={50} />
         </div>
+      )}
+
+      {notificacion && (
+        <>
+          <Alert
+            icon={<CheckCircleIcon className="w-6 h-6" />}
+            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-green-800 bg-green-50 font-medium text-green-800  w-auto"
+          >
+            {notificacion}
+          </Alert>
+          <Alert
+            icon={<ExclamationCircleIcon className="w-6 h-6" />}
+            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-red-800 bg-red-50 font-medium text-red-800 w-auto"
+          >
+            {notificacion}
+          </Alert>
+        </>
       )}
       <div className="w-full">
         <form className="px-10" onSubmit={handleSubmit}>
@@ -1263,7 +1324,7 @@ function Datos() {
 
               <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
                 <Chip
-                  onClick={onOpen}
+                  onClick={onOpenTitulo}
                   endContent={
                     <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white" />
                   }
@@ -1276,8 +1337,8 @@ function Datos() {
                   Añadir
                 </Chip>
                 <Modal
-                  isOpen={isOpen}
-                  onOpenChange={onOpenChange}
+                  isOpen={isOpenTitulo}
+                  onOpenChange={onOpenChangeTitulo}
                   placement="top-center"
                   classNames={{
                     base: "bg-white border border-blue-900",
@@ -1293,6 +1354,7 @@ function Datos() {
                         <ModalBody>
                           <Autocomplete
                             allowsCustomValue
+                            startContent={<ClipboardDocumentListIcon className="text-blue-900 h-6 w-6"/>}
                             label="Título"
                             isRequired={true}
                             labelPlacement="inside"
@@ -1355,10 +1417,6 @@ function Datos() {
               <label className="font-light text-lg text-black">
                 Historial de Empleo
               </label>
-
-              <div className="ml-3 inline-flex items-center text-sm text-blue-900 cursor-pointer animate-pulse">
-                <PlusCircleIcon className="h-6 w-6 transform hover:scale-105 transition-transform duration-300 hover:text-green-600" />
-              </div>
             </div>
 
             <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
@@ -1392,6 +1450,118 @@ function Datos() {
                   </PopoverContent>
                 </Popover>
               ))}
+              <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
+                <Chip
+                  onClick={onOpenExperiencia}
+                  endContent={
+                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white" />
+                  }
+                  variant="shadow"
+                  classNames={{
+                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
+                    content: "drop-shadow shadow-black text-white",
+                  }}
+                >
+                  Añadir
+                </Chip>
+                <Modal
+                  isOpen={isOpenExperiencia}
+                  onOpenChange={onOpenChangeExperiencia}
+                  placement="top-center"
+                  classNames={{
+                    base: "bg-white border border-blue-900",
+                    closeButton: "text-red-400 bg-gray-200",
+                  }}
+                >
+                  <ModalContent>
+                    {(onClose) => (
+                      <>
+                        <ModalHeader className="text-blue-900">
+                          Añadir Experiencia
+                        </ModalHeader>
+                        <ModalBody>
+                          <Autocomplete
+                            allowsCustomValue
+                            label="Experiencia"
+                            isRequired={true}
+                            labelPlacement="inside"
+                            placeholder="Buscar experiencia"
+                            startContent={
+                              <SparklesIcon className="h-6 w-6 text-blue-900" />
+                            }
+                            defaultItems={searchExperiencias}
+                            disabledKeys={experiencias.map(
+                              (experiencia) =>
+                                experiencia.experiencia.institucion
+                            )}
+                            classNames={{
+                              base: "bg-gray-100 border border-blue-900 rounded-lg focus:ring-blue-900 focus:border-blue-900",
+                              input: "text-gray-900",
+                              listboxWrapper: "",
+                              listbox:
+                                "bg-white border border-blue-900 rounded-lg",
+                              option: "text-gray-900 hover:bg-blue-100",
+                              clearButton: "text-red-400",
+                              selectorButton: "text-blue-900",
+                              popoverContent:
+                                "bg-gray-100 border border-blue-900",
+                            }}
+                            onInputChange={handleInputChange}
+                          >
+                            {(experiencia) => (
+                              <AutocompleteItem key={experiencia.institucion}>
+                                {experiencia.institucion}
+                              </AutocompleteItem>
+                            )}
+                          </Autocomplete>
+
+                          <Input
+                            type="text"
+                            label="Cargo"
+                            labelPlacement="inside"
+                            variant="bordered"
+                            placeholder="Docente"
+                            isInvalid={false}
+                            errorMessage="Por favor, ingrese un cargo"
+                            isRequired={true}
+                            isClearable
+                            startContent={
+                              <BriefcaseIcon className="h-6 w-6 text-blue-900" />
+                            }
+                            classNames={{
+                              base: "",
+                              input: "text-gray-900",
+                              inputWrapper:
+                                "bg-gray-100 border border-blue-900 focus:ring-blue-900 focus:border-blue-900",
+                              clearButton: "text-red-400", // Es el icono de limpiar el input
+                            }}
+                          />
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="danger"
+                            variant="flat"
+                            onPress={onClose}
+                          >
+                            Cerrar
+                          </Button>
+                          <Button
+                            color="primary"
+                            className="bg-blue-900 text-white hover:bg-blue-800"
+                            onPress={() => {
+                              console.log("Añadir");
+                              console.log(addTitulo);
+                              onClose();
+                            }}
+                          >
+                            Añadir
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+              </div>
             </div>
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
