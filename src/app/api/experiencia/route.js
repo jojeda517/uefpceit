@@ -16,3 +16,18 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(request) {
+  try {
+    const data = await request.json();
+    const experiencia = await prisma.eXPERIENCIA.create({
+      data,
+    });
+    return NextResponse.json(experiencia, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Error al crear la experiencia" },
+      { status: 500 }
+    );
+  }
+}
