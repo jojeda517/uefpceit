@@ -147,6 +147,12 @@ function Datos() {
     setTitulos(titulos.filter((titulo) => titulo !== tituloToRemove));
   };
 
+  const handleCloseExperiencia = (experienciaToRemove) => {
+    setExperiencias(
+      experiencias.filter((experiencia) => experiencia !== experienciaToRemove)
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -1287,9 +1293,11 @@ function Datos() {
                   <PopoverTrigger>
                     <Chip
                       variant="shadow"
+                      onClose={() => handleCloseExperiencia(experiencia)}
                       classNames={{
                         base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30 cursor-pointer",
                         content: "drop-shadow shadow-black text-white",
+                        closeButton: "text-red-400",
                       }}
                     >
                       {experiencia.experiencia.institucion}
