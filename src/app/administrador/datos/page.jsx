@@ -62,6 +62,8 @@ function Datos() {
   const [searchExperiencias, setSearchExperiencias] = useState([]);
   const [experiencias, setExperiencias] = useState([]);
   const [addTitulo, setAddTitulo] = useState("");
+  const [addExperiencia, setAddExperiencia] = useState("");
+  const [addExperienciaCargo, setAddExperienciaCargo] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedProvincia, setSelectedProvincia] = useState(null);
@@ -544,9 +546,17 @@ function Datos() {
     });
   };
 
-  const handleInputChange = (value) => {
+  const handleInputChangeTitulo = (value) => {
     setAddTitulo(value);
   };
+
+  const handleInputChangeExperiencia = (value) => {
+    setAddExperiencia(value);
+  };
+
+  const handleInputChangeExperienciaCargo = (value) => {
+    setAddExperienciaCargo(value);
+  }
 
   return (
     <div className="bg-gray-100 w-full flex justify-center pt-24 pb-10">
@@ -1241,7 +1251,7 @@ function Datos() {
                               popoverContent:
                                 "bg-gray-100 border border-blue-900",
                             }}
-                            onInputChange={handleInputChange}
+                            onInputChange={handleInputChangeTitulo}
                           >
                             {(titulo) => (
                               <AutocompleteItem key={titulo.titulo}>
@@ -1279,7 +1289,7 @@ function Datos() {
 
             <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
               <label className="font-light text-lg text-black">
-                Historial de Empleo
+                Añadir historial de empleo
               </label>
             </div>
 
@@ -1372,7 +1382,7 @@ function Datos() {
                               popoverContent:
                                 "bg-gray-100 border border-blue-900",
                             }}
-                            onInputChange={handleInputChange}
+                            onInputChange={handleInputChangeExperiencia}
                           >
                             {(experiencia) => (
                               <AutocompleteItem key={experiencia.institucion}>
@@ -1394,6 +1404,7 @@ function Datos() {
                             startContent={
                               <BriefcaseIcon className="h-6 w-6 text-blue-900" />
                             }
+                            onChange={handleInputChangeExperienciaCargo}
                             classNames={{
                               base: "",
                               input: "text-gray-900",
@@ -1415,8 +1426,6 @@ function Datos() {
                             color="primary"
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onPress={() => {
-                              console.log("Añadir");
-                              console.log(addTitulo);
                               onClose();
                             }}
                           >

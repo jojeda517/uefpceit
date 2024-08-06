@@ -20,13 +20,37 @@ export async function GET() {
 export async function POST(request) {
   try {
     const data = await request.json();
-    const experiencia = await prisma.eXPERIENCIA.create({
-      data,
+    const { institucion } = data;
+
+    if (!institucion) {
+      return NextResponse.json(
+        { message: "La institución es requerida" },
+        { status: 400 }
+      );
+    }
+
+    let experienciaExistente = await prisma.eXPERIENCIA.findUnique({
+      where: { institucion },
     });
-    return NextResponse.json(experiencia, { status: 201 });
-  } catch (error) {
+
+    if (!experienciaExistente) {
+      experienciaExistente = await prisma.eXPERIENCIA.create({
+        data: { institucion },
+      });
+      return NextResponse.json(experienciaExistente, { status: 201 });
+    }
+
     return NextResponse.json(
-      { message: "Error al crear la experiencia" },
+      {
+        message: "La institución ya existe",
+        institucion: experienciaExistente,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error al crear la institución:", error);
+    return NextResponse.json(
+      { message: "Error al crear la institución", error: error.message },
       { status: 500 }
     );
   }
