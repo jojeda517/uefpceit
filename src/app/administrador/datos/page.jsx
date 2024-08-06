@@ -10,6 +10,22 @@ import {
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import CircularProgress from "@mui/material/CircularProgress";
+import { Chip } from "@nextui-org/chip";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure,
+  Autocomplete,
+  AutocompleteItem,
+  AutocompleteSection,
+} from "@nextui-org/react";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,13 +36,16 @@ function Datos() {
   const [parroquias, setParroquias] = useState([]);
   const [foto, setFoto] = useState(null);
   const [titulos, setTitulos] = useState([]);
+  const [searchTitulos, setSearchTitulos] = useState([]);
   const [experiencias, setExperiencias] = useState([]);
+  const [addTitulo, setAddTitulo] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [formData, setFormData] = useState({
     id: "",
     nombre: "",
@@ -54,10 +73,8 @@ function Datos() {
       // Agregar los datos del formulario
       // Si id no esta vacio se añade al formData
       if (formData.id) {
-        console.log("ID:", formData.id);
         formPOST.append("id", formData.id);
       } else {
-        console.log("ID: Vacio");
       }
       formPOST.append("nombre", formData.nombre);
       formPOST.append("apellido", formData.apellido);
@@ -98,6 +115,19 @@ function Datos() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchTitulos = async () => {
+      try {
+        const response = await fetch("/api/titulo");
+        const data = await response.json();
+        setSearchTitulos(data);
+      } catch (error) {
+        console.error("Error fetching titulos:", error);
+      }
+    };
+    fetchTitulos();
+  }, []);
 
   useEffect(() => {
     const fetchCampuses = async () => {
@@ -404,6 +434,10 @@ function Datos() {
       ...roles,
       [name]: checked,
     });
+  };
+
+  const handleInputChange = (value) => {
+    setAddTitulo(value);
   };
 
   return (
@@ -1209,24 +1243,111 @@ function Datos() {
               <label className="font-light text-lg text-black">
                 Titulos Academicos
               </label>
-
-              <div className="ml-3 inline-flex items-center text-sm text-blue-900 cursor-pointer animate-pulse">
-                <PlusCircleIcon className="h-6 w-6 transform hover:scale-105 transition-transform duration-300 hover:text-green-600" />
-              </div>
             </div>
 
-            {titulos.map((titulo) => (
-              <div
-                key={titulo.id}
-                className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer"
-              >
-                <div className="text-center">
-                  <p className="text-white font-serif text-2xl mb-2">
-                    {titulo.titulo}
-                  </p>
-                </div>
+            <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+              {titulos.map((titulo) => (
+                <Chip
+                  key={titulo.id}
+                  onClose={() => console.log("close")}
+                  variant="shadow"
+                  classNames={{
+                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
+                    content: "drop-shadow shadow-black text-white",
+                    closeButton: "text-red-400",
+                  }}
+                >
+                  {titulo.titulo}
+                </Chip>
+              ))}
+
+              <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
+                <Chip
+                  onClick={onOpen}
+                  endContent={
+                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white" />
+                  }
+                  variant="shadow"
+                  classNames={{
+                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
+                    content: "drop-shadow shadow-black text-white",
+                  }}
+                >
+                  Añadir
+                </Chip>
+                <Modal
+                  isOpen={isOpen}
+                  onOpenChange={onOpenChange}
+                  placement="top-center"
+                  classNames={{
+                    base: "bg-white border border-blue-900",
+                    closeButton: "text-red-400 bg-gray-200",
+                  }}
+                >
+                  <ModalContent>
+                    {(onClose) => (
+                      <>
+                        <ModalHeader className="text-blue-900">
+                          Añadir Título
+                        </ModalHeader>
+                        <ModalBody>
+                          <Autocomplete
+                            allowsCustomValue
+                            label="Título"
+                            isRequired={true}
+                            labelPlacement="inside"
+                            placeholder="Buscar título"
+                            defaultItems={searchTitulos}
+                            disabledKeys={titulos.map(
+                              (titulo) => titulo.titulo
+                            )}
+                            classNames={{
+                              base: "bg-gray-100 border border-blue-900 rounded-lg focus:ring-blue-900 focus:border-blue-900",
+                              input: "text-gray-900",
+                              listboxWrapper: "",
+                              listbox:
+                                "bg-white border border-blue-900 rounded-lg",
+                              option: "text-gray-900 hover:bg-blue-100",
+                              clearButton: "text-red-400",
+                              selectorButton: "text-blue-900",
+                              popoverContent:
+                                "bg-gray-100 border border-blue-900",
+                            }}
+                            onInputChange={handleInputChange}
+                          >
+                            {(titulo) => (
+                              <AutocompleteItem key={titulo.titulo}>
+                                {titulo.titulo}
+                              </AutocompleteItem>
+                            )}
+                          </Autocomplete>
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="danger"
+                            variant="flat"
+                            onPress={onClose}
+                          >
+                            Cerrar
+                          </Button>
+                          <Button
+                            color="primary"
+                            className="bg-blue-900 text-white hover:bg-blue-800"
+                            onPress={() => {
+                              console.log("Añadir");
+                              console.log(addTitulo);
+                              onClose();
+                            }}
+                          >
+                            Añadir
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
               </div>
-            ))}
+            </div>
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
@@ -1240,21 +1361,38 @@ function Datos() {
               </div>
             </div>
 
-            {experiencias.map((experiencia) => (
-              <div
-                key={experiencia.experiencia.id}
-                className="bg-blue-900 py-5 px-2.5 rounded-3xl m-3 shadow-black shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer"
-              >
-                <div className="text-center">
-                  <p className="text-white font-serif text-2xl mb-2">
-                    {experiencia.experiencia.institucion}
-                  </p>
-                  <p className="text-cyan-500 font-sans text-lg">
-                    {experiencia.cargo}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+              {experiencias.map((experiencia) => (
+                <Popover
+                  key={experiencia.experiencia.id}
+                  placement="bottom"
+                  showArrow={true}
+                >
+                  <PopoverTrigger>
+                    <Chip
+                      variant="shadow"
+                      classNames={{
+                        base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30 cursor-pointer",
+                        content: "drop-shadow shadow-black text-white",
+                      }}
+                    >
+                      {experiencia.experiencia.institucion}
+                    </Chip>
+                    {/* <div className="capitalize bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full inline-flex items-center justify-center px-4 py-1 cursor-pointer text-white">
+                      {experiencia.experiencia.institucion}
+                    </div> */}
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className="px-1 py-2">
+                      <div className="text-small font-bold">
+                        {experiencia.experiencia.institucion}
+                      </div>
+                      <div className="text-tiny">{experiencia.cargo}</div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ))}
+            </div>
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
 
@@ -1271,8 +1409,6 @@ function Datos() {
             <button className="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
               Cancelar
             </button>
-
-            {/*  */}
           </div>
         </form>
       </div>

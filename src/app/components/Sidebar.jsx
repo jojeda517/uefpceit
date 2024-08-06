@@ -63,8 +63,8 @@ export default function Sidebar({ roles }) {
 
   const handleSignOut = () => {
     setIsLoading(true);
-    const baseUrl = process.env.NEXTAUTH_URL;
-    signOut({ callbackUrl: baseUrl });
+    //const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: "/" });
   };
 
   // Función para verificar si el usuario tiene un rol específico

@@ -30,41 +30,46 @@ export default function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    const data = new FormData(event.currentTarget);
 
-    if (data.get("email") === "" || data.get("password") === "") {
+    const data = new FormData(event.currentTarget);
+    const email = data.get("email");
+    const password = data.get("password");
+
+    if (!email || !password) {
       setError("Por favor, ingrese su correo y contraseña");
       setIsLoading(false);
       return;
     }
 
-    const res = await signIn("credentials", {
-      correo: data.get("email"),
-      contrasena: data.get("password"),
-      redirect: false,
-    });
+    try {
+      const res = await signIn("credentials", {
+        correo: email,
+        contrasena: password,
+        redirect: false,
+      });
 
-    if (res.error) {
-      setError("Credenciales incorrectas. Inténtelo de nuevo.");
-      setIsLoading(false);
-    } else {
-      if (res.ok) {
+      if (res.error) {
+        setError("Credenciales incorrectas. Inténtelo de nuevo.");
+      } else {
         const session = await fetch("/api/auth/session").then((res) =>
           res.json()
         );
-
         const roles = session.user?.roles || [];
-        setIsLoading(false);
-        if (roles.includes("Administrador")) {
-          router.push("/administrador");
-        } else if (roles.includes("Docente")) {
-          router.push("/docente");
-        } else if (roles.includes("Estudiante")) {
-          router.push("/estudiante");
-        } else {
-          router.push("/");
-        }
+        const roleRoutes = {
+          administrador: "/administrador",
+          docente: "/docente",
+          estudiante: "/estudiante",
+        };
+        const route =
+          roles
+            .map((role) => role.toLowerCase())
+            .find((role) => roleRoutes[role]) || "/";
+        router.push(route);
       }
+    } catch (error) {
+      setError("Ocurrió un error. Inténtelo de nuevo más tarde.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

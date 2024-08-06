@@ -17,8 +17,8 @@ function Header() {
 
   const handleSignOut = () => {
     setIsLoading(true); // Establece el estado de carga a true
-    const baseUrl = process.env.NEXTAUTH_URL;
-    signOut({ callbackUrl: baseUrl });
+    //const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: "/" });
   };
 
   const fetchPersona = useCallback(async () => {
