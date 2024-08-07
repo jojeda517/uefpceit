@@ -437,6 +437,35 @@ function Datos() {
     });
   };
 
+  // Manejar limpieza de datos
+  const handleClear = async (event) => {
+    setFormData({
+      id: "",
+      nombre: "",
+      apellido: "",
+      correo: "",
+      contrasena: "",
+      nacionalidad: "",
+      direccion: "",
+      telefono: "",
+      fechaNacimiento: "",
+      genero: "",
+      experiencia: 0,
+    }); // Limpiar los datos del formulario
+    setRoles({
+      administrador: false,
+      docente: true,
+    });
+    setTitulos([]);
+    setExperiencias([]);
+    setSelectedCampus(null);
+    setSelectedProvincia(null);
+    setSelectedCanton(null);
+    setSelectedParroquia(null);
+    setSelectedImage(null);
+    setCedula("");
+  };
+
   // Manejar el cambio en el campo de cédula
   const handleCedulaChange = async (event) => {
     try {
@@ -531,62 +560,14 @@ function Datos() {
           type: "success",
         });
       } else {
-        setFormData({
-          id: "",
-          nombre: "",
-          apellido: "",
-          correo: "",
-          contrasena: "",
-          nacionalidad: "",
-          direccion: "",
-          telefono: "",
-          fechaNacimiento: "",
-          genero: "",
-          experiencia: 0,
-        });
-        setRoles({
-          administrador: false,
-          docente: true,
-        });
-        setTitulos([]);
-        setExperiencias([]);
-        setSelectedCampus(null);
-        setSelectedProvincia(null);
-        setSelectedCanton(null);
-        setSelectedParroquia(null);
-        setSelectedImage(null);
+        handleClear();
         setNotificacion({
           message: "No se encontraron datos para la cédula ingresada",
           type: "warning",
         });
       }
     } catch (error) {
-      console.error("Error fetching data:");
-      setFormData(null);
-      setFormData({
-        id: "",
-        nombre: "",
-        apellido: "",
-        correo: "",
-        contrasena: "",
-        nacionalidad: "",
-        direccion: "",
-        telefono: "",
-        fechaNacimiento: "",
-        genero: "",
-        experiencia: 0,
-      });
-      setRoles({
-        administrador: false,
-        docente: true,
-      });
-      setTitulos([]);
-      setExperiencias([]);
-      setSelectedCampus(null);
-      setSelectedProvincia(null);
-      setSelectedCanton(null);
-      setSelectedParroquia(null);
-      setSelectedImage(null);
+      handleClear();
       setNotificacion({
         message: "No se encontraron datos para la cédula ingresada",
         type: "warning",
@@ -1568,9 +1549,10 @@ function Datos() {
               <Button
                 startContent={<TrashIcon className="h-6 w-6" />}
                 type="button"
+                onClick={handleClear}
                 className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
               >
-                Cancelar
+                Limpiar
               </Button>
             </div>
           </div>
