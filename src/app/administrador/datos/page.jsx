@@ -145,6 +145,49 @@ function Datos() {
     }
   };
 
+  const handleAddExperiencia = async () => {
+    try {
+      setIsLoading(true);
+      if (addExperiencia) {
+        const response = await fetch("/api/experiencia", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ institucion: addExperiencia }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (
+          experiencias.find(
+            (experiencia) =>
+              experiencia.experiencia.id === result.institucion.id
+          )
+        ) {
+        } else {
+          const newInstitucion = {
+            experiencia: {
+              id: result.institucion.id,
+              institucion: result.institucion.institucion,
+            },
+            cargo: addExperienciaCargo,
+          };
+          setExperiencias([...experiencias, newInstitucion]);
+        }
+      }
+    } catch (error) {
+      console.error("Error al añadir la institucion:", error);
+    } finally {
+      setAddExperiencia("");
+      setAddExperienciaCargo("");
+      setIsLoading(false);
+    }
+  };
+
   const handleCloseTitulo = (tituloToRemove) => {
     setTitulos(titulos.filter((titulo) => titulo !== tituloToRemove));
   };
@@ -501,7 +544,9 @@ function Datos() {
   // Efecto secundario para depurar los datos de formData
   useEffect(() => {
     console.log("FormData actualizado:", formData);
-  }, [formData]);
+    console.log("Expereincias actualizadas:", experiencias);
+    console.log("Titulos actualizados:", titulos);
+  }, [formData, experiencias, titulos]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -556,7 +601,7 @@ function Datos() {
 
   const handleInputChangeExperienciaCargo = (value) => {
     setAddExperienciaCargo(value);
-  }
+  };
 
   return (
     <div className="bg-gray-100 w-full flex justify-center pt-24 pb-10">
@@ -1404,7 +1449,8 @@ function Datos() {
                             startContent={
                               <BriefcaseIcon className="h-6 w-6 text-blue-900" />
                             }
-                            onChange={handleInputChangeExperienciaCargo}
+                            value={addExperienciaCargo}
+                            onValueChange={handleInputChangeExperienciaCargo}
                             classNames={{
                               base: "",
                               input: "text-gray-900",
@@ -1423,9 +1469,9 @@ function Datos() {
                             Cerrar
                           </Button>
                           <Button
-                            color="primary"
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onPress={() => {
+                              handleAddExperiencia();
                               onClose();
                             }}
                           >

@@ -37,7 +37,10 @@ export async function POST(request) {
       tituloExistente = await prisma.tITULO.create({
         data: { titulo },
       });
-      return NextResponse.json(tituloExistente, { status: 201 });
+      return NextResponse.json(
+        { message: "El título se agrego", titulo: tituloExistente },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json(

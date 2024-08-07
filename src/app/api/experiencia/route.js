@@ -37,7 +37,13 @@ export async function POST(request) {
       experienciaExistente = await prisma.eXPERIENCIA.create({
         data: { institucion },
       });
-      return NextResponse.json(experienciaExistente, { status: 201 });
+      return NextResponse.json(
+        {
+          message: "La institución se agrego",
+          institucion: experienciaExistente,
+        },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json(
