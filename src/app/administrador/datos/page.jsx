@@ -29,6 +29,7 @@ import {
   BriefcaseIcon,
   SparklesIcon,
   ClipboardDocumentListIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Chip } from "@nextui-org/chip";
@@ -640,6 +641,12 @@ function Datos() {
           <Alert
             icon={<ExclamationCircleIcon className="w-6 h-6" />}
             className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-red-800 bg-red-50 font-medium text-red-800 w-auto"
+          >
+            {notificacion}
+          </Alert>
+          <Alert
+            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-yellow-800 bg-yellow-50 font-medium text-yellow-800 w-auto"
           >
             {notificacion}
           </Alert>
@@ -1321,8 +1328,10 @@ function Datos() {
                           <Button
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onPress={() => {
-                              handleAddTitulo();
-                              onClose();
+                              if (addTitulo) {
+                                handleAddTitulo(addTitulo);
+                                setAddTitulo("");
+                              }
                             }}
                           >
                             Añadir
@@ -1362,9 +1371,6 @@ function Datos() {
                     >
                       {experiencia.experiencia.institucion}
                     </Chip>
-                    {/* <div className="capitalize bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full inline-flex items-center justify-center px-4 py-1 cursor-pointer text-white">
-                      {experiencia.experiencia.institucion}
-                    </div> */}
                   </PopoverTrigger>
                   <PopoverContent>
                     <div className="px-1 py-2">
@@ -1476,8 +1482,15 @@ function Datos() {
                           <Button
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onPress={() => {
-                              handleAddExperiencia();
-                              onClose();
+                              // Controlar que no se pueda añadir una experiencia sin cargo y sin experiencia
+                              if (addExperienciaCargo && addExperiencia) {
+                                handleAddExperiencia();
+                                onClose();
+                              } else {
+                                alert(
+                                  "Por favor, ingrese una experiencia y un cargo"
+                                );
+                              }
                             }}
                           >
                             Añadir
