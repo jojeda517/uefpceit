@@ -152,6 +152,26 @@ export async function POST(request) {
     }
   }
 
+  // Crear o actualizar detalles de docente experiencia
+  await prisma.dETALLEDOCENTEEXPERIENCIA.deleteMany({
+    where: { idDocentePertenece: docente.id },
+  });
+  if (body.experiencias) {
+    for (const experiencia of JSON.parse(body.experiencias)) {
+      await prisma.dETALLEDOCENTEEXPERIENCIA.create({
+        data: {
+          DOCENTE: {
+            connect: { id: docente.id },
+          },
+          EXPERIENCIA: {
+            connect: { id: experiencia.experiencia.id },
+          },
+          cargo: experiencia.cargo,
+        },
+      });
+    }
+  }
+
   /* // Crear o actualizar detalles de rol
   if (body.roles) {
     await prisma.dETALLEROL.deleteMany({

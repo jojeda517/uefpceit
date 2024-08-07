@@ -236,6 +236,11 @@ function Datos() {
         formPOST.append("titulos", JSON.stringify(titulos));
       }
 
+      // Agregar Experiencias
+      if (experiencias.length > 0) {
+        formPOST.append("experiencias", JSON.stringify(experiencias));
+      }
+
       const response = await fetch("/api/persona/docente", {
         method: "POST",
         body: formPOST,
