@@ -49,6 +49,7 @@ import {
   Input,
 } from "@nextui-org/react";
 import { Alert } from "@material-tailwind/react";
+import Notification from "@/app/components/Notification";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
@@ -71,9 +72,9 @@ function Datos() {
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
-  const [notificacion, setNotificacion] = useState(""); // Estado de error
+  const [notificacion, setNotificacion] = useState({ message: "", type: "" });
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (notificacion) {
       const timer = setTimeout(() => {
         setNotificacion("");
@@ -81,7 +82,7 @@ function Datos() {
 
       return () => clearTimeout(timer);
     }
-  }, [notificacion]);
+  }, [notificacion]); */
 
   const {
     isOpen: isOpenTitulo,
@@ -129,17 +130,26 @@ function Datos() {
 
         const result = await response.json();
         if (titulos.find((titulo) => titulo.id === result.titulo.id)) {
+          setNotificacion({ message: "El título ya existe", type: "warning" });
         } else {
           const newTitulo = {
             id: result.titulo.id,
             titulo: result.titulo.titulo,
           };
-          //setTitulos((prevTitulos) => [...prevTitulos, newTitulo]);
           setTitulos([...titulos, newTitulo]);
+          setNotificacion({
+            message: "Título añadido correctamente",
+            type: "success",
+          });
         }
+      } else {
+        setNotificacion({
+          message: "El campo de título está vacío",
+          type: "warning",
+        });
       }
     } catch (error) {
-      console.error("Error al añadir título:", error);
+      setNotificacion({ message: "Error al añadir título", type: "error" });
     } finally {
       setAddTitulo("");
       setIsLoading(false);
@@ -169,6 +179,10 @@ function Datos() {
               experiencia.experiencia.id === result.institucion.id
           )
         ) {
+          setNotificacion({
+            message: "La experiencia ya existe",
+            type: "warning",
+          });
         } else {
           const newInstitucion = {
             experiencia: {
@@ -178,10 +192,22 @@ function Datos() {
             cargo: addExperienciaCargo,
           };
           setExperiencias([...experiencias, newInstitucion]);
+          setNotificacion({
+            message: "Experiencia añadida correctamente",
+            type: "success",
+          });
         }
+      } else {
+        setNotificacion({
+          message: "El campo de experiencia está vacío",
+          type: "warning",
+        });
       }
     } catch (error) {
-      console.error("Error al añadir la institucion:", error);
+      setNotificacion({
+        message: "Error al añadir la institucion",
+        type: "error",
+      });
     } finally {
       setAddExperiencia("");
       setAddExperienciaCargo("");
@@ -249,14 +275,22 @@ function Datos() {
 
       if (response.ok) {
         const result = await response.json();
-        setNotificacion("Datos actualizados correctamente");
+        setNotificacion({
+          message: "Datos actualizados correctamente",
+          type: "success",
+        });
       } else {
         const error = await response.json();
-        setNotificacion("Error al actualizar los datos");
+        setNotificacion({
+          message: "Error al actualizar los datos",
+          type: "error",
+        });
       }
     } catch (error) {
-      console.error("Error al enviar datos:", error);
-      setNotificacion("Error al actualizar los datos");
+      setNotificacion({
+        message: "Error al actualizar los datos",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -429,9 +463,6 @@ function Datos() {
               : 0
             : 0,
         });
-
-        console.log("Docente: ", data.docente);
-        console.log("Experiencias: ", data.docente.experiencias);
         setRoles(roles);
 
         setSelectedImage(data.foto);
@@ -477,16 +508,10 @@ function Datos() {
             }
             if (data.docente.experiencias) {
               setExperiencias(data.docente.experiencias);
-              /* setFormData({
-                experiencia: data.docente.tiempoExperiencia,
-              }); */
             }
           } else {
             setTitulos([]);
             setExperiencias([]);
-            /* setFormData({
-              experiencia: 0,
-            }); */
           }
         }
       } else {
@@ -630,28 +655,12 @@ function Datos() {
         </div>
       )}
 
-      {notificacion && (
-        <>
-          <Alert
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-green-800 bg-green-50 font-medium text-green-800  w-auto"
-          >
-            {notificacion}
-          </Alert>
-          <Alert
-            icon={<ExclamationCircleIcon className="w-6 h-6" />}
-            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-red-800 bg-red-50 font-medium text-red-800 w-auto"
-          >
-            {notificacion}
-          </Alert>
-          <Alert
-            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
-            className="fixed bottom-4 left-4 z-50 rounded-none border-l-4 border-yellow-800 bg-yellow-50 font-medium text-yellow-800 w-auto"
-          >
-            {notificacion}
-          </Alert>
-        </>
-      )}
+      <Notification
+        message={notificacion.message}
+        type={notificacion.type}
+        onClose={() => setNotificacion({ message: "", type: "" })}
+      />
+
       <div className="w-full">
         <form className="px-10" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-2 pb-5">
@@ -1330,7 +1339,12 @@ function Datos() {
                             onPress={() => {
                               if (addTitulo) {
                                 handleAddTitulo(addTitulo);
-                                setAddTitulo("");
+                                onClose();
+                              } else {
+                                setNotificacion({
+                                  message: "Por favor, ingrese un título",
+                                  type: "warning",
+                                });
                               }
                             }}
                           >
@@ -1487,9 +1501,11 @@ function Datos() {
                                 handleAddExperiencia();
                                 onClose();
                               } else {
-                                alert(
-                                  "Por favor, ingrese una experiencia y un cargo"
-                                );
+                                setNotificacion({
+                                  message:
+                                    "Por favor, ingrese una experiencia y un cargo",
+                                  type: "warning",
+                                });
                               }
                             }}
                           >
