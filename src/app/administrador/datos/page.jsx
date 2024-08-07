@@ -19,6 +19,8 @@ import {
   PhoneIcon,
   UserGroupIcon,
   ClockIcon,
+  BookmarkSquareIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
@@ -69,17 +71,6 @@ function Datos() {
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
-
-  /* useEffect(() => {
-    if (notificacion) {
-      const timer = setTimeout(() => {
-        setNotificacion("");
-      }, 4000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [notificacion]); */
-
   const {
     isOpen: isOpenTitulo,
     onOpen: onOpenTitulo,
@@ -226,65 +217,90 @@ function Datos() {
 
     try {
       setIsLoading(true);
-      const formPOST = new FormData();
-      // Agregar los datos del formulario
-      // Si id no esta vacio se añade al formData
-      if (formData.id) {
-        formPOST.append("id", formData.id);
-      } else {
-      }
-      formPOST.append("nombre", formData.nombre);
-      formPOST.append("apellido", formData.apellido);
-      formPOST.append("correo", formData.correo);
-      formPOST.append("contrasena", formData.contrasena);
-      formPOST.append("nacionalidad", formData.nacionalidad);
-      formPOST.append("direccion", formData.direccion);
-      formPOST.append("telefono", formData.telefono);
-      formPOST.append("fechaNacimiento", "1999-01-24T12:08:43.000Z");
-      formPOST.append("sexo", formData.genero);
-      formPOST.append("tiempoExperiencia", formData.experiencia);
-      formPOST.append("idCampusPertenece", selectedCampus.id);
-      formPOST.append("idParroquiaPertenece", selectedParroquia.id);
-      formPOST.append("cedula", cedula);
-
-      // Agregar foto
-      if (selectedImage) {
-        const response = await fetch(selectedImage);
-        const blob = await response.blob();
-        formPOST.append("foto", blob);
-      }
-
-      // Agregar Títulos
-      if (titulos.length > 0) {
-        formPOST.append("titulos", JSON.stringify(titulos));
-      }
-
-      // Agregar Experiencias
-      if (experiencias.length > 0) {
-        formPOST.append("experiencias", JSON.stringify(experiencias));
-      }
-
-      const response = await fetch("/api/persona/docente", {
-        method: "POST",
-        body: formPOST,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+      // Validar que Campus, Provincia, Cantón, Parroquia y Género estén seleccionados
+      if (
+        !selectedCampus ||
+        !selectedProvincia ||
+        !selectedCanton ||
+        !selectedParroquia ||
+        !formData.genero
+      ) {
         setNotificacion({
-          message: "Datos actualizados correctamente",
-          type: "success",
+          message: "Por favor, complete todos los campos obligatorios",
+          type: "warning",
         });
       } else {
-        const error = await response.json();
-        setNotificacion({
-          message: "Error al actualizar los datos",
-          type: "error",
+        const formPOST = new FormData();
+        // Agregar los datos del formulario
+        // Si id no esta vacio se añade al formData
+        if (formData.id) {
+          formPOST.append("id", formData.id);
+        } else {
+        }
+        formPOST.append("nombre", formData.nombre);
+        formPOST.append("apellido", formData.apellido);
+        formPOST.append("correo", formData.correo);
+        formPOST.append("contrasena", formData.contrasena);
+        formPOST.append("nacionalidad", formData.nacionalidad);
+        formPOST.append("direccion", formData.direccion);
+        formPOST.append("telefono", formData.telefono);
+        const fecha = new Date(formData.fechaNacimiento);
+        formPOST.append("fechaNacimiento", fecha.toISOString());
+        formPOST.append("sexo", formData.genero);
+        formPOST.append("tiempoExperiencia", formData.experiencia);
+        formPOST.append("idCampusPertenece", selectedCampus.id);
+        formPOST.append("idParroquiaPertenece", selectedParroquia.id);
+        formPOST.append("cedula", cedula);
+
+        // Agregar foto
+        if (selectedImage) {
+          const response = await fetch(selectedImage);
+          const blob = await response.blob();
+          formPOST.append("foto", blob);
+        }
+
+        // Agregar Títulos
+        if (titulos.length > 0) {
+          formPOST.append("titulos", JSON.stringify(titulos));
+        }
+
+        // Agregar Experiencias
+        if (experiencias.length > 0) {
+          formPOST.append("experiencias", JSON.stringify(experiencias));
+        }
+
+        // Agregar el nombre de los roles con valor true [{rol: administrador}, {rol: docente}]
+        const rolesArray = Object.entries(roles)
+          .filter(([, value]) => value)
+          .map(([key]) => ({
+            rol: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
+          }));
+        formPOST.append("roles", JSON.stringify(rolesArray));
+
+        const response = await fetch("/api/persona/docente", {
+          method: "POST",
+          body: formPOST,
         });
+
+        console.log("response", response);
+
+        if (response.ok) {
+          const result = await response.json();
+          setNotificacion({
+            message: "Datos actualizados correctamente",
+            type: "success",
+          });
+        } else {
+          const error = await response.json();
+          setNotificacion({
+            message: "Error. Verifique los datos e inténtelo nuevamente",
+            type: "error",
+          });
+        }
       }
     } catch (error) {
       setNotificacion({
-        message: "Error al actualizar los datos",
+        message: "Error. Verifique los datos e inténtelo nuevamente",
         type: "error",
       });
     } finally {
@@ -510,6 +526,10 @@ function Datos() {
             setExperiencias([]);
           }
         }
+        setNotificacion({
+          message: "Datos cargados correctamente",
+          type: "success",
+        });
       } else {
         setFormData({
           id: "",
@@ -535,6 +555,10 @@ function Datos() {
         setSelectedCanton(null);
         setSelectedParroquia(null);
         setSelectedImage(null);
+        setNotificacion({
+          message: "No se encontraron datos para la cédula ingresada",
+          type: "warning",
+        });
       }
     } catch (error) {
       console.error("Error fetching data:");
@@ -563,6 +587,10 @@ function Datos() {
       setSelectedCanton(null);
       setSelectedParroquia(null);
       setSelectedImage(null);
+      setNotificacion({
+        message: "No se encontraron datos para la cédula ingresada",
+        type: "warning",
+      });
     } finally {
       setIsLoading(false); // Establece el estado de carga
     }
@@ -573,7 +601,8 @@ function Datos() {
     console.log("FormData actualizado:", formData);
     console.log("Expereincias actualizadas:", experiencias);
     console.log("Titulos actualizados:", titulos);
-  }, [formData, experiencias, titulos]);
+    console.log("Roles actualizados:", roles);
+  }, [formData, experiencias, titulos, roles]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -735,6 +764,7 @@ function Datos() {
                   className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
                   placeholder="9999999999"
                   onChange={(e) => setCedula(e.target.value)}
+                  required
                 />
                 <div
                   /* enviar el valor de cedula en el oncklick */
@@ -816,6 +846,7 @@ function Datos() {
                   placeholder="ejemplo@gmail.com"
                   value={formData.correo}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -839,6 +870,7 @@ function Datos() {
                   placeholder="********"
                   value={formData.contrasena}
                   onChange={handleChange}
+                  required
                 />
                 <div
                   onClick={togglePasswordVisibility}
@@ -872,6 +904,7 @@ function Datos() {
                   placeholder="Juan Antonio"
                   value={formData.nombre}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -895,6 +928,7 @@ function Datos() {
                   placeholder="Pérez López"
                   value={formData.apellido}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -918,6 +952,7 @@ function Datos() {
                   placeholder="Ecuatoriana"
                   value={formData.nacionalidad}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -941,6 +976,7 @@ function Datos() {
                   placeholder="dd/mm/aaaa"
                   value={formData.fechaNacimiento}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -1096,6 +1132,7 @@ function Datos() {
                   placeholder="Calle S/N"
                   value={formData.direccion}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -1119,6 +1156,7 @@ function Datos() {
                   placeholder="0999999999"
                   value={formData.telefono}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -1191,6 +1229,7 @@ function Datos() {
                   placeholder="1"
                   value={formData.experiencia}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -1515,21 +1554,25 @@ function Datos() {
               </div>
             </div>
 
-            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
+            {/* <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" /> */}
 
             {/* botones: cancelar, dar de baja al usuario, guardar */}
-            <button
-              className="bg-blue-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"
-              type="submit"
-            >
-              Guardar
-            </button>
-            <button className="bg-red-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
-              Dar de Baja
-            </button>
-            <button className="bg-gray-900 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
-              Cancelar
-            </button>
+            <div className="flex flex-wrap gap-4 justify-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+              <Button
+                startContent={<BookmarkSquareIcon className="h-6 w-6" />}
+                type="submit"
+                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-blue-900 shadow-lg"
+              >
+                Guardar
+              </Button>
+              <Button
+                startContent={<TrashIcon className="h-6 w-6" />}
+                type="button"
+                className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
+              >
+                Cancelar
+              </Button>
+            </div>
           </div>
         </form>
       </div>

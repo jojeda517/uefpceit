@@ -172,46 +172,28 @@ export async function POST(request) {
     }
   }
 
-  /* // Crear o actualizar detalles de rol
+  // Crear o actualizar detalles de rol
+  await prisma.dETALLEROL.deleteMany({
+    where: { idUsuarioPertenece: usuario.id },
+  });
   if (body.roles) {
-    await prisma.dETALLEROL.deleteMany({
-      where: { idUsuarioPertenece: usuario.id },
-    });
-
     for (const rol of JSON.parse(body.roles)) {
+      // Buscar el id del rol del body ya que en el body viene el nombre del rol
+      const rolID = await prisma.rOL.findUnique({
+        where: { rol: rol.rol },
+      }); 
       await prisma.dETALLEROL.create({
         data: {
           USUARIO: {
             connect: { id: usuario.id },
           },
           ROL: {
-            connect: { id: rol.id },
+            connect: { id: rolID.id },
           },
         },
       });
     }
   }
-
-  // Crear o actualizar detalles de docente experiencia
-  if (body.experiencias) {
-    await prisma.dETALLEDOCENTEEXPERIENCIA.deleteMany({
-      where: { idDocentePertenece: docente.id },
-    });
-
-    for (const experiencia of JSON.parse(body.experiencias)) {
-      await prisma.dETALLEDOCENTEEXPERIENCIA.create({
-        data: {
-          DOCENTE: {
-            connect: { id: docente.id },
-          },
-          EXPERIENCIA: {
-            connect: { id: experiencia.id },
-          },
-          cargo: experiencia.cargo,
-        },
-      });
-    }
-  } */
 
   // Retornar la respuesta
   return NextResponse.json(persona, { status: 201 });
