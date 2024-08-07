@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { useState, useEffect } from "react";
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -21,19 +20,14 @@ import {
   UserGroupIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   ChevronDownIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
   BriefcaseIcon,
   SparklesIcon,
   ClipboardDocumentListIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
-import CircularProgress from "@mui/material/CircularProgress";
-import { Chip } from "@nextui-org/chip";
 import {
+  Chip,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -48,8 +42,10 @@ import {
   AutocompleteItem,
   Input,
 } from "@nextui-org/react";
-import { Alert } from "@material-tailwind/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
+import { useState, useEffect } from "react";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
