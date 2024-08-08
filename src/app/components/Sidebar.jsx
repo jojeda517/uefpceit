@@ -90,14 +90,14 @@ export default function Sidebar({ roles }) {
           <CircularProgress size={50} />
         </div>
       )}
-      <IconButton variant="text" size="lg" onClick={openDrawer}>
+      <IconButton className="hover:bg-blue-800 dark:hover:bg-gray-700" variant="text" size="lg" onClick={openDrawer}>
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />
         ) : (
           <Bars3Icon className="h-8 w-8 stroke-2 text-white" />
         )}
       </IconButton>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900">
+      <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900 dark:bg-gray-900">
         <Card
           color="transparent"
           shadow={false}
@@ -109,13 +109,13 @@ export default function Sidebar({ roles }) {
               Menú
             </Typography>
           </div>
-          <div className="p-2 text-white">
+          {/* <div className="p-2 text-white">
             <Input
               icon={<MagnifyingGlassIcon className="h-5 w-5 " />}
               label="Buscar"
               className="text-white placeholder:text-white"
             />
-          </div>
+          </div> */}
           <div className="overflow-y-auto h-[calc(100vh-10rem)]">
             <List className="text-white">
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
