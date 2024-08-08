@@ -4,7 +4,6 @@ import {
   EyeIcon,
   EyeSlashIcon,
   MagnifyingGlassIcon,
-  PlusCircleIcon,
   IdentificationIcon,
   BuildingOffice2Icon,
   AtSymbolIcon,
@@ -21,12 +20,14 @@ import {
   ClockIcon,
   BookmarkSquareIcon,
   TrashIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
   BriefcaseIcon,
   SparklesIcon,
   ClipboardDocumentListIcon,
+  PlusCircleIcon,
 } from "@heroicons/react/20/solid";
 import {
   Chip,
@@ -48,6 +49,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
 import { useState, useEffect } from "react";
+import { color } from "framer-motion";
 
 function Datos() {
   const [showPassword, setShowPassword] = useState(false);
@@ -439,6 +441,7 @@ function Datos() {
 
   // Manejar limpieza de datos
   const handleClear = async (event) => {
+    setIsLoading(true); // Establece el estado de carga a true
     setFormData({
       id: "",
       nombre: "",
@@ -464,6 +467,11 @@ function Datos() {
     setSelectedParroquia(null);
     setSelectedImage(null);
     setCedula("");
+    setIsLoading(false);
+    setNotificacion({
+      message: "Formulario limpiado correctamente",
+      type: "success",
+    });
   };
 
   // Manejar el cambio en el campo de cédula
@@ -641,7 +649,7 @@ function Datos() {
   };
 
   return (
-    <div className="bg-gray-100 w-full flex justify-center pt-24 pb-10">
+    <div className="bg-gray-100 dark:bg-gray-800 w-full flex justify-center pt-24 pb-10">
       {isLoading && (
         <div
           style={{
@@ -670,10 +678,10 @@ function Datos() {
       <div className="w-full">
         <form className="px-10" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-2 pb-5">
-            <h2 className="font-extrabold text-3xl text-blue-900">
-              Actualizar Perfil
+            <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
+              Perfil de Docente
             </h2>
-            <p className="font-light text-lg text-black">
+            <p className="font-light text-lg text-black dark:text-white">
               Información personal
             </p>
           </div>
@@ -681,7 +689,7 @@ function Datos() {
             <div className="grid row-span-3 justify-items-center content-center">
               <div
                 htmlFor="foto"
-                className="flex flex-col items-center justify-center w-52 h-52 border-2 border-blue-900 border-dashed rounded-full cursor-pointer bg-gray-50 hover:bg-blue-gray-50"
+                className="flex flex-col items-center justify-center w-52 h-52 border-2 border-blue-900 dark:border-black border-dashed rounded-full cursor-pointer bg-gray-50 dark:bg-gray-600 hover:bg-blue-gray-50 dark:hover:bg-gray-500"
                 onClick={handleFileClick}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
@@ -694,7 +702,7 @@ function Datos() {
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -707,12 +715,13 @@ function Datos() {
                         strokeLinejoin="round"
                         d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
                       />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500">
+                    </svg> */}
+                    <CloudArrowUpIcon className="h-14 w-14 text-gray-800" />
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-300">
                       <span className="font-semibold">Haga clic</span> o
                       arrastre y suelte
                     </p>
-                    <p className="text-xs text-gray-500 text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-300 text-center">
                       SVG, PNG, JPG o GIF (MAX. 800x400px)
                     </p>
                   </div>
@@ -730,19 +739,19 @@ function Datos() {
             <div className="">
               <label
                 htmlFor="cedula"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Número de cédula
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <IdentificationIcon className="w-6 h-6" />
                 </span>
                 <input
                   type="text"
                   pattern="\d{10}"
                   id="cedula"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="9999999999"
                   onChange={(e) => setCedula(e.target.value)}
                   required
@@ -750,7 +759,7 @@ function Datos() {
                 <div
                   /* enviar el valor de cedula en el oncklick */
                   onClick={handleCedulaChange}
-                  className="ml-2 px-3 text-sm bg-blue-900 hover:bg-blue-gray-100 hover:text-blue-900 text-white border border-blue-900 rounded-lg cursor-pointer flex items-center justify-center"
+                  className="ml-2 px-3 text-sm bg-blue-900 dark:bg-gray-900 hover:bg-blue-gray-100 dark:hover:bg-gray-900 hover:text-blue-900 dark:hover:text-blue-500 text-white border border-blue-900 dark:border-black dark:hover:shadow-black dark:hover:shadow-md rounded-lg cursor-pointer flex items-center justify-center"
                 >
                   <MagnifyingGlassIcon className="w-5 h-5" />
                 </div>
@@ -758,7 +767,7 @@ function Datos() {
             </div>
 
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Campus
               </label>
               <Menu
@@ -766,10 +775,10 @@ function Datos() {
                 className="relative inline-block text-left min-w-full"
               >
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                     <BuildingOffice2Icon className="h-6 w-6" />
                   </span>
-                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
                       {selectedCampus ? (
                         <>
@@ -782,14 +791,14 @@ function Datos() {
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
-                      className="mx-1.5 h-5 w-5 text-gray-900"
+                      className="mx-1.5 h-5 w-5 text-black"
                     />
                   </MenuButton>
                 </div>
 
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {campuses.map((campus) => (
@@ -797,7 +806,7 @@ function Datos() {
                         key={campus.id}
                         onClick={() => handleSelectCampus(campus)}
                       >
-                        <a className="data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900">
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
                           <strong>{campus.nombre}</strong> - ({campus.direccion}
                           )
                         </a>
@@ -811,19 +820,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="correo"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Correo
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <AtSymbolIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="email"
                   id="correo"
                   name="correo"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="ejemplo@gmail.com"
                   value={formData.correo}
                   onChange={handleChange}
@@ -835,19 +844,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="contrasena"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Contraseña
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <ShieldCheckIcon className="h-6 w-6" />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="contrasena"
                   name="contrasena"
-                  className="rounded-none bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="********"
                   value={formData.contrasena}
                   onChange={handleChange}
@@ -855,7 +864,7 @@ function Datos() {
                 />
                 <div
                   onClick={togglePasswordVisibility}
-                  className=" px-3 text-sm bg-blue-900 hover:bg-blue-gray-100 hover:text-blue-900 text-white border border-blue-900 rounded-e-lg cursor-pointer flex items-center justify-center"
+                  className=" px-3 text-sm bg-blue-900 dark:bg-gray-900 hover:bg-blue-gray-100 dark:hover:bg-gray-900 dark:hover:shadow-black dark:hover:shadow-md hover:text-blue-900 dark:hover:text-blue-500 text-white border border-blue-900 dark:border-black rounded-e-lg cursor-pointer flex items-center justify-center"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="w-5 h-5" />
@@ -869,19 +878,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="nombre"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Nombres
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-lg">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <UserCircleIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
                   id="nombre"
                   name="nombre"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Juan Antonio"
                   value={formData.nombre}
                   onChange={handleChange}
@@ -893,19 +902,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="apellido"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Apellidos
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-sm text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <UserCircleIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
                   id="apellido"
                   name="apellido"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Pérez López"
                   value={formData.apellido}
                   onChange={handleChange}
@@ -917,19 +926,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="nacionalidad"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Nacionalidad
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <GlobeAmericasIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
                   id="nacionalidad"
                   name="nacionalidad"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Ecuatoriana"
                   value={formData.nacionalidad}
                   onChange={handleChange}
@@ -941,19 +950,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="fechaNacimiento"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Fecha de Nacimiento
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <CalendarDaysIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="date"
                   id="fechaNacimiento"
                   name="fechaNacimiento"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="dd/mm/aaaa"
                   value={formData.fechaNacimiento}
                   onChange={handleChange}
@@ -963,7 +972,7 @@ function Datos() {
             </div>
 
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Provincia
               </label>
               <Menu
@@ -971,10 +980,10 @@ function Datos() {
                 className="relative inline-block text-left min-w-full"
               >
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                     <MapIcon className="h-6 w-6" />
                   </span>
-                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
                       {selectedProvincia
                         ? selectedProvincia.provincia
@@ -982,13 +991,13 @@ function Datos() {
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
-                      className="mx-1.5 h-5 w-5 text-gray-900"
+                      className="mx-1.5 h-5 w-5 text-black"
                     />
                   </MenuButton>
                 </div>
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {provincias.map((provincia) => (
@@ -996,7 +1005,7 @@ function Datos() {
                         key={provincia.id}
                         onClick={() => handleSelectProvincia(provincia)}
                       >
-                        <a className="data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900">
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {provincia.provincia}
                         </a>
                       </MenuItem>
@@ -1007,7 +1016,7 @@ function Datos() {
             </div>
 
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Cantón
               </label>
               <Menu
@@ -1015,10 +1024,10 @@ function Datos() {
                 className="relative inline-block text-left min-w-full"
               >
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                     <BuildingOfficeIcon className="h-6 w-6" />
                   </span>
-                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
                       {selectedCanton
                         ? selectedCanton.canton
@@ -1026,13 +1035,13 @@ function Datos() {
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
-                      className="mx-1.5 h-5 w-5 text-gray-900"
+                      className="mx-1.5 h-5 w-5 text-black"
                     />
                   </MenuButton>
                 </div>
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {cantones.map((canton) => (
@@ -1040,7 +1049,7 @@ function Datos() {
                         key={canton.id}
                         onClick={() => handleSelectCanton(canton)}
                       >
-                        <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {canton.canton}
                         </a>
                       </MenuItem>
@@ -1051,7 +1060,7 @@ function Datos() {
             </div>
 
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Parroquia
               </label>
               <Menu
@@ -1059,10 +1068,10 @@ function Datos() {
                 className="relative inline-block text-left min-w-full"
               >
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                     <HomeIcon className="h-6 w-6" />
                   </span>
-                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
                       {selectedParroquia
                         ? selectedParroquia.parroquia
@@ -1070,13 +1079,13 @@ function Datos() {
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
-                      className="mx-1.5 h-5 w-5 text-gray-900"
+                      className="mx-1.5 h-5 w-5 text-black"
                     />
                   </MenuButton>
                 </div>
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {parroquias.map((parroquia) => (
@@ -1084,7 +1093,7 @@ function Datos() {
                         key={parroquia.id}
                         onClick={() => handleSelectParroquia(parroquia)}
                       >
-                        <a className="block px-4 py-2 text-sm text-gray-900 data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900">
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
                           {parroquia.parroquia}
                         </a>
                       </MenuItem>
@@ -1097,19 +1106,19 @@ function Datos() {
             <div>
               <label
                 htmlFor="direccion"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Dirección
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <MapPinIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
                   id="direccion"
                   name="direccion"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Calle S/N"
                   value={formData.direccion}
                   onChange={handleChange}
@@ -1121,19 +1130,20 @@ function Datos() {
             <div>
               <label
                 htmlFor="telefono"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Teléfono
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <PhoneIcon className="h-6 w-6" />
                 </span>
                 <input
                   type="tel"
                   id="telefono"
                   name="telefono"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  pattern="\d{10}"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="0999999999"
                   value={formData.telefono}
                   onChange={handleChange}
@@ -1143,7 +1153,7 @@ function Datos() {
             </div>
 
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Género
               </label>
               <Menu
@@ -1151,23 +1161,23 @@ function Datos() {
                 className="relative inline-block text-left min-w-full"
               >
                 <div className="flex">
-                  <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                     <UserGroupIcon className="h-6 w-6" />
                   </span>
-                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-gray-100 border border-blue-900">
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
                       {formData.genero || "Seleccione un género"}
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
-                      className="mx-1.5 h-5 w-5 text-gray-900"
+                      className="mx-1.5 h-5 w-5 text-black"
                     />
                   </MenuButton>
                 </div>
 
                 <MenuItems
                   transition
-                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white border border-blue-900 shadow-blue-900 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
                     {["Masculino", "Femenino", "Otro"].map((option) => (
@@ -1176,7 +1186,7 @@ function Datos() {
                           onClick={() =>
                             setFormData({ ...formData, genero: option })
                           }
-                          className={`data-[focus]:bg-blue-gray-100 data-[focus]:text-gray-900 block px-4 py-2 text-sm text-gray-900 ${
+                          className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
                             formData.genero === option ? "bg-blue-100" : ""
                           }`}
                         >
@@ -1192,12 +1202,12 @@ function Datos() {
             <div>
               <label
                 htmlFor="experiencia"
-                className="block mb-2 text-sm font-medium text-blue-900"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Años de Experiencia
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 border rounded-l-lg border-blue-900 border-e-0 rounded-s-m">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
                   <ClockIcon className="h-6 w-6" />
                 </span>
                 <input
@@ -1206,7 +1216,7 @@ function Datos() {
                   max="60"
                   id="experiencia"
                   name="experiencia"
-                  className="rounded-none rounded-e-lg bg-white border text-gray-900 focus:ring-blue-900 focus:border-blue-900 block flex-1 min-w-0 w-full text-sm border-blue-900 p-2.5"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="1"
                   value={formData.experiencia}
                   onChange={handleChange}
@@ -1217,7 +1227,7 @@ function Datos() {
 
             {/* Add role checkboxes */}
             <div className="">
-              <label className="block mb-2 text-sm font-medium text-blue-900">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
                 Roles
               </label>
               <div className="flex items-center mb-2">
@@ -1227,11 +1237,11 @@ function Datos() {
                   name="administrador"
                   checked={roles.administrador}
                   onChange={handleRoleChange}
-                  className="w-4 h-4 text-blue-900 border-gray-300 rounded focus:ring-blue-900"
+                  className="w-4 h-4 text-blue-900 border-gray-300 dark:border-black rounded focus:ring-blue-900 dark:focus:ring-black"
                 />
                 <label
                   htmlFor="administrador"
-                  className="ml-2 text-sm font-medium text-gray-900"
+                  className="ml-2 text-sm font-medium text-black dark:text-white"
                 >
                   Administrador
                 </label>
@@ -1243,21 +1253,21 @@ function Datos() {
                   name="docente"
                   checked={roles.docente}
                   onChange={handleRoleChange}
-                  className="w-4 h-4 text-blue-900 border-gray-300 rounded focus:ring-blue-900"
+                  className="w-4 h-4 text-blue-900 border-gray-300 dark:border-black rounded focus:ring-blue-900 dark:focus:ring-black"
                 />
                 <label
                   htmlFor="docente"
-                  className="ml-2 text-sm font-medium text-gray-900"
+                  className="ml-2 text-sm font-medium text-black dark:text-white"
                 >
                   Docente
                 </label>
               </div>
             </div>
 
-            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
+            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900 dark:border-black" />
 
             <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              <label className="font-light text-lg text-black">
+              <label className="font-light text-lg text-black dark:text-white">
                 Titulos Academicos
               </label>
             </div>
@@ -1269,8 +1279,9 @@ function Datos() {
                   onClose={() => handleCloseTitulo(titulo)}
                   variant="shadow"
                   classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
-                    content: "drop-shadow shadow-black text-white",
+                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
+                    content:
+                      "drop-shadow shadow-black text-white dark:text-black",
                     closeButton: "text-red-400",
                   }}
                 >
@@ -1282,12 +1293,13 @@ function Datos() {
                 <Chip
                   onClick={onOpenTitulo}
                   endContent={
-                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white" />
+                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
                   }
                   variant="shadow"
                   classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
-                    content: "drop-shadow shadow-black text-white",
+                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
+                    content:
+                      "drop-shadow shadow-black text-white dark:text-black",
                   }}
                 >
                   Añadir
@@ -1297,23 +1309,28 @@ function Datos() {
                   onOpenChange={onOpenChangeTitulo}
                   placement="top-center"
                   classNames={{
-                    base: "bg-white border border-blue-900",
-                    closeButton: "text-red-400 bg-gray-200",
+                    base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
+                    closeButton:
+                      "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
                   }}
                 >
                   <ModalContent>
                     {(onClose) => (
                       <>
-                        <ModalHeader className="text-blue-900">
+                        <ModalHeader className="text-blue-900 dark:text-white">
                           Añadir Título
                         </ModalHeader>
                         <ModalBody>
                           <Autocomplete
                             allowsCustomValue
                             startContent={
-                              <ClipboardDocumentListIcon className="text-blue-900 h-6 w-6" />
+                              <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                             }
-                            label="Título"
+                            label={
+                              <label className="text-blue-900 dark:text-white">
+                                Título
+                              </label>
+                            }
                             isRequired={true}
                             labelPlacement="inside"
                             placeholder="Buscar título"
@@ -1321,17 +1338,21 @@ function Datos() {
                             disabledKeys={titulos.map(
                               (titulo) => titulo.titulo
                             )}
+                            variant="bordered"
+                            inputProps={{
+                              className: "dark:text-white",
+                            }}
                             classNames={{
-                              base: "bg-gray-100 border border-blue-900 rounded-lg focus:ring-blue-900 focus:border-blue-900",
-                              input: "text-gray-900",
-                              listboxWrapper: "",
+                              base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                              listboxWrapper: "", // Es el contenedor del listbox
                               listbox:
-                                "bg-white border border-blue-900 rounded-lg",
-                              option: "text-gray-900 hover:bg-blue-100",
+                                "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                              option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
                               clearButton: "text-red-400",
-                              selectorButton: "text-blue-900",
+                              selectorButton: "text-blue-900 dark:text-black",
                               popoverContent:
-                                "bg-gray-100 border border-blue-900",
+                                "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
                             }}
                             onInputChange={handleInputChangeTitulo}
                           >
@@ -1344,14 +1365,13 @@ function Datos() {
                         </ModalBody>
                         <ModalFooter>
                           <Button
-                            color="danger"
-                            variant="flat"
+                            className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
                             onPress={onClose}
                           >
                             Cerrar
                           </Button>
                           <Button
-                            className="bg-blue-900 text-white hover:bg-blue-800"
+                            className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                             onPress={() => {
                               if (addTitulo) {
                                 handleAddTitulo(addTitulo);
@@ -1374,10 +1394,10 @@ function Datos() {
               </div>
             </div>
 
-            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" />
+            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900 dark:border-black" />
 
             <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              <label className="font-light text-lg text-black">
+              <label className="font-light text-lg text-black dark:text-white">
                 Añadir historial de empleo
               </label>
             </div>
@@ -1394,20 +1414,21 @@ function Datos() {
                       variant="shadow"
                       onClose={() => handleCloseExperiencia(experiencia)}
                       classNames={{
-                        base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30 cursor-pointer",
-                        content: "drop-shadow shadow-black text-white",
+                        base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30 cursor-pointer",
+                        content:
+                          "drop-shadow shadow-black text-white dark:text-black",
                         closeButton: "text-red-400",
                       }}
                     >
                       {experiencia.experiencia.institucion}
                     </Chip>
                   </PopoverTrigger>
-                  <PopoverContent>
+                  <PopoverContent className="dark:bg-gray-700">
                     <div className="px-1 py-2">
-                      <div className="text-small font-bold">
+                      <div className="text-small font-bold dark:text-white">
                         {experiencia.experiencia.institucion}
                       </div>
-                      <div className="text-tiny">{experiencia.cargo}</div>
+                      <div className="text-tiny dark:text-white">{experiencia.cargo}</div>
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -1416,12 +1437,13 @@ function Datos() {
                 <Chip
                   onClick={onOpenExperiencia}
                   endContent={
-                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white" />
+                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
                   }
                   variant="shadow"
                   classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 to-blue-500 border-small border-white/50 shadow-blue-500/30",
-                    content: "drop-shadow shadow-black text-white",
+                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
+                    content:
+                      "drop-shadow shadow-black text-white dark:text-black",
                   }}
                 >
                   Añadir
@@ -1431,42 +1453,51 @@ function Datos() {
                   onOpenChange={onOpenChangeExperiencia}
                   placement="top-center"
                   classNames={{
-                    base: "bg-white border border-blue-900",
-                    closeButton: "text-red-400 bg-gray-200",
+                    base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
+                    closeButton:
+                      "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
                   }}
                 >
                   <ModalContent>
                     {(onClose) => (
                       <>
-                        <ModalHeader className="text-blue-900">
+                        <ModalHeader className="text-blue-900 dark:text-white">
                           Añadir Experiencia
                         </ModalHeader>
                         <ModalBody>
                           <Autocomplete
                             allowsCustomValue
-                            label="Experiencia"
+                            label={
+                              <label className="text-blue-900 dark:text-white">
+                                Experiencia
+                              </label>
+                            }
                             isRequired={true}
                             labelPlacement="inside"
                             placeholder="Buscar experiencia"
                             startContent={
-                              <SparklesIcon className="h-6 w-6 text-blue-900" />
+                              <SparklesIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                             }
                             defaultItems={searchExperiencias}
                             disabledKeys={experiencias.map(
                               (experiencia) =>
                                 experiencia.experiencia.institucion
                             )}
+                            variant="bordered"
+                            inputProps={{
+                              className: "dark:text-white",
+                            }}
                             classNames={{
-                              base: "bg-gray-100 border border-blue-900 rounded-lg focus:ring-blue-900 focus:border-blue-900",
-                              input: "text-gray-900",
-                              listboxWrapper: "",
+                              base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                              listboxWrapper: "", // Es el contenedor del listbox
                               listbox:
-                                "bg-white border border-blue-900 rounded-lg",
-                              option: "text-gray-900 hover:bg-blue-100",
+                                "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                              option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
                               clearButton: "text-red-400",
-                              selectorButton: "text-blue-900",
+                              selectorButton: "text-blue-900 dark:text-black",
                               popoverContent:
-                                "bg-gray-100 border border-blue-900",
+                                "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
                             }}
                             onInputChange={handleInputChangeExperiencia}
                           >
@@ -1479,7 +1510,11 @@ function Datos() {
 
                           <Input
                             type="text"
-                            label="Cargo"
+                            label={
+                              <label className="text-blue-900 dark:text-white">
+                                Cargo
+                              </label>
+                            }
                             labelPlacement="inside"
                             variant="bordered"
                             placeholder="Docente"
@@ -1488,29 +1523,28 @@ function Datos() {
                             isRequired={true}
                             isClearable
                             startContent={
-                              <BriefcaseIcon className="h-6 w-6 text-blue-900" />
+                              <BriefcaseIcon className="h-6 w-6 text-blue-900 dark:text-white" />
                             }
                             value={addExperienciaCargo}
                             onValueChange={handleInputChangeExperienciaCargo}
                             classNames={{
                               base: "",
-                              input: "text-gray-900",
+                              input: "text-gray-900 dark:text-white",
                               inputWrapper:
-                                "bg-gray-100 border border-blue-900 focus:ring-blue-900 focus:border-blue-900",
+                                "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
                               clearButton: "text-red-400", // Es el icono de limpiar el input
                             }}
                           />
                         </ModalBody>
                         <ModalFooter>
                           <Button
-                            color="danger"
-                            variant="flat"
+                            className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
                             onPress={onClose}
                           >
                             Cerrar
                           </Button>
                           <Button
-                            className="bg-blue-900 text-white hover:bg-blue-800"
+                            className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                             onPress={() => {
                               // Controlar que no se pueda añadir una experiencia sin cargo y sin experiencia
                               if (addExperienciaCargo && addExperiencia) {
@@ -1542,7 +1576,7 @@ function Datos() {
               <Button
                 startContent={<BookmarkSquareIcon className="h-6 w-6" />}
                 type="submit"
-                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-blue-900 shadow-lg"
+                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
               >
                 Guardar
               </Button>

@@ -10,7 +10,7 @@ const config = withMT({
   theme: {
     extend: {},
   },
-  darkMode: "class",
+  darkMode: "media", 
   plugins: [nextui()],
 });
 

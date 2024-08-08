@@ -61,7 +61,7 @@ function Header() {
   }, []);
 
   return (
-    <div className="z-30 fixed bg-blue-900 w-full h-12 flex justify-between items-center">
+    <div className="z-30 fixed bg-blue-900 dark:bg-gray-900 w-full h-12 flex justify-between items-center">
       {isLoading && (
         <div
           style={{
@@ -167,7 +167,7 @@ function Header() {
 
           <div
             id="userDropdown"
-            className={`absolute right-0 mt-2 w-44 bg-blue-900 divide-y divide-gray-100 rounded-lg shadow ${
+            className={`absolute right-0 mt-2 w-44 bg-blue-900 dark:bg-gray-900 divide-y divide-gray-100 rounded-lg shadow ${
               isDropdownOpen ? "block" : "hidden"
             }`}
           >
