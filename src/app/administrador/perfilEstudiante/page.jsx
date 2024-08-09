@@ -21,6 +21,8 @@ import {
   BookmarkSquareIcon,
   TrashIcon,
   CloudArrowUpIcon,
+  HandRaisedIcon,
+  HeartIcon
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
@@ -51,7 +53,7 @@ import Notification from "@/app/components/Notification";
 import { useState, useEffect } from "react";
 import { color } from "framer-motion";
 
-function Datos() {
+function PerfilEstudiante() {
   const [showPassword, setShowPassword] = useState(false);
   const [cedula, setCedula] = useState("");
   const [campuses, setCampuses] = useState([]);
@@ -679,7 +681,7 @@ function Datos() {
         <form className="px-10" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-2 pb-5">
             <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
-              Perfil de Docente
+              Perfil de Estudiante
             </h2>
             <p className="font-light text-lg text-black dark:text-white">
               Información personal
@@ -949,6 +951,30 @@ function Datos() {
 
             <div>
               <label
+                htmlFor="lugarNacimiento"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Lugar de Nacimiento
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <GlobeAmericasIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="lugarNacimiento"
+                  name="lugarNacimiento"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="Ambato"
+                  value={formData.lugarNacimiento}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
                 htmlFor="fechaNacimiento"
                 className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
@@ -969,6 +995,50 @@ function Datos() {
                   required
                 />
               </div>
+            </div>
+
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
+                Auto identificación etnica
+              </label>
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
+              >
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                    <HandRaisedIcon className="h-6 w-6" />
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
+                    <p className="p-2.5">
+                      {selectedProvincia
+                        ? selectedProvincia.provincia
+                        : "Seleccione una provincia"}
+                    </p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-black"
+                    />
+                  </MenuButton>
+                </div>
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                >
+                  <div className="py-1 cursor-pointer">
+                    {provincias.map((provincia) => (
+                      <MenuItem
+                        key={provincia.id}
+                        onClick={() => handleSelectProvincia(provincia)}
+                      >
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
+                          {provincia.provincia}
+                        </a>
+                      </MenuItem>
+                    ))}
+                  </div>
+                </MenuItems>
+              </Menu>
             </div>
 
             <div className="">
@@ -1199,30 +1269,51 @@ function Datos() {
               </Menu>
             </div>
 
-            <div>
-              <label
-                htmlFor="experiencia"
-                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
-              >
-                Años de Experiencia
+            <div className="">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
+                Estado Civil
               </label>
-              <div className="flex">
-                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
-                  <ClockIcon className="h-6 w-6" />
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  max="60"
-                  id="experiencia"
-                  name="experiencia"
-                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
-                  placeholder="1"
-                  value={formData.experiencia}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <Menu
+                as="div"
+                className="relative inline-block text-left min-w-full"
+              >
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                    <HeartIcon className="h-6 w-6" />
+                  </span>
+                  <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
+                    <p className="p-2.5">
+                      {formData.genero || "Seleccione un estado civil"}
+                    </p>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="mx-1.5 h-5 w-5 text-black"
+                    />
+                  </MenuButton>
+                </div>
+
+                <MenuItems
+                  transition
+                  className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
+                >
+                  <div className="py-1 cursor-pointer">
+                    {["Casado", "Divorciado", "Soltero", "Unión de Hecho", "Viudo"].map((option) => (
+                      <MenuItem key={option}>
+                        <a
+                          onClick={() =>
+                            setFormData({ ...formData, estadoCivil: option })
+                          }
+                          className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
+                            formData.estadoCivil === option ? "bg-blue-100" : ""
+                          }`}
+                        >
+                          {option}
+                        </a>
+                      </MenuItem>
+                    ))}
+                  </div>
+                </MenuItems>
+              </Menu>
             </div>
 
             {/* Add role checkboxes */}
@@ -1428,7 +1519,9 @@ function Datos() {
                       <div className="text-small font-bold dark:text-white">
                         {experiencia.experiencia.institucion}
                       </div>
-                      <div className="text-tiny dark:text-white">{experiencia.cargo}</div>
+                      <div className="text-tiny dark:text-white">
+                        {experiencia.cargo}
+                      </div>
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -1596,4 +1689,4 @@ function Datos() {
   );
 }
 
-export default Datos;
+export default PerfilEstudiante;

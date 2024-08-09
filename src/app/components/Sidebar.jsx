@@ -90,14 +90,23 @@ export default function Sidebar({ roles }) {
           <CircularProgress size={50} />
         </div>
       )}
-      <IconButton className="hover:bg-blue-800 dark:hover:bg-gray-700" variant="text" size="lg" onClick={openDrawer}>
+      <IconButton
+        className="hover:bg-blue-800 dark:hover:bg-gray-700"
+        variant="text"
+        size="lg"
+        onClick={openDrawer}
+      >
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />
         ) : (
           <Bars3Icon className="h-8 w-8 stroke-2 text-white" />
         )}
       </IconButton>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900 dark:bg-gray-900">
+      <Drawer
+        open={isDrawerOpen}
+        onClose={closeDrawer}
+        className="bg-blue-900 dark:bg-gray-900"
+      >
         <Card
           color="transparent"
           shadow={false}
@@ -159,17 +168,19 @@ export default function Sidebar({ roles }) {
 
                     <AccordionBody className="py-1">
                       <List className="p-0 text-white">
-                        <ListItem>
-                          <ListItemPrefix>
-                            <BriefcaseIcon
-                              strokeWidth={3}
-                              className="h-3 w-5"
-                            />
-                          </ListItemPrefix>
-                          Docentes
-                        </ListItem>
+                        <Link href="/administrador/perfilDocente">
+                          <ListItem>
+                            <ListItemPrefix>
+                              <BriefcaseIcon
+                                strokeWidth={3}
+                                className="h-3 w-5"
+                              />
+                            </ListItemPrefix>
+                            Docentes
+                          </ListItem>
+                        </Link>
 
-                        <Link href="/administrador/datos">
+                        <Link href="/administrador/perfilEstudiante">
                           <ListItem>
                             <ListItemPrefix>
                               <AcademicCapIcon

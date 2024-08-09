@@ -128,7 +128,7 @@ model ESTUDIANTE {
   bonoMies                 Boolean
   numeroCarnetDiscapacidad String?               @unique @db.VarChar(50)
   lugarNacimiento          String?               @db.VarChar(100)
-  codigoElectricoUnico     String?               @unique @db.VarChar(50)
+  codigoElectricoUnico     String?               @db.VarChar(50)
   observacion              String?               @db.VarChar(255)
   ESTADO_CIVIL             ESTADOCIVIL           @relation(fields: [idEstadoCivilPertenece], references: [id])
   ETNIA                    ETNIA                 @relation(fields: [idEtniaPertenece], references: [id])
