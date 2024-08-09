@@ -22,7 +22,10 @@ import {
   TrashIcon,
   CloudArrowUpIcon,
   HandRaisedIcon,
-  HeartIcon
+  HeartIcon,
+  BoltIcon,
+  WrenchScrewdriverIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
@@ -30,6 +33,8 @@ import {
   SparklesIcon,
   ClipboardDocumentListIcon,
   PlusCircleIcon,
+  HandThumbUpIcon,
+  HeartIcon as HeartSolidIcon,
 } from "@heroicons/react/20/solid";
 import {
   Chip,
@@ -46,6 +51,9 @@ import {
   Autocomplete,
   AutocompleteItem,
   Input,
+  Checkbox,
+  Slider,
+  Tooltip,
 } from "@nextui-org/react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -75,6 +83,10 @@ function PerfilEstudiante() {
   const [selectedParroquia, setSelectedParroquia] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
+  const [bonoMies, setBonoMies] = useState(false);
+  const [trabaja, setTrabaja] = useState(false);
+  const [hijos, setHijos] = useState(false);
+  const [discapacidad, setDiscapacidad] = useState(false);
   const {
     isOpen: isOpenTitulo,
     onOpen: onOpenTitulo,
@@ -1297,7 +1309,13 @@ function PerfilEstudiante() {
                   className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
-                    {["Casado", "Divorciado", "Soltero", "Unión de Hecho", "Viudo"].map((option) => (
+                    {[
+                      "Casado",
+                      "Divorciado",
+                      "Soltero",
+                      "Unión de Hecho",
+                      "Viudo",
+                    ].map((option) => (
                       <MenuItem key={option}>
                         <a
                           onClick={() =>
@@ -1316,181 +1334,312 @@ function PerfilEstudiante() {
               </Menu>
             </div>
 
-            {/* Add role checkboxes */}
-            <div className="">
+            <div>
+              <label
+                htmlFor="codigoElectrico"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Código Eléctrico
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <BoltIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="codigoElectrico"
+                  name="codigoElectrico"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="200010000000"
+                  pattern="\d" // Solo números
+                  /* value={formData.nombre}
+                  onChange={handleChange} */
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 justify-center">
               <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
-                Roles
+                Bono del MIES
               </label>
-              <div className="flex items-center mb-2">
-                <input
-                  type="checkbox"
-                  id="administrador"
-                  name="administrador"
-                  checked={roles.administrador}
-                  onChange={handleRoleChange}
-                  className="w-4 h-4 text-blue-900 border-gray-300 dark:border-black rounded focus:ring-blue-900 dark:focus:ring-black"
-                />
-                <label
-                  htmlFor="administrador"
-                  className="ml-2 text-sm font-medium text-black dark:text-white"
-                >
-                  Administrador
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="docente"
-                  name="docente"
-                  checked={roles.docente}
-                  onChange={handleRoleChange}
-                  className="w-4 h-4 text-blue-900 border-gray-300 dark:border-black rounded focus:ring-blue-900 dark:focus:ring-black"
-                />
-                <label
-                  htmlFor="docente"
-                  className="ml-2 text-sm font-medium text-black dark:text-white"
-                >
-                  Docente
-                </label>
-              </div>
+              <Checkbox
+                isSelected={bonoMies}
+                icon={<HandThumbUpIcon />}
+                size="lg"
+                onValueChange={setBonoMies}
+              >
+                <p className="dark:text-white">
+                  ¿Recibe bono del MIES? - {bonoMies ? "Sí" : "No"}
+                </p>
+              </Checkbox>
             </div>
 
-            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900 dark:border-black" />
-
-            <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              <label className="font-light text-lg text-black dark:text-white">
-                Titulos Academicos
+            <div className="grid grid-cols-1 justify-center">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
+                Trabajo
               </label>
+              <Checkbox
+                isSelected={trabaja}
+                icon={<HandThumbUpIcon />}
+                size="lg"
+                onValueChange={setTrabaja}
+              >
+                <p className="dark:text-white">
+                  ¿Trabaja? - {trabaja ? "Sí" : "No"}
+                </p>
+              </Checkbox>
             </div>
 
-            <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              {titulos.map((titulo) => (
-                <Chip
-                  key={titulo.id}
-                  onClose={() => handleCloseTitulo(titulo)}
-                  variant="shadow"
-                  classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
-                    content:
-                      "drop-shadow shadow-black text-white dark:text-black",
-                    closeButton: "text-red-400",
-                  }}
+            {/* si trabaja mostrar un mensaje */}
+            {trabaja && (
+              <div>
+                <label
+                  htmlFor="trabajo"
+                  className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
                 >
-                  {titulo.titulo}
-                </Chip>
-              ))}
+                  En que trabaja
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                    <WrenchScrewdriverIcon className="h-6 w-6" />
+                  </span>
+                  <input
+                    type="text"
+                    id="trabajo"
+                    name="trabajo"
+                    className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                    placeholder="Nombre del trabajo"
+                    /* value={formData.nombre}
+                  onChange={handleChange} */
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
-              <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
-                <Chip
-                  onClick={onOpenTitulo}
-                  endContent={
-                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
-                  }
-                  variant="shadow"
-                  classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
-                    content:
-                      "drop-shadow shadow-black text-white dark:text-black",
-                  }}
-                >
-                  Añadir
-                </Chip>
-                <Modal
-                  isOpen={isOpenTitulo}
-                  onOpenChange={onOpenChangeTitulo}
-                  placement="top-center"
-                  classNames={{
-                    base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
-                    closeButton:
-                      "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
-                  }}
-                >
-                  <ModalContent>
-                    {(onClose) => (
-                      <>
-                        <ModalHeader className="text-blue-900 dark:text-white">
-                          Añadir Título
-                        </ModalHeader>
-                        <ModalBody>
-                          <Autocomplete
-                            allowsCustomValue
-                            startContent={
-                              <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
-                            }
-                            label={
-                              <label className="text-blue-900 dark:text-white">
-                                Título
-                              </label>
-                            }
-                            isRequired={true}
-                            labelPlacement="inside"
-                            placeholder="Buscar título"
-                            defaultItems={searchTitulos}
-                            disabledKeys={titulos.map(
-                              (titulo) => titulo.titulo
-                            )}
-                            variant="bordered"
-                            inputProps={{
-                              className: "dark:text-white",
-                            }}
-                            classNames={{
-                              base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+            <div className="grid grid-cols-1 justify-center">
+              <label className="block mb-2 text-sm font-medium text-blue-900 dark:text-white">
+                Hijos
+              </label>
+              <Checkbox
+                isSelected={hijos}
+                icon={<HandThumbUpIcon />}
+                size="lg"
+                onValueChange={setHijos}
+              >
+                <p className="dark:text-white">
+                  ¿Tiene hijos? - {hijos ? "Sí" : "No"}
+                </p>
+              </Checkbox>
+            </div>
 
-                              listboxWrapper: "", // Es el contenedor del listbox
-                              listbox:
-                                "bg-white border border-blue-900 dark:border-black text-red-500 ",
-                              option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
-                              clearButton: "text-red-400",
-                              selectorButton: "text-blue-900 dark:text-black",
-                              popoverContent:
-                                "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
-                            }}
-                            onInputChange={handleInputChangeTitulo}
-                          >
-                            {(titulo) => (
-                              <AutocompleteItem key={titulo.titulo}>
-                                {titulo.titulo}
-                              </AutocompleteItem>
-                            )}
-                          </Autocomplete>
-                        </ModalBody>
-                        <ModalFooter>
-                          <Button
-                            className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
-                            onPress={onClose}
-                          >
-                            Cerrar
-                          </Button>
-                          <Button
-                            className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
-                            onPress={() => {
-                              if (addTitulo) {
-                                handleAddTitulo(addTitulo);
-                                onClose();
-                              } else {
-                                setNotificacion({
-                                  message: "Por favor, ingrese un título",
-                                  type: "warning",
-                                });
-                              }
-                            }}
-                          >
-                            Añadir
-                          </Button>
-                        </ModalFooter>
-                      </>
+            {/* si trabaja mostrar un mensaje */}
+            {hijos && (
+              <div>
+                {/* <label
+                  htmlFor="hijos"
+                  className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+                >
+                  Rango de edad de los hijos
+                </label> */}
+                <div>
+                  <Slider
+                    size="lg"
+                    label={
+                      <label className="text-blue-900 dark:text-white">
+                        Rango de edad de los hijos
+                      </label>
+                    }
+                    maxValue={100}
+                    step={1}
+                    defaultValue={[5, 15]}
+                    classNames={{
+                      base: "max-w-md gap-3",
+                      value: "dark:text-white text-blue-900",
+                      filler:
+                        "bg-gradient-to-r from-pink-300 to-cyan-300 dark:from-pink-600 dark:to-cyan-800",
+                    }}
+                    renderLabel={({ children, ...props }) => (
+                      <label
+                        {...props}
+                        className="text-medium flex gap-2 items-center"
+                      >
+                        {children}
+                        <Tooltip
+                          className="w-[200px] px-1 text-tiny text-default-600 rounded-small"
+                          content="Rango de edad de los hijos"
+                          placement="right"
+                        >
+                          <span className="transition-opacity opacity-80 hover:opacity-100">
+                            <InformationCircleIcon className="h-4 w-4" />
+                          </span>
+                        </Tooltip>
+                      </label>
                     )}
-                  </ModalContent>
-                </Modal>
+                    renderThumb={({ index, ...props }) => (
+                      <div
+                        {...props}
+                        className="group p-1 top-1/2 bg-background border-small border-default-200 dark:border-default-400/50 shadow-medium rounded-full cursor-grab data-[dragging=true]:cursor-grabbing"
+                      >
+                        <span
+                          className={`transition-transform bg-gradient-to-br shadow-small rounded-full w-5 h-5 block group-data-[dragging=true]:scale-80 ${
+                            index === 0
+                              ? "from-pink-200 to-pink-500 dark:from-pink-400 dark:to-pink-600" // first thumb
+                              : "from-cyan-200 to-cyan-600 dark:from-cyan-600 dark:to-cyan-800" // second thumb
+                          }`}
+                        />
+                      </div>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900 dark:border-black" />
+
+            <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+              <label className="font-light text-lg text-black dark:text-white">
+                Datos del Representante Legal
+              </label>
+            </div>
+
+            <div>
+              <label
+                htmlFor="nombreRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Nombres
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <UserCircleIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="nombreRepresentante"
+                  name="nombreRepresentante"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="Juan Antonio"
+                  /* value={formData.nombre}
+                  onChange={handleChange} */
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="apellidoRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Apellidos
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <UserCircleIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="apellidoRepresentante"
+                  name="apellidoRepresentante"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="Pérez López"
+                  /* value={formData.apellido}
+                  onChange={handleChange} */
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="direccionRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Dirección
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <MapPinIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="direccionRepresentante"
+                  name="direccionRepresentante"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="Calle S/N"
+                  /* value={formData.direccion}
+                  onChange={handleChange} */
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="telefonoRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Teléfono
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <PhoneIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="tel"
+                  id="telefonoRepresentante"
+                  name="telefonoRepresentante"
+                  pattern="\d{10}"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="0999999999"
+                  /* value={formData.telefono}
+                  onChange={handleChange} */
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="ocupacionRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Ocupación
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <WrenchScrewdriverIcon className="h-6 w-6" />
+                </span>
+                <input
+                  type="text"
+                  id="ocupacionRepresentante"
+                  name="ocupacionRepresentante"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="Ocupación"
+                  /* value={formData.nombre}
+                  onChange={handleChange} */
+                  required
+                />
               </div>
             </div>
 
             <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900 dark:border-black" />
 
             <div className="flex content-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              <label className="font-light text-lg text-black dark:text-white">
-                Añadir historial de empleo
-              </label>
+              <Checkbox
+                isSelected={discapacidad}
+                icon={<HeartSolidIcon />}
+                color="warning"
+                size="lg"
+                onValueChange={setDiscapacidad}
+              >
+                <p className="dark:text-white">
+                  ¿El estudiante tiene alguna discapacidad? -{" "}
+                  {discapacidad ? "Sí" : "No"}
+                </p>
+              </Checkbox>
             </div>
 
             <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
@@ -1526,140 +1675,143 @@ function PerfilEstudiante() {
                   </PopoverContent>
                 </Popover>
               ))}
-              <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
-                <Chip
-                  onClick={onOpenExperiencia}
-                  endContent={
-                    <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
-                  }
-                  variant="shadow"
-                  classNames={{
-                    base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
-                    content:
-                      "drop-shadow shadow-black text-white dark:text-black",
-                  }}
-                >
-                  Añadir
-                </Chip>
-                <Modal
-                  isOpen={isOpenExperiencia}
-                  onOpenChange={onOpenChangeExperiencia}
-                  placement="top-center"
-                  classNames={{
-                    base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
-                    closeButton:
-                      "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
-                  }}
-                >
-                  <ModalContent>
-                    {(onClose) => (
-                      <>
-                        <ModalHeader className="text-blue-900 dark:text-white">
-                          Añadir Experiencia
-                        </ModalHeader>
-                        <ModalBody>
-                          <Autocomplete
-                            allowsCustomValue
-                            label={
-                              <label className="text-blue-900 dark:text-white">
-                                Experiencia
-                              </label>
-                            }
-                            isRequired={true}
-                            labelPlacement="inside"
-                            placeholder="Buscar experiencia"
-                            startContent={
-                              <SparklesIcon className="text-blue-900 dark:text-white h-6 w-6 " />
-                            }
-                            defaultItems={searchExperiencias}
-                            disabledKeys={experiencias.map(
-                              (experiencia) =>
-                                experiencia.experiencia.institucion
-                            )}
-                            variant="bordered"
-                            inputProps={{
-                              className: "dark:text-white",
-                            }}
-                            classNames={{
-                              base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
 
-                              listboxWrapper: "", // Es el contenedor del listbox
-                              listbox:
-                                "bg-white border border-blue-900 dark:border-black text-red-500 ",
-                              option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
-                              clearButton: "text-red-400",
-                              selectorButton: "text-blue-900 dark:text-black",
-                              popoverContent:
-                                "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
-                            }}
-                            onInputChange={handleInputChangeExperiencia}
-                          >
-                            {(experiencia) => (
-                              <AutocompleteItem key={experiencia.institucion}>
-                                {experiencia.institucion}
-                              </AutocompleteItem>
-                            )}
-                          </Autocomplete>
-
-                          <Input
-                            type="text"
-                            label={
-                              <label className="text-blue-900 dark:text-white">
-                                Cargo
-                              </label>
-                            }
-                            labelPlacement="inside"
-                            variant="bordered"
-                            placeholder="Docente"
-                            isInvalid={false}
-                            errorMessage="Por favor, ingrese un cargo"
-                            isRequired={true}
-                            isClearable
-                            startContent={
-                              <BriefcaseIcon className="h-6 w-6 text-blue-900 dark:text-white" />
-                            }
-                            value={addExperienciaCargo}
-                            onValueChange={handleInputChangeExperienciaCargo}
-                            classNames={{
-                              base: "",
-                              input: "text-gray-900 dark:text-white",
-                              inputWrapper:
-                                "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
-                              clearButton: "text-red-400", // Es el icono de limpiar el input
-                            }}
-                          />
-                        </ModalBody>
-                        <ModalFooter>
-                          <Button
-                            className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
-                            onPress={onClose}
-                          >
-                            Cerrar
-                          </Button>
-                          <Button
-                            className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
-                            onPress={() => {
-                              // Controlar que no se pueda añadir una experiencia sin cargo y sin experiencia
-                              if (addExperienciaCargo && addExperiencia) {
-                                handleAddExperiencia();
-                                onClose();
-                              } else {
-                                setNotificacion({
-                                  message:
-                                    "Por favor, ingrese una experiencia y un cargo",
-                                  type: "warning",
-                                });
+              {discapacidad && (
+                <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
+                  <Chip
+                    onClick={onOpenExperiencia}
+                    endContent={
+                      <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
+                    }
+                    variant="shadow"
+                    classNames={{
+                      base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30",
+                      content:
+                        "drop-shadow shadow-black text-white dark:text-black",
+                    }}
+                  >
+                    Añadir
+                  </Chip>
+                  <Modal
+                    isOpen={isOpenExperiencia}
+                    onOpenChange={onOpenChangeExperiencia}
+                    placement="top-center"
+                    classNames={{
+                      base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
+                      closeButton:
+                        "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
+                    }}
+                  >
+                    <ModalContent>
+                      {(onClose) => (
+                        <>
+                          <ModalHeader className="text-blue-900 dark:text-white">
+                            Añadir Experiencia
+                          </ModalHeader>
+                          <ModalBody>
+                            <Autocomplete
+                              allowsCustomValue
+                              label={
+                                <label className="text-blue-900 dark:text-white">
+                                  Experiencia
+                                </label>
                               }
-                            }}
-                          >
-                            Añadir
-                          </Button>
-                        </ModalFooter>
-                      </>
-                    )}
-                  </ModalContent>
-                </Modal>
-              </div>
+                              isRequired={true}
+                              labelPlacement="inside"
+                              placeholder="Buscar experiencia"
+                              startContent={
+                                <SparklesIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                              }
+                              defaultItems={searchExperiencias}
+                              disabledKeys={experiencias.map(
+                                (experiencia) =>
+                                  experiencia.experiencia.institucion
+                              )}
+                              variant="bordered"
+                              inputProps={{
+                                className: "dark:text-white",
+                              }}
+                              classNames={{
+                                base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                                listboxWrapper: "", // Es el contenedor del listbox
+                                listbox:
+                                  "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                                option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                                clearButton: "text-red-400",
+                                selectorButton: "text-blue-900 dark:text-black",
+                                popoverContent:
+                                  "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                              }}
+                              onInputChange={handleInputChangeExperiencia}
+                            >
+                              {(experiencia) => (
+                                <AutocompleteItem key={experiencia.institucion}>
+                                  {experiencia.institucion}
+                                </AutocompleteItem>
+                              )}
+                            </Autocomplete>
+
+                            <Input
+                              type="text"
+                              label={
+                                <label className="text-blue-900 dark:text-white">
+                                  Cargo
+                                </label>
+                              }
+                              labelPlacement="inside"
+                              variant="bordered"
+                              placeholder="Docente"
+                              isInvalid={false}
+                              errorMessage="Por favor, ingrese un cargo"
+                              isRequired={true}
+                              isClearable
+                              startContent={
+                                <BriefcaseIcon className="h-6 w-6 text-blue-900 dark:text-white" />
+                              }
+                              value={addExperienciaCargo}
+                              onValueChange={handleInputChangeExperienciaCargo}
+                              classNames={{
+                                base: "",
+                                input: "text-gray-900 dark:text-white",
+                                inputWrapper:
+                                  "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+                                clearButton: "text-red-400", // Es el icono de limpiar el input
+                              }}
+                            />
+                          </ModalBody>
+                          <ModalFooter>
+                            <Button
+                              className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
+                              onPress={onClose}
+                            >
+                              Cerrar
+                            </Button>
+                            <Button
+                              className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
+                              onPress={() => {
+                                // Controlar que no se pueda añadir una experiencia sin cargo y sin experiencia
+                                if (addExperienciaCargo && addExperiencia) {
+                                  handleAddExperiencia();
+                                  onClose();
+                                } else {
+                                  setNotificacion({
+                                    message:
+                                      "Por favor, ingrese una experiencia y un cargo",
+                                    type: "warning",
+                                  });
+                                }
+                              }}
+                            >
+                              Añadir
+                            </Button>
+                          </ModalFooter>
+                        </>
+                      )}
+                    </ModalContent>
+                  </Modal>
+                </div>
+              )}
             </div>
 
             {/* <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" /> */}

@@ -69,7 +69,7 @@ export default function Login() {
     } catch (error) {
       setError("Ocurrió un error. Inténtelo de nuevo más tarde.");
     } finally {
-      setIsLoading(false);
+      //setIsLoading(false);
     }
   };
 
