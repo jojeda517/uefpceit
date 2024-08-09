@@ -65,12 +65,10 @@ function PerfilEstudiante() {
   const [showPassword, setShowPassword] = useState(false);
   const [cedula, setCedula] = useState("");
   const [campuses, setCampuses] = useState([]);
+  const [etnias, setEtnias] = useState([]);
   const [provincias, setProvincias] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
-  const [foto, setFoto] = useState(null);
-  const [titulos, setTitulos] = useState([]);
-  const [searchTitulos, setSearchTitulos] = useState([]);
   const [searchExperiencias, setSearchExperiencias] = useState([]);
   const [experiencias, setExperiencias] = useState([]);
   const [addTitulo, setAddTitulo] = useState("");
@@ -78,6 +76,7 @@ function PerfilEstudiante() {
   const [addExperienciaCargo, setAddExperienciaCargo] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
+  const [selectedEtnia, setSelectedEtnia] = useState(null);
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
@@ -88,76 +87,32 @@ function PerfilEstudiante() {
   const [hijos, setHijos] = useState(false);
   const [discapacidad, setDiscapacidad] = useState(false);
   const {
-    isOpen: isOpenTitulo,
-    onOpen: onOpenTitulo,
-    onOpenChange: onOpenChangeTitulo,
-  } = useDisclosure();
-  const {
     isOpen: isOpenExperiencia,
     onOpen: onOpenExperiencia,
     onOpenChange: onOpenChangeExperiencia,
   } = useDisclosure();
   const [formData, setFormData] = useState({
     id: "",
-    nombre: "",
-    apellido: "",
     correo: "",
     contrasena: "",
+    nombre: "",
+    apellido: "",
     nacionalidad: "",
+    lugarNacimiento: "",
+    fechaNacimiento: "",
     direccion: "",
     telefono: "",
-    fechaNacimiento: "",
     genero: "",
-    experiencia: 0,
+    codigoElectricoUnico: "",
+    bonoMies: false,
+    numeroCarnetDiscapacidad: "",
+    observacion: "",
+    trabaja: false,
+    nombreTrabajo: "",
+    tieneHijo: false,
+    rangoEdadHijo: "",
+
   });
-  const [roles, setRoles] = useState({
-    administrador: false,
-    docente: true,
-  });
-
-  const handleAddTitulo = async () => {
-    try {
-      setIsLoading(true);
-      if (addTitulo) {
-        const response = await fetch("/api/titulo", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ titulo: addTitulo }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (titulos.find((titulo) => titulo.id === result.titulo.id)) {
-          setNotificacion({ message: "El título ya existe", type: "warning" });
-        } else {
-          const newTitulo = {
-            id: result.titulo.id,
-            titulo: result.titulo.titulo,
-          };
-          setTitulos([...titulos, newTitulo]);
-          setNotificacion({
-            message: "Título añadido correctamente",
-            type: "success",
-          });
-        }
-      } else {
-        setNotificacion({
-          message: "El campo de título está vacío",
-          type: "warning",
-        });
-      }
-    } catch (error) {
-      setNotificacion({ message: "Error al añadir título", type: "error" });
-    } finally {
-      setAddTitulo("");
-      setIsLoading(false);
-    }
-  };
 
   const handleAddExperiencia = async () => {
     try {
@@ -216,10 +171,6 @@ function PerfilEstudiante() {
       setAddExperienciaCargo("");
       setIsLoading(false);
     }
-  };
-
-  const handleCloseTitulo = (tituloToRemove) => {
-    setTitulos(titulos.filter((titulo) => titulo !== tituloToRemove));
   };
 
   const handleCloseExperiencia = (experienciaToRemove) => {
@@ -325,19 +276,6 @@ function PerfilEstudiante() {
   };
 
   useEffect(() => {
-    const fetchTitulos = async () => {
-      try {
-        const response = await fetch("/api/titulo");
-        const data = await response.json();
-        setSearchTitulos(data);
-      } catch (error) {
-        console.error("Error fetching titulos:", error);
-      }
-    };
-    fetchTitulos();
-  }, []);
-
-  useEffect(() => {
     const fetchExperiencias = async () => {
       try {
         const response = await fetch("/api/experiencia");
@@ -366,6 +304,24 @@ function PerfilEstudiante() {
 
   const handleSelectCampus = (campus) => {
     setSelectedCampus(campus);
+  };
+
+  useEffect(() => {
+    const fetchEtnias = async () => {
+      try {
+        const response = await fetch("/api/etnia");
+        const data = await response.json();
+        setEtnias(data);
+      } catch (error) {
+        console.error("Error fetching etnias:", error);
+      }
+    };
+
+    fetchEtnias();
+  }, []);
+
+  const handleSelectEtnia = (etnia) => {
+    setSelectedEtnia(etnia);
   };
 
   useEffect(() => {
@@ -567,13 +523,11 @@ function PerfilEstudiante() {
 
           if (data.docente) {
             if (data.docente.titulos) {
-              setTitulos(data.docente.titulos);
             }
             if (data.docente.experiencias) {
               setExperiencias(data.docente.experiencias);
             }
           } else {
-            setTitulos([]);
             setExperiencias([]);
           }
         }
@@ -603,9 +557,7 @@ function PerfilEstudiante() {
   useEffect(() => {
     console.log("FormData actualizado:", formData);
     console.log("Expereincias actualizadas:", experiencias);
-    console.log("Titulos actualizados:", titulos);
-    console.log("Roles actualizados:", roles);
-  }, [formData, experiencias, titulos, roles]);
+  }, [formData, experiencias]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -640,18 +592,6 @@ function PerfilEstudiante() {
   const handleDragOver = (event) => {
     event.preventDefault();
     event.stopPropagation();
-  };
-
-  const handleRoleChange = (e) => {
-    const { name, checked } = e.target;
-    setRoles({
-      ...roles,
-      [name]: checked,
-    });
-  };
-
-  const handleInputChangeTitulo = (value) => {
-    setAddTitulo(value);
   };
 
   const handleInputChangeExperiencia = (value) => {
@@ -1023,9 +963,9 @@ function PerfilEstudiante() {
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
-                      {selectedProvincia
-                        ? selectedProvincia.provincia
-                        : "Seleccione una provincia"}
+                      {selectedEtnia
+                        ? selectedEtnia.etnia
+                        : "Seleccione una etnia"}
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
@@ -1038,13 +978,13 @@ function PerfilEstudiante() {
                   className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
-                    {provincias.map((provincia) => (
+                    {etnias.map((etnia) => (
                       <MenuItem
-                        key={provincia.id}
-                        onClick={() => handleSelectProvincia(provincia)}
+                        key={etnia.id}
+                        onClick={() => handleSelectEtnia(etnia)}
                       >
                         <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
-                          {provincia.provincia}
+                          {etnia.etnia}
                         </a>
                       </MenuItem>
                     ))}
@@ -1269,7 +1209,7 @@ function PerfilEstudiante() {
                             setFormData({ ...formData, genero: option })
                           }
                           className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
-                            formData.genero === option ? "bg-blue-100" : ""
+                            formData.genero === option ? "bg-blue-100 dark:bg-gray-500 dark:text-black" : ""
                           }`}
                         >
                           {option}
@@ -1322,7 +1262,7 @@ function PerfilEstudiante() {
                             setFormData({ ...formData, estadoCivil: option })
                           }
                           className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
-                            formData.estadoCivil === option ? "bg-blue-100" : ""
+                            formData.estadoCivil === option ? "bg-blue-100 dark:bg-gray-500 dark:text-black" : ""
                           }`}
                         >
                           {option}
@@ -1502,6 +1442,29 @@ function PerfilEstudiante() {
               <label className="font-light text-lg text-black dark:text-white">
                 Datos del Representante Legal
               </label>
+            </div>
+
+            <div className="">
+              <label
+                htmlFor="cedulaRepresentante"
+                className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+              >
+                Número de cédula
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                  <IdentificationIcon className="w-6 h-6" />
+                </span>
+                <input
+                  type="text"
+                  pattern="\d{10}"
+                  id="cedulaRepresentante"
+                  name="cedulaRepresentante"
+                  className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                  placeholder="9999999999"
+                  required
+                />
+              </div>
             </div>
 
             <div>
