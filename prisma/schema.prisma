@@ -101,7 +101,7 @@ model ETNIA {
 
 model DISCAPACIDAD {
   id                   Int                   @id @default(autoincrement())
-  tipo                 String                @unique @db.VarChar(50)
+  tipo                 String                @unique @db.VarChar(255)
   DETALLE_DISCAPACIDAD DETALLEDISCAPACIDAD[]
 }
 

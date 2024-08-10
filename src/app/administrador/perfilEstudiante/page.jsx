@@ -195,7 +195,8 @@ function PerfilEstudiante() {
         !selectedProvincia ||
         !selectedCanton ||
         !selectedParroquia ||
-        !formData.genero
+        !formData.genero ||
+        !selectedEtnia
       ) {
         setNotificacion({
           message: "Por favor, complete todos los campos obligatorios",
@@ -207,22 +208,64 @@ function PerfilEstudiante() {
         // Si id no esta vacio se añade al formData
         if (formData.id) {
           formPOST.append("id", formData.id);
-        } else {
         }
-        formPOST.append("nombre", formData.nombre);
-        formPOST.append("apellido", formData.apellido);
-        formPOST.append("correo", formData.correo);
-        formPOST.append("contrasena", formData.contrasena);
-        formPOST.append("nacionalidad", formData.nacionalidad);
-        formPOST.append("direccion", formData.direccion);
-        formPOST.append("telefono", formData.telefono);
-        const fecha = new Date(formData.fechaNacimiento);
-        formPOST.append("fechaNacimiento", fecha.toISOString());
-        formPOST.append("sexo", formData.genero);
-        formPOST.append("tiempoExperiencia", formData.experiencia);
         formPOST.append("idCampusPertenece", selectedCampus.id);
         formPOST.append("idParroquiaPertenece", selectedParroquia.id);
+        formPOST.append("nombre", formData.nombre);
+        formPOST.append("apellido", formData.apellido);
         formPOST.append("cedula", cedula);
+        formPOST.append("direccion", formData.direccion);
+        const fecha = new Date(formData.fechaNacimiento);
+        formPOST.append("fechaNacimiento", fecha.toISOString());
+        formPOST.append("nacionalidad", formData.nacionalidad);
+        formPOST.append("telefono", formData.telefono);
+        formPOST.append("sexo", formData.genero);
+        formPOST.append("correo", formData.correo);
+        formPOST.append("contrasena", formData.contrasena);
+        formPOST.append("cedulaRepresentante", formData.cedulaRepresentante);
+        formPOST.append("nombresRepresentante", formData.nombreRepresentante);
+        formPOST.append(
+          "apellidosRepresentante",
+          formData.apellidoRepresentante
+        );
+        formPOST.append(
+          "direccionRepresentante",
+          formData.direccionRepresentante
+        );
+        formPOST.append(
+          "telefonoRepresentante",
+          formData.telefonoRepresentante
+        );
+        formPOST.append(
+          "ocupacionRepresentante",
+          formData.ocupacionRepresentante
+        );
+        formPOST.append("idEstadoCivilPertenece", selectedEstadoCivil.id);
+        formPOST.append("idEtniaPertenece", selectedEtnia.id);
+        formPOST.append("trabaja", trabaja);
+        if (trabaja) {
+          formPOST.append("nombreTrabajo", formData.nombreTrabajo);
+        } else {
+          formPOST.append("nombreTrabajo", "");
+        }
+        formPOST.append("tieneHijo", hijos);
+        if (hijos) {
+          formPOST.append("rangoEdadHijo", JSON.stringify(rangoEdadHijo)); // Convertir el array a un string JSON
+        } else {
+          formPOST.append("rangoEdadHijo", JSON.stringify([0, 0])); // Valor por defecto
+        }
+        formPOST.append("bonoMies", bonoMies);
+        if (discapacidad) {
+          formPOST.append(
+            "numeroCarnetDiscapacidad",
+            formData.numeroCarnetDiscapacidad
+          );
+        } else {
+          formPOST.append("numeroCarnetDiscapacidad", "");
+        }
+        formPOST.append("lugarNacimiento", formData.lugarNacimiento);
+        formPOST.append("codigoElectricoUnico", formData.codigoElectricoUnico);
+        formPOST.append("observacion", formData.observacion);
 
         // Agregar foto
         if (selectedImage) {
@@ -231,25 +274,12 @@ function PerfilEstudiante() {
           formPOST.append("foto", blob);
         }
 
-        // Agregar Títulos
-        if (titulos.length > 0) {
-          formPOST.append("titulos", JSON.stringify(titulos));
-        }
-
-        // Agregar Experiencias
+        /* // Agregar Experiencias
         if (experiencias.length > 0) {
           formPOST.append("experiencias", JSON.stringify(experiencias));
-        }
+        } */
 
-        // Agregar el nombre de los roles con valor true [{rol: administrador}, {rol: docente}]
-        const rolesArray = Object.entries(roles)
-          .filter(([, value]) => value)
-          .map(([key]) => ({
-            rol: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
-          }));
-        formPOST.append("roles", JSON.stringify(rolesArray));
-
-        const response = await fetch("/api/persona/docente", {
+        const response = await fetch("/api/persona/estudiante", {
           method: "POST",
           body: formPOST,
         });
@@ -1384,7 +1414,7 @@ function PerfilEstudiante() {
                   name="codigoElectricoUnico"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="200010000000"
-                  pattern="\d" // Solo números
+                  pattern="\d+" // Solo números
                   value={formData.codigoElectricoUnico}
                   onChange={handleChange}
                   required
