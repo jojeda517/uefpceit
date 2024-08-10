@@ -38,17 +38,17 @@ export const authOptions = {
         }
 
         // Verificar la contraseña
-        if (credentials.contrasena !== user.contrasena) {
+        /* if (credentials.contrasena !== user.contrasena) {
           throw new Error("Incorrect password");
-        }
-        console.log(user);
-        /* const isMatch = await bcrypt.compare(
+        } */
+        const isMatch = await bcrypt.compare(
           credentials.contrasena,
           user.contrasena
         );
+        console.log(user);
         if (!isMatch) {
           throw new Error("Incorrect password");
-        } */
+        }
 
         // Construir el objeto de sesión
         return {

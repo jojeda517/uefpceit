@@ -5,7 +5,7 @@ import { prisma } from "@/libs/prisma";
 export async function GET(request, { params }) {
   try {
     // Buscar la persona e incluir la información del usuario
-    const persona = await prisma.PERSONA.findUnique({
+    const persona = await prisma.pERSONA.findUnique({
       where: {
         cedula: params.cedula,
       },

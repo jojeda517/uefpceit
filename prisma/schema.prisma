@@ -102,17 +102,16 @@ model ETNIA {
 model DISCAPACIDAD {
   id                   Int                   @id @default(autoincrement())
   tipo                 String                @unique @db.VarChar(50)
-  porcentaje           Int?
   DETALLE_DISCAPACIDAD DETALLEDISCAPACIDAD[]
 }
 
 model DETALLEDISCAPACIDAD {
+  id                      Int          @id @default(autoincrement())
   idDiscapacidadPertenece Int
   idEstudiantePertenece   Int
+  porcentaje              Int?
   Discapacidad            DISCAPACIDAD @relation(fields: [idDiscapacidadPertenece], references: [id])
   ESTUDIANTE              ESTUDIANTE   @relation(fields: [idEstudiantePertenece], references: [id])
-
-  @@id([idDiscapacidadPertenece, idEstudiantePertenece])
 }
 
 model ESTUDIANTE {

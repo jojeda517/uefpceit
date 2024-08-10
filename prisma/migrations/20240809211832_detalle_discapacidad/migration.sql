@@ -3,6 +3,7 @@ CREATE TABLE `ROL` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `rol` VARCHAR(255) NOT NULL,
 
+    UNIQUE INDEX `ROL_rol_key`(`rol`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -30,6 +31,7 @@ CREATE TABLE `USUARIO` (
 CREATE TABLE `PERSONA` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idCampusPertenece` INTEGER NOT NULL,
+    `idParroquiaPertenece` INTEGER NULL,
     `nombre` VARCHAR(50) NOT NULL,
     `apellido` VARCHAR(50) NOT NULL,
     `cedula` VARCHAR(10) NOT NULL,
@@ -37,12 +39,38 @@ CREATE TABLE `PERSONA` (
     `direccion` VARCHAR(100) NULL,
     `fechaNacimiento` DATETIME(3) NULL,
     `nacionalidad` VARCHAR(100) NULL,
-    `paisOrigen` VARCHAR(100) NULL,
     `telefono` VARCHAR(10) NULL,
     `sexo` VARCHAR(50) NULL,
     `foto` VARCHAR(255) NULL,
 
     UNIQUE INDEX `PERSONA_cedula_key`(`cedula`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PROVINCIA` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `provincia` VARCHAR(255) NOT NULL,
+
+    UNIQUE INDEX `PROVINCIA_provincia_key`(`provincia`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CANTON` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `canton` VARCHAR(255) NOT NULL,
+    `idProvinciaPertenece` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PARROQUIA` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `parroquia` VARCHAR(255) NOT NULL,
+    `idCantonPertenece` INTEGER NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -75,7 +103,6 @@ CREATE TABLE `ETNIA` (
 CREATE TABLE `DISCAPACIDAD` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `tipo` VARCHAR(50) NOT NULL,
-    `porcentaje` INTEGER NULL,
 
     UNIQUE INDEX `DISCAPACIDAD_tipo_key`(`tipo`),
     PRIMARY KEY (`id`)
@@ -83,10 +110,12 @@ CREATE TABLE `DISCAPACIDAD` (
 
 -- CreateTable
 CREATE TABLE `DETALLEDISCAPACIDAD` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idDiscapacidadPertenece` INTEGER NOT NULL,
     `idEstudiantePertenece` INTEGER NOT NULL,
+    `porcentaje` INTEGER NULL,
 
-    PRIMARY KEY (`idDiscapacidadPertenece`, `idEstudiantePertenece`)
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -108,7 +137,6 @@ CREATE TABLE `ESTUDIANTE` (
 
     UNIQUE INDEX `ESTUDIANTE_idPersonaPertenece_key`(`idPersonaPertenece`),
     UNIQUE INDEX `ESTUDIANTE_numeroCarnetDiscapacidad_key`(`numeroCarnetDiscapacidad`),
-    UNIQUE INDEX `ESTUDIANTE_codigoElectricoUnico_key`(`codigoElectricoUnico`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -280,6 +308,15 @@ ALTER TABLE `USUARIO` ADD CONSTRAINT `USUARIO_idPersonaPertenece_fkey` FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE `PERSONA` ADD CONSTRAINT `PERSONA_idCampusPertenece_fkey` FOREIGN KEY (`idCampusPertenece`) REFERENCES `CAMPUS`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PERSONA` ADD CONSTRAINT `PERSONA_idParroquiaPertenece_fkey` FOREIGN KEY (`idParroquiaPertenece`) REFERENCES `PARROQUIA`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CANTON` ADD CONSTRAINT `CANTON_idProvinciaPertenece_fkey` FOREIGN KEY (`idProvinciaPertenece`) REFERENCES `PROVINCIA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PARROQUIA` ADD CONSTRAINT `PARROQUIA_idCantonPertenece_fkey` FOREIGN KEY (`idCantonPertenece`) REFERENCES `CANTON`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `DETALLEDISCAPACIDAD` ADD CONSTRAINT `DETALLEDISCAPACIDAD_idDiscapacidadPertenece_fkey` FOREIGN KEY (`idDiscapacidadPertenece`) REFERENCES `DISCAPACIDAD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

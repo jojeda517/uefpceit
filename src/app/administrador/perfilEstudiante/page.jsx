@@ -17,7 +17,6 @@ import {
   MapPinIcon,
   PhoneIcon,
   UserGroupIcon,
-  ClockIcon,
   BookmarkSquareIcon,
   TrashIcon,
   CloudArrowUpIcon,
@@ -31,10 +30,7 @@ import {
   ChevronDownIcon,
   BriefcaseIcon,
   SparklesIcon,
-  ClipboardDocumentListIcon,
   PlusCircleIcon,
-  HandThumbUpIcon,
-  HeartIcon as HeartSolidIcon,
 } from "@heroicons/react/20/solid";
 import {
   Chip,
@@ -58,25 +54,27 @@ import {
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
+import { HandThumbUpIcon } from "@/app/components/HandThumbUpIcon.jsx";
+import { HeartSolidIcon } from "@/app/components/HeartIcon.jsx";
 import { useState, useEffect } from "react";
-import { color } from "framer-motion";
 
 function PerfilEstudiante() {
   const [showPassword, setShowPassword] = useState(false);
   const [cedula, setCedula] = useState("");
   const [campuses, setCampuses] = useState([]);
   const [etnias, setEtnias] = useState([]);
+  const [estadosCiviles, setEstadosCiviles] = useState([]);
   const [provincias, setProvincias] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
   const [searchExperiencias, setSearchExperiencias] = useState([]);
   const [experiencias, setExperiencias] = useState([]);
-  const [addTitulo, setAddTitulo] = useState("");
   const [addExperiencia, setAddExperiencia] = useState("");
   const [addExperienciaCargo, setAddExperienciaCargo] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedEtnia, setSelectedEtnia] = useState(null);
+  const [selectedEstadoCivil, setSelectedEstadoCivil] = useState(null);
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
@@ -86,6 +84,7 @@ function PerfilEstudiante() {
   const [trabaja, setTrabaja] = useState(false);
   const [hijos, setHijos] = useState(false);
   const [discapacidad, setDiscapacidad] = useState(false);
+  const [rangoEdadHijo, setRangoEdadHijo] = useState([5, 15]);
   const {
     isOpen: isOpenExperiencia,
     onOpen: onOpenExperiencia,
@@ -104,14 +103,15 @@ function PerfilEstudiante() {
     telefono: "",
     genero: "",
     codigoElectricoUnico: "",
-    bonoMies: false,
     numeroCarnetDiscapacidad: "",
     observacion: "",
-    trabaja: false,
     nombreTrabajo: "",
-    tieneHijo: false,
-    rangoEdadHijo: "",
-
+    cedulaRepresentante: "",
+    nombreRepresentante: "",
+    apellidoRepresentante: "",
+    direccionRepresentante: "",
+    telefonoRepresentante: "",
+    ocupacionRepresentante: "",
   });
 
   const handleAddExperiencia = async () => {
@@ -177,6 +177,11 @@ function PerfilEstudiante() {
     setExperiencias(
       experiencias.filter((experiencia) => experiencia !== experienciaToRemove)
     );
+  };
+
+  const handleRangoEdadHijos = (newValue) => {
+    setRangoEdadHijo(newValue);
+    console.log(newValue); // Muestra el valor en la consola
   };
 
   const handleSubmit = async (e) => {
@@ -325,6 +330,23 @@ function PerfilEstudiante() {
   };
 
   useEffect(() => {
+    const fetchEstadosCiviles = async () => {
+      try {
+        const response = await fetch("/api/estadoCivil");
+        const data = await response.json();
+        setEstadosCiviles(data);
+      } catch (error) {
+        console.error("Error fetching estados civiles:", error);
+      }
+    };
+    fetchEstadosCiviles();
+  }, []);
+
+  const handleSelectEstadoCivil = (estadoCivil) => {
+    setSelectedEstadoCivil(estadoCivil);
+  };
+
+  useEffect(() => {
     const fetchProvincias = async () => {
       try {
         const response = await fetch("/api/provincia");
@@ -425,11 +447,6 @@ function PerfilEstudiante() {
       genero: "",
       experiencia: 0,
     }); // Limpiar los datos del formulario
-    setRoles({
-      administrador: false,
-      docente: true,
-    });
-    setTitulos([]);
     setExperiencias([]);
     setSelectedCampus(null);
     setSelectedProvincia(null);
@@ -448,41 +465,113 @@ function PerfilEstudiante() {
   const handleCedulaChange = async (event) => {
     try {
       setIsLoading(true); // Establece el estado de carga a true
-      const response = await fetch(`/api/persona/docente/${cedula}`);
+      const response = await fetch(`/api/persona/estudiante/${cedula}`);
       const data = await response.json();
 
       if (data) {
-        const roles = data.usuario.roles.reduce(
-          (acc, role) => {
-            acc[role.rol.toLowerCase()] = true;
-            return acc;
-          },
-          {
-            administrador: false,
-            docente: false,
-          }
-        );
         setFormData({
           id: data.id,
-          nombre: data.nombre,
-          apellido: data.apellido,
           correo: data.usuario.correo,
           contrasena: data.usuario.contrasena,
+          nombre: data.nombre,
+          apellido: data.apellido,
           nacionalidad: data.nacionalidad,
-          direccion: data.direccion,
-          telefono: data.telefono,
+          lugarNacimiento: data.estudiante
+            ? data.estudiante.lugarNacimiento
+            : "",
           fechaNacimiento: new Date(data.fechaNacimiento)
             .toISOString()
             .split("T")[0],
+          direccion: data.direccion,
+          telefono: data.telefono,
           genero: data.sexo,
-          // si data.docente existe, se añade la experiencia
-          experiencia: data.docente
-            ? data.docente.tiempoExperiencia
-              ? data.docente.tiempoExperiencia
-              : 0
-            : 0,
+          codigoElectricoUnico: data.estudiante
+            ? data.estudiante.codigoElectricoUnico
+            : "",
+          numeroCarnetDiscapacidad: data.estudiante
+            ? data.estudiante.numeroCarnetDiscapacidad
+            : "",
+          observacion: data.estudiante
+            ? data.estudiante.observacion
+              ? data.estudiante.observacion
+              : ""
+            : "",
+          nombreTrabajo: data.estudiante
+            ? data.estudiante.nombreTrabajo
+              ? data.estudiante.nombreTrabajo
+              : ""
+            : "",
+          /* Datos del representante */
+          cedulaRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.cedula
+              ? data.estudiante.REPRESENTANTE.cedula
+              : ""
+            : "",
+          nombreRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.nombre
+              ? data.estudiante.REPRESENTANTE.nombre
+              : ""
+            : "",
+          apellidoRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.apellido
+              ? data.estudiante.REPRESENTANTE.apellido
+              : ""
+            : "",
+          direccionRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.direccion
+              ? data.estudiante.REPRESENTANTE.direccion
+              : ""
+            : "",
+          telefonoRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.telefono
+              ? data.estudiante.REPRESENTANTE.telefono
+              : ""
+            : "",
+          ocupacionRepresentante: data.estudiante.REPRESENTANTE
+            ? data.estudiante.REPRESENTANTE.ocupacion
+              ? data.estudiante.REPRESENTANTE.ocupacion
+              : ""
+            : "",
         });
-        setRoles(roles);
+
+        if (data.estudiante) {
+          if (data.estudiante.rangoEdadHijo) {
+            // Convertir el string JSON a un array
+            const parsedValue = JSON.parse(data.estudiante.rangoEdadHijo);
+            // Asegurarse de que el valor sea un array con dos números
+            if (Array.isArray(parsedValue) && parsedValue.length === 2) {
+              setRangoEdadHijo(parsedValue);
+            }
+          } else {
+            setRangoEdadHijo([5, 15]);
+          }
+        } else {
+          setRangoEdadHijo([5, 15]);
+        }
+
+        setBonoMies(
+          data.estudiante
+            ? data.estudiante.bonoMies
+              ? data.estudiante.bonoMies
+              : false
+            : false
+        );
+
+        setTrabaja(
+          data.estudiante
+            ? data.estudiante.trabaja
+              ? data.estudiante.trabaja
+              : false
+            : false
+        );
+
+        setHijos(
+          data.estudiante
+            ? data.estudiante.tieneHijo
+              ? data.estudiante.tieneHijo
+              : false
+            : false
+        );
 
         setSelectedImage(data.foto);
 
@@ -490,6 +579,16 @@ function PerfilEstudiante() {
           (campus) => campus.id === data.idCampusPertenece
         );
         setSelectedCampus(selectedCampus);
+
+        const selectedEtnia = etnias.find(
+          (etnia) => etnia.id === data.estudiante.idEtniaPertenece
+        );
+        setSelectedEtnia(selectedEtnia);
+
+        const selectedEstadoCivil = estadosCiviles.find(
+          (estado) => estado.id === data.estudiante.idEstadoCivilPertenece
+        );
+        setSelectedEstadoCivil(selectedEstadoCivil);
 
         const selectedProvincia = provincias.find(
           (provincia) => provincia.id === data.parroquia.CANTON.PROVINCIA.id
@@ -521,7 +620,7 @@ function PerfilEstudiante() {
             setSelectedParroquia(selectedParroquia);
           }
 
-          if (data.docente) {
+          /* if (data.docente) {
             if (data.docente.titulos) {
             }
             if (data.docente.experiencias) {
@@ -530,17 +629,18 @@ function PerfilEstudiante() {
           } else {
             setExperiencias([]);
           }
+        } */
+          setNotificacion({
+            message: "Datos cargados correctamente",
+            type: "success",
+          });
+        } else {
+          handleClear();
+          setNotificacion({
+            message: "No se encontraron datos para la cédula ingresada",
+            type: "warning",
+          });
         }
-        setNotificacion({
-          message: "Datos cargados correctamente",
-          type: "success",
-        });
-      } else {
-        handleClear();
-        setNotificacion({
-          message: "No se encontraron datos para la cédula ingresada",
-          type: "warning",
-        });
       }
     } catch (error) {
       handleClear();
@@ -1209,7 +1309,9 @@ function PerfilEstudiante() {
                             setFormData({ ...formData, genero: option })
                           }
                           className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
-                            formData.genero === option ? "bg-blue-100 dark:bg-gray-500 dark:text-black" : ""
+                            formData.genero === option
+                              ? "bg-blue-100 dark:bg-gray-500 dark:text-black"
+                              : ""
                           }`}
                         >
                           {option}
@@ -1235,7 +1337,9 @@ function PerfilEstudiante() {
                   </span>
                   <MenuButton className="flex-grow inline-flex items-center justify-between rounded-r-lg bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-800 hover:bg-blue-gray-100 dark:hover:bg-gray-700 border border-blue-900 dark:border-black">
                     <p className="p-2.5">
-                      {formData.genero || "Seleccione un estado civil"}
+                      {selectedEstadoCivil
+                        ? selectedEstadoCivil.estadoCivil
+                        : "Seleccione una etnia"}
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
@@ -1243,29 +1347,18 @@ function PerfilEstudiante() {
                     />
                   </MenuButton>
                 </div>
-
                 <MenuItems
                   transition
                   className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 dark:divide-gray-700 rounded-md bg-white dark:bg-gray-600 border border-blue-900 dark:border-black shadow-blue-900 dark:shadow-black shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in max-h-52 overflow-y-auto"
                 >
                   <div className="py-1 cursor-pointer">
-                    {[
-                      "Casado",
-                      "Divorciado",
-                      "Soltero",
-                      "Unión de Hecho",
-                      "Viudo",
-                    ].map((option) => (
-                      <MenuItem key={option}>
-                        <a
-                          onClick={() =>
-                            setFormData({ ...formData, estadoCivil: option })
-                          }
-                          className={`data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black block px-4 py-2 text-sm text-gray-900 dark:text-white ${
-                            formData.estadoCivil === option ? "bg-blue-100 dark:bg-gray-500 dark:text-black" : ""
-                          }`}
-                        >
-                          {option}
+                    {estadosCiviles.map((estadoCivil) => (
+                      <MenuItem
+                        key={estadoCivil.id}
+                        onClick={() => handleSelectEstadoCivil(estadoCivil)}
+                      >
+                        <a className="data-[focus]:bg-blue-gray-100 dark:data-[focus]:bg-gray-400 data-[focus]:text-black  block px-4 py-2 text-sm text-gray-900 dark:text-white">
+                          {estadoCivil.estadoCivil}
                         </a>
                       </MenuItem>
                     ))}
@@ -1276,7 +1369,7 @@ function PerfilEstudiante() {
 
             <div>
               <label
-                htmlFor="codigoElectrico"
+                htmlFor="codigoElectricoUnico"
                 className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
               >
                 Código Eléctrico
@@ -1287,13 +1380,13 @@ function PerfilEstudiante() {
                 </span>
                 <input
                   type="text"
-                  id="codigoElectrico"
-                  name="codigoElectrico"
+                  id="codigoElectricoUnico"
+                  name="codigoElectricoUnico"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="200010000000"
                   pattern="\d" // Solo números
-                  /* value={formData.nombre}
-                  onChange={handleChange} */
+                  value={formData.codigoElectricoUnico}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -1305,6 +1398,7 @@ function PerfilEstudiante() {
               </label>
               <Checkbox
                 isSelected={bonoMies}
+                disableAnimation
                 icon={<HandThumbUpIcon />}
                 size="lg"
                 onValueChange={setBonoMies}
@@ -1321,6 +1415,7 @@ function PerfilEstudiante() {
               </label>
               <Checkbox
                 isSelected={trabaja}
+                disableAnimation
                 icon={<HandThumbUpIcon />}
                 size="lg"
                 onValueChange={setTrabaja}
@@ -1335,7 +1430,7 @@ function PerfilEstudiante() {
             {trabaja && (
               <div>
                 <label
-                  htmlFor="trabajo"
+                  htmlFor="nombreTrabajo"
                   className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
                 >
                   En que trabaja
@@ -1346,12 +1441,12 @@ function PerfilEstudiante() {
                   </span>
                   <input
                     type="text"
-                    id="trabajo"
-                    name="trabajo"
+                    id="nombreTrabajo"
+                    name="nombreTrabajo"
                     className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                     placeholder="Nombre del trabajo"
-                    /* value={formData.nombre}
-                  onChange={handleChange} */
+                    value={formData.nombreTrabajo}
+                    onChange={handleChange}
                     required
                   />
                 </div>
@@ -1364,6 +1459,7 @@ function PerfilEstudiante() {
               </label>
               <Checkbox
                 isSelected={hijos}
+                disableAnimation
                 icon={<HandThumbUpIcon />}
                 size="lg"
                 onValueChange={setHijos}
@@ -1377,12 +1473,6 @@ function PerfilEstudiante() {
             {/* si trabaja mostrar un mensaje */}
             {hijos && (
               <div>
-                {/* <label
-                  htmlFor="hijos"
-                  className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
-                >
-                  Rango de edad de los hijos
-                </label> */}
                 <div>
                   <Slider
                     size="lg"
@@ -1392,6 +1482,8 @@ function PerfilEstudiante() {
                       </label>
                     }
                     maxValue={100}
+                    value={rangoEdadHijo}
+                    onChange={handleRangoEdadHijos}
                     step={1}
                     defaultValue={[5, 15]}
                     classNames={{
@@ -1463,6 +1555,8 @@ function PerfilEstudiante() {
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="9999999999"
                   required
+                  value={formData.cedulaRepresentante}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -1484,8 +1578,8 @@ function PerfilEstudiante() {
                   name="nombreRepresentante"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Juan Antonio"
-                  /* value={formData.nombre}
-                  onChange={handleChange} */
+                  value={formData.nombreRepresentante}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -1508,8 +1602,8 @@ function PerfilEstudiante() {
                   name="apellidoRepresentante"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Pérez López"
-                  /* value={formData.apellido}
-                  onChange={handleChange} */
+                  value={formData.apellidoRepresentante}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -1532,8 +1626,8 @@ function PerfilEstudiante() {
                   name="direccionRepresentante"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Calle S/N"
-                  /* value={formData.direccion}
-                  onChange={handleChange} */
+                  value={formData.direccionRepresentante}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -1557,8 +1651,8 @@ function PerfilEstudiante() {
                   pattern="\d{10}"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="0999999999"
-                  /* value={formData.telefono}
-                  onChange={handleChange} */
+                  value={formData.telefonoRepresentante}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -1581,8 +1675,8 @@ function PerfilEstudiante() {
                   name="ocupacionRepresentante"
                   className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
                   placeholder="Ocupación"
-                  /* value={formData.nombre}
-                  onChange={handleChange} */
+                  value={formData.ocupacionRepresentante}
+                  onChange={handleChange}
                   required
                 />
               </div>
