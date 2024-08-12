@@ -50,6 +50,7 @@ export default function Login() {
 
       if (res.error) {
         setError("Credenciales incorrectas. Inténtelo de nuevo.");
+        setIsLoading(false);
       } else {
         const session = await fetch("/api/auth/session").then((res) =>
           res.json()
@@ -68,6 +69,7 @@ export default function Login() {
       }
     } catch (error) {
       setError("Ocurrió un error. Inténtelo de nuevo más tarde.");
+      setIsLoading(false);
     } finally {
       //setIsLoading(false);
     }

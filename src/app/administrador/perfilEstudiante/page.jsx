@@ -26,12 +26,7 @@ import {
   WrenchScrewdriverIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  BriefcaseIcon,
-  SparklesIcon,
-  PlusCircleIcon,
-} from "@heroicons/react/20/solid";
+import { ChevronDownIcon, PlusCircleIcon } from "@heroicons/react/20/solid";
 import {
   Chip,
   Popover,
@@ -46,7 +41,6 @@ import {
   useDisclosure,
   Autocomplete,
   AutocompleteItem,
-  Input,
   Checkbox,
   Slider,
   Tooltip,
@@ -67,10 +61,10 @@ function PerfilEstudiante() {
   const [provincias, setProvincias] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
-  const [searchExperiencias, setSearchExperiencias] = useState([]);
-  const [experiencias, setExperiencias] = useState([]);
-  const [addExperiencia, setAddExperiencia] = useState("");
-  const [addExperienciaCargo, setAddExperienciaCargo] = useState("");
+  const [searchDiscapacidades, setSearchDiscapacidades] = useState([]); // Poblar Autocomplete
+  const [discapacidades, setDiscapacidades] = useState([]); // Discapacidades del estudiante
+  const [addDiscapacidad, setAddDiscapacidad] = useState({ id: "", tipo: "" }); // Discapacidad a añadir
+  const [addPorcentajeDiscapacidad, setAddPorcentajeDiscapacidad] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
   const [selectedEtnia, setSelectedEtnia] = useState(null);
@@ -86,9 +80,9 @@ function PerfilEstudiante() {
   const [discapacidad, setDiscapacidad] = useState(false);
   const [rangoEdadHijo, setRangoEdadHijo] = useState([5, 15]);
   const {
-    isOpen: isOpenExperiencia,
-    onOpen: onOpenExperiencia,
-    onOpenChange: onOpenChangeExperiencia,
+    isOpen: isOpenDiscapacidad,
+    onOpen: onOpenDiscapacidad,
+    onOpenChange: onOpenChangeDiscapacidad,
   } = useDisclosure();
   const [formData, setFormData] = useState({
     id: "",
@@ -114,74 +108,51 @@ function PerfilEstudiante() {
     ocupacionRepresentante: "",
   });
 
-  const handleAddExperiencia = async () => {
+  const handleAddDiscapacidad = async () => {
     try {
       setIsLoading(true);
-      if (addExperiencia) {
-        const response = await fetch("/api/experiencia", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      if (addDiscapacidad) {
+        const newDiscapacidad = {
+          Discapacidad: {
+            id: addDiscapacidad.id,
+            tipo: addDiscapacidad.tipo,
           },
-          body: JSON.stringify({ institucion: addExperiencia }),
+          porcentaje: addPorcentajeDiscapacidad,
+        };
+        setDiscapacidades([...discapacidades, newDiscapacidad]);
+        setNotificacion({
+          message: "Discapacidad añadida correctamente",
+          type: "success",
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (
-          experiencias.find(
-            (experiencia) =>
-              experiencia.experiencia.id === result.institucion.id
-          )
-        ) {
-          setNotificacion({
-            message: "La experiencia ya existe",
-            type: "warning",
-          });
-        } else {
-          const newInstitucion = {
-            experiencia: {
-              id: result.institucion.id,
-              institucion: result.institucion.institucion,
-            },
-            cargo: addExperienciaCargo,
-          };
-          setExperiencias([...experiencias, newInstitucion]);
-          setNotificacion({
-            message: "Experiencia añadida correctamente",
-            type: "success",
-          });
-        }
       } else {
         setNotificacion({
-          message: "El campo de experiencia está vacío",
+          message: "El campo de discapacidad está vacío",
           type: "warning",
         });
       }
     } catch (error) {
+      console.error("Error al añadir discapacidad:", error);
       setNotificacion({
-        message: "Error al añadir la institucion",
+        message: "Ocurrió un error al añadir la discapacidad",
         type: "error",
       });
     } finally {
-      setAddExperiencia("");
-      setAddExperienciaCargo("");
       setIsLoading(false);
+      setAddDiscapacidad({ id: "", tipo: "" });
+      setAddPorcentajeDiscapacidad(1);
     }
   };
 
-  const handleCloseExperiencia = (experienciaToRemove) => {
-    setExperiencias(
-      experiencias.filter((experiencia) => experiencia !== experienciaToRemove)
+  const handleCloseDiscapacidad = (discapacidadToRemove) => {
+    setDiscapacidades(
+      discapacidades.filter(
+        (discapacidad) => discapacidad !== discapacidadToRemove
+      )
     );
   };
 
   const handleRangoEdadHijos = (newValue) => {
     setRangoEdadHijo(newValue);
-    console.log(newValue); // Muestra el valor en la consola
   };
 
   const handleSubmit = async (e) => {
@@ -311,16 +282,16 @@ function PerfilEstudiante() {
   };
 
   useEffect(() => {
-    const fetchExperiencias = async () => {
+    const fetchDiscapacidades = async () => {
       try {
-        const response = await fetch("/api/experiencia");
+        const response = await fetch("/api/discapacidad");
         const data = await response.json();
-        setSearchExperiencias(data);
+        setSearchDiscapacidades(data);
       } catch (error) {
-        console.error("Error fetching experiencias:", error);
+        console.error("Error fetching discapacidades:", error);
       }
     };
-    fetchExperiencias();
+    fetchDiscapacidades();
   }, []);
 
   useEffect(() => {
@@ -477,7 +448,6 @@ function PerfilEstudiante() {
       genero: "",
       experiencia: 0,
     }); // Limpiar los datos del formulario
-    setExperiencias([]);
     setSelectedCampus(null);
     setSelectedProvincia(null);
     setSelectedCanton(null);
@@ -650,16 +620,13 @@ function PerfilEstudiante() {
             setSelectedParroquia(selectedParroquia);
           }
 
-          /* if (data.docente) {
-            if (data.docente.titulos) {
+          if (data.estudiante) {
+            if (data.estudiante.DETALLE_DISCAPACIDAD) {
+              setDiscapacidad(true);
+              setDiscapacidades(data.estudiante.DETALLE_DISCAPACIDAD);
             }
-            if (data.docente.experiencias) {
-              setExperiencias(data.docente.experiencias);
-            }
-          } else {
-            setExperiencias([]);
           }
-        } */
+
           setNotificacion({
             message: "Datos cargados correctamente",
             type: "success",
@@ -686,8 +653,9 @@ function PerfilEstudiante() {
   // Efecto secundario para depurar los datos de formData
   useEffect(() => {
     console.log("FormData actualizado:", formData);
-    console.log("Expereincias actualizadas:", experiencias);
-  }, [formData, experiencias]);
+    console.log("discapacidades:", discapacidades);
+    console.log("addDiscapacidad:", addDiscapacidad);
+  }, [formData, discapacidades, addDiscapacidad]);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -724,12 +692,16 @@ function PerfilEstudiante() {
     event.stopPropagation();
   };
 
-  const handleInputChangeExperiencia = (value) => {
-    setAddExperiencia(value);
-  };
-
-  const handleInputChangeExperienciaCargo = (value) => {
-    setAddExperienciaCargo(value);
+  const handleInputChangeDiscapacidad = (item) => {
+    const selectedItem = searchDiscapacidades.find(
+      (discapacidad) => discapacidad.id === parseInt(item)
+    );
+    if (selectedItem) {
+      setAddDiscapacidad({
+        id: selectedItem.id,
+        tipo: selectedItem.tipo,
+      });
+    }
   };
 
   return (
@@ -786,20 +758,6 @@ function PerfilEstudiante() {
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    {/* <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      className="size-14 text-gray-700"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
-                      />
-                    </svg> */}
                     <CloudArrowUpIcon className="h-14 w-14 text-gray-800" />
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-300">
                       <span className="font-semibold">Haga clic</span> o
@@ -1730,43 +1688,47 @@ function PerfilEstudiante() {
             </div>
 
             <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              {experiencias.map((experiencia) => (
-                <Popover
-                  key={experiencia.experiencia.id}
-                  placement="bottom"
-                  showArrow={true}
-                >
-                  <PopoverTrigger>
-                    <Chip
-                      variant="shadow"
-                      onClose={() => handleCloseExperiencia(experiencia)}
-                      classNames={{
-                        base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30 cursor-pointer",
-                        content:
-                          "drop-shadow shadow-black text-white dark:text-black",
-                        closeButton: "text-red-400",
-                      }}
+              {discapacidad && (
+                <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+                  {discapacidades.map((discapacidad) => (
+                    <Popover
+                      key={discapacidad.Discapacidad.id}
+                      placement="bottom"
+                      showArrow={true}
                     >
-                      {experiencia.experiencia.institucion}
-                    </Chip>
-                  </PopoverTrigger>
-                  <PopoverContent className="dark:bg-gray-700">
-                    <div className="px-1 py-2">
-                      <div className="text-small font-bold dark:text-white">
-                        {experiencia.experiencia.institucion}
-                      </div>
-                      <div className="text-tiny dark:text-white">
-                        {experiencia.cargo}
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              ))}
+                      <PopoverTrigger>
+                        <Chip
+                          variant="shadow"
+                          onClose={() => handleCloseDiscapacidad(discapacidad)}
+                          classNames={{
+                            base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30 cursor-pointer",
+                            content:
+                              "drop-shadow shadow-black text-white dark:text-black",
+                            closeButton: "text-red-400",
+                          }}
+                        >
+                          {discapacidad.Discapacidad.tipo}
+                        </Chip>
+                      </PopoverTrigger>
+                      <PopoverContent className="dark:bg-gray-700">
+                        <div className="px-1 py-2">
+                          <div className="text-small font-bold dark:text-white">
+                            {discapacidad.Discapacidad.tipo}
+                          </div>
+                          <div className="text-tiny dark:text-white">
+                            {discapacidad.porcentaje}%
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ))}
+                </div>
+              )}
 
               {discapacidad && (
                 <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
                   <Chip
-                    onClick={onOpenExperiencia}
+                    onClick={onOpenDiscapacidad}
                     endContent={
                       <PlusCircleIcon className="h-5 w-5 transform hover:scale-105 transition-transform duration-300 text-white dark:text-green-400" />
                     }
@@ -1780,8 +1742,8 @@ function PerfilEstudiante() {
                     Añadir
                   </Chip>
                   <Modal
-                    isOpen={isOpenExperiencia}
-                    onOpenChange={onOpenChangeExperiencia}
+                    isOpen={isOpenDiscapacidad}
+                    onOpenChange={onOpenChangeDiscapacidad}
                     placement="top-center"
                     classNames={{
                       base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
@@ -1793,26 +1755,24 @@ function PerfilEstudiante() {
                       {(onClose) => (
                         <>
                           <ModalHeader className="text-blue-900 dark:text-white">
-                            Añadir Experiencia
+                            Discapacidades
                           </ModalHeader>
                           <ModalBody>
                             <Autocomplete
-                              allowsCustomValue
                               label={
                                 <label className="text-blue-900 dark:text-white">
-                                  Experiencia
+                                  Discapacidad
                                 </label>
                               }
                               isRequired={true}
                               labelPlacement="inside"
-                              placeholder="Buscar experiencia"
+                              placeholder="Buscar discapacidad"
                               startContent={
-                                <SparklesIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                                <HeartSolidIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                               }
-                              defaultItems={searchExperiencias}
-                              disabledKeys={experiencias.map(
-                                (experiencia) =>
-                                  experiencia.experiencia.institucion
+                              defaultItems={searchDiscapacidades}
+                              disabledKeys={discapacidades.map((discapacidad) =>
+                                String(discapacidad.Discapacidad.id)
                               )}
                               variant="bordered"
                               inputProps={{
@@ -1830,40 +1790,54 @@ function PerfilEstudiante() {
                                 popoverContent:
                                   "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
                               }}
-                              onInputChange={handleInputChangeExperiencia}
+                              //onInputChange={handleInputChangeDiscapacidad}
+                              onSelectionChange={handleInputChangeDiscapacidad}
                             >
-                              {(experiencia) => (
-                                <AutocompleteItem key={experiencia.institucion}>
-                                  {experiencia.institucion}
+                              {(discapacidad) => (
+                                <AutocompleteItem key={String(discapacidad.id)}>
+                                  {discapacidad.tipo}
                                 </AutocompleteItem>
                               )}
                             </Autocomplete>
 
-                            <Input
-                              type="text"
+                            <Slider
                               label={
                                 <label className="text-blue-900 dark:text-white">
-                                  Cargo
+                                  Porcentaje
                                 </label>
                               }
-                              labelPlacement="inside"
-                              variant="bordered"
-                              placeholder="Docente"
-                              isInvalid={false}
-                              errorMessage="Por favor, ingrese un cargo"
-                              isRequired={true}
-                              isClearable
-                              startContent={
-                                <BriefcaseIcon className="h-6 w-6 text-blue-900 dark:text-white" />
-                              }
-                              value={addExperienciaCargo}
-                              onValueChange={handleInputChangeExperienciaCargo}
+                              onChangeEnd={setAddPorcentajeDiscapacidad}
+                              showTooltip={true}
+                              step={1} // Cambia el paso a 1% en lugar de 0.01
+                              maxValue={100} // El valor máximo ahora es 100
+                              minValue={1} // El valor mínimo ahora es 1
+                              marks={[
+                                {
+                                  value: 20,
+                                  label:"20%",
+                                },
+                                {
+                                  value: 40,
+                                  label: "40%",
+                                },
+                                {
+                                  value: 60,
+                                  label: "60%",
+                                },
+                                {
+                                  value: 80,
+                                  label: "80%",
+                                },
+                                {
+                                  value: 100,
+                                  label: "100%",
+                                },
+                              ]}
+                              defaultValue={1} // El valor por defecto también debe reflejar el rango correcto
+                              className="max-w-md"
                               classNames={{
-                                base: "",
-                                input: "text-gray-900 dark:text-white",
-                                inputWrapper:
-                                  "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
-                                clearButton: "text-red-400", // Es el icono de limpiar el input
+                                mark: "text-blue-900 dark:text-white",
+                                value: "text-blue-900 dark:text-white",
                               }}
                             />
                           </ModalBody>
@@ -1877,14 +1851,19 @@ function PerfilEstudiante() {
                             <Button
                               className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                               onPress={() => {
-                                // Controlar que no se pueda añadir una experiencia sin cargo y sin experiencia
-                                if (addExperienciaCargo && addExperiencia) {
-                                  handleAddExperiencia();
+                                // Controlar que no se pueda añadir una discapacidad sin un porcentaje ni una discapacidad seleccionada
+                                if (addDiscapacidad.id) {
+                                  // Si hay una discapacidad seleccionada
+                                  console.log(
+                                    "Discapacidad: ",
+                                    addDiscapacidad
+                                  );
+                                  handleAddDiscapacidad();
                                   onClose();
                                 } else {
                                   setNotificacion({
                                     message:
-                                      "Por favor, ingrese una experiencia y un cargo",
+                                      "Por favor, ingrese una discapacidad",
                                     type: "warning",
                                   });
                                 }
@@ -1900,8 +1879,6 @@ function PerfilEstudiante() {
                 </div>
               )}
             </div>
-
-            {/* <hr className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3 my-2 border-blue-900" /> */}
 
             {/* botones: cancelar, dar de baja al usuario, guardar */}
             <div className="flex flex-wrap gap-4 justify-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
