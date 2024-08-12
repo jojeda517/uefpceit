@@ -17,8 +17,8 @@ function Header() {
 
   const handleSignOut = () => {
     setIsLoading(true); // Establece el estado de carga a true
-    const baseUrl = process.env.NEXTAUTH_URL;
-    signOut({ callbackUrl: baseUrl });
+    //const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: "/" });
   };
 
   const fetchPersona = useCallback(async () => {
@@ -61,7 +61,7 @@ function Header() {
   }, []);
 
   return (
-    <div className="bg-blue-900 w-full h-12 flex justify-between items-center">
+    <div className="z-30 fixed bg-blue-900 dark:bg-gray-900 w-full h-12 flex justify-between items-center">
       {isLoading && (
         <div
           style={{
@@ -167,7 +167,7 @@ function Header() {
 
           <div
             id="userDropdown"
-            className={`absolute right-0 mt-2 w-44 bg-blue-900 divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600 ${
+            className={`absolute right-0 mt-2 w-44 bg-blue-900 dark:bg-gray-900 divide-y divide-gray-100 rounded-lg shadow ${
               isDropdownOpen ? "block" : "hidden"
             }`}
           >
@@ -191,7 +191,7 @@ function Header() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/administrador/datos"
                   className="block px-4 py-2 hover:bg-blue-gray-100 hover:text-black"
                 >
                   Settings

@@ -14,12 +14,12 @@ datasource db {
 }
 
 model ROL {
-  id          Int           @id @default(autoincrement())
-  rol         String        @db.VarChar(255)
-  DETALLE_ROL DETALLE_ROL[]
+  id          Int          @id @default(autoincrement())
+  rol         String       @unique @db.VarChar(255)
+  DETALLE_ROL DETALLEROL[]
 }
 
-model DETALLE_ROL {
+model DETALLEROL {
   idRolPertenece     Int
   idUsuarioPertenece Int
   ROL                ROL     @relation(fields: [idRolPertenece], references: [id])
@@ -29,31 +29,55 @@ model DETALLE_ROL {
 }
 
 model USUARIO {
-  id                 Int           @id @default(autoincrement())
-  idPersonaPertenece Int?          @unique
-  correo             String        @unique @db.VarChar(255)
-  contrasena         String        @db.VarChar(255)
-  DETALLE_ROL        DETALLE_ROL[]
-  PERSONA            PERSONA?      @relation(fields: [idPersonaPertenece], references: [id])
+  id                 Int          @id @default(autoincrement())
+  idPersonaPertenece Int?         @unique
+  correo             String       @unique @db.VarChar(255)
+  contrasena         String       @db.VarChar(255)
+  DETALLE_ROL        DETALLEROL[]
+  PERSONA            PERSONA?     @relation(fields: [idPersonaPertenece], references: [id])
 }
 
 model PERSONA {
-  id                Int         @id @default(autoincrement())
-  idCampusPertenece Int
-  nombre            String      @db.VarChar(50)
-  apellido          String      @db.VarChar(50)
-  cedula            String      @unique @db.VarChar(10)
-  estado            Boolean?
-  direccion         String?     @db.VarChar(100)
-  fechaNacimiento   DateTime?
-  nacionalidad      String?     @db.VarChar(100)
-  paisOrigen        String?     @db.VarChar(100)
-  telefono          String?     @db.VarChar(10)
-  foto              String?     @db.VarChar(255)
-  campus            CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
-  estudiante        ESTUDIANTE? @relation
-  docente           DOCENTE?    @relation
-  usuario           USUARIO?    @relation
+  id                   Int         @id @default(autoincrement())
+  idCampusPertenece    Int
+  idParroquiaPertenece Int?
+  nombre               String      @db.VarChar(50)
+  apellido             String      @db.VarChar(50)
+  cedula               String      @unique @db.VarChar(10)
+  estado               Boolean?
+  direccion            String?     @db.VarChar(100)
+  fechaNacimiento      DateTime?
+  nacionalidad         String?     @db.VarChar(100)
+  telefono             String?     @db.VarChar(10)
+  sexo                 String?     @db.VarChar(50)
+  foto                 String?     @db.VarChar(255)
+  campus               CAMPUS      @relation(fields: [idCampusPertenece], references: [id])
+  estudiante           ESTUDIANTE? @relation
+  docente              DOCENTE?    @relation
+  usuario              USUARIO?    @relation
+  parroquia            PARROQUIA?  @relation(fields: [idParroquiaPertenece], references: [id])
+}
+
+model PROVINCIA {
+  id        Int      @id @default(autoincrement())
+  provincia String   @unique @db.VarChar(255)
+  CANTON    CANTON[]
+}
+
+model CANTON {
+  id                   Int         @id @default(autoincrement())
+  canton               String      @db.VarChar(255)
+  idProvinciaPertenece Int
+  PROVINCIA            PROVINCIA   @relation(fields: [idProvinciaPertenece], references: [id])
+  PARROQUIA            PARROQUIA[]
+}
+
+model PARROQUIA {
+  id                Int       @id @default(autoincrement())
+  parroquia         String    @db.VarChar(255)
+  idCantonPertenece Int
+  CANTON            CANTON    @relation(fields: [idCantonPertenece], references: [id])
+  PERSONA           PERSONA[]
 }
 
 model CAMPUS {
@@ -63,7 +87,7 @@ model CAMPUS {
   PERSONA   PERSONA[]
 }
 
-model ESTADO_CIVIL {
+model ESTADOCIVIL {
   id          Int          @id @default(autoincrement())
   estadoCivil String       @db.VarChar(255)
   ESTUDIANTE  ESTUDIANTE[]
@@ -75,39 +99,41 @@ model ETNIA {
   ESTUDIANTE ESTUDIANTE[]
 }
 
-model Discapacidad {
-  id                   Int                    @id @default(autoincrement())
-  tipo                 String                 @unique @db.VarChar(50)
-  porcentaje           Int?
-  DETALLE_DISCAPACIDAD DETALLE_DISCAPACIDAD[]
+model DISCAPACIDAD {
+  id                   Int                   @id @default(autoincrement())
+  tipo                 String                @unique @db.VarChar(255)
+  DETALLE_DISCAPACIDAD DETALLEDISCAPACIDAD[]
 }
 
-model DETALLE_DISCAPACIDAD {
+model DETALLEDISCAPACIDAD {
+  id                      Int          @id @default(autoincrement())
   idDiscapacidadPertenece Int
   idEstudiantePertenece   Int
-  Discapacidad            Discapacidad @relation(fields: [idDiscapacidadPertenece], references: [id])
+  porcentaje              Int?
+  Discapacidad            DISCAPACIDAD @relation(fields: [idDiscapacidadPertenece], references: [id])
   ESTUDIANTE              ESTUDIANTE   @relation(fields: [idEstudiantePertenece], references: [id])
-
-  @@id([idDiscapacidadPertenece, idEstudiantePertenece])
 }
 
 model ESTUDIANTE {
-  id                       Int                    @id @default(autoincrement())
-  idPersonaPertenece       Int                    @unique
+  id                       Int                   @id @default(autoincrement())
+  idPersonaPertenece       Int                   @unique
   idEstadoCivilPertenece   Int
   idEtniaPertenece         Int
   idRepresentantePertenece Int
   trabaja                  Boolean
-  nombreTrabajo            String?                @db.VarChar(255)
+  nombreTrabajo            String?               @db.VarChar(255)
   tieneHijo                Boolean
-  rangoEdadHijo            String?                @db.VarChar(50)
+  rangoEdadHijo            String?               @db.VarChar(50)
   bonoMies                 Boolean
-  numeroCarnetDiscapacidad String?                @unique @db.VarChar(50)
-  ESTADO_CIVIL             ESTADO_CIVIL           @relation(fields: [idEstadoCivilPertenece], references: [id])
-  ETNIA                    ETNIA                  @relation(fields: [idEtniaPertenece], references: [id])
-  REPRESENTANTE            REPRESENTANTE          @relation(fields: [idRepresentantePertenece], references: [id])
-  PERSONA                  PERSONA                @relation(fields: [idPersonaPertenece], references: [id])
-  DETALLE_DISCAPACIDAD     DETALLE_DISCAPACIDAD[]
+  numeroCarnetDiscapacidad String?               @unique @db.VarChar(50)
+  lugarNacimiento          String?               @db.VarChar(100)
+  codigoElectricoUnico     String?               @db.VarChar(50)
+  observacion              String?               @db.VarChar(255)
+  ESTADO_CIVIL             ESTADOCIVIL           @relation(fields: [idEstadoCivilPertenece], references: [id])
+  ETNIA                    ETNIA                 @relation(fields: [idEtniaPertenece], references: [id])
+  REPRESENTANTE            REPRESENTANTE         @relation(fields: [idRepresentantePertenece], references: [id])
+  PERSONA                  PERSONA               @relation(fields: [idPersonaPertenece], references: [id])
+  DETALLE_DISCAPACIDAD     DETALLEDISCAPACIDAD[]
   CALIFICACION             CALIFICACION[]
 }
 
@@ -118,26 +144,58 @@ model REPRESENTANTE {
   apellido   String       @db.VarChar(50)
   direccion  String?      @db.VarChar(100)
   telefono   String?      @db.VarChar(10)
+  ocupacion  String?      @db.VarChar(255)
   ESTUDIANTE ESTUDIANTE[]
 }
 
 model DOCENTE {
   id                         Int                          @id @default(autoincrement())
   idPersonaPertenece         Int                          @unique
-  titulo                     String?                      @db.VarChar(100)
-  fechaIngreso               DateTime?
-  fechaSalida                DateTime?
+  tiempoExperiencia          Int?
   PERSONA                    PERSONA                      @relation(fields: [idPersonaPertenece], references: [id])
   DETALLECURSOMATERIADOCENTE DETALLECURSOMATERIADOCENTE[]
+  DETALLEDOCENTETITULO       DETALLEDOCENTETITULO[]
+  DETALLEDOCENTEEXPERIENCIA  DETALLEDOCENTEEXPERIENCIA[]
 }
 
-model tipoPeriodo {
+model DETALLEDOCENTETITULO {
+  idDocentePertenece Int
+  idTituloPertenece  Int
+  DOCENTE            DOCENTE @relation(fields: [idDocentePertenece], references: [id])
+  TITULO             TITULO  @relation(fields: [idTituloPertenece], references: [id])
+
+  @@id([idDocentePertenece, idTituloPertenece])
+}
+
+model TITULO {
+  id                   Int                    @id @default(autoincrement())
+  titulo               String                 @unique @db.VarChar(100)
+  DETALLEDOCENTETITULO DETALLEDOCENTETITULO[]
+}
+
+model DETALLEDOCENTEEXPERIENCIA {
+  idDocentePertenece     Int
+  idExperienciaPertenece Int
+  cargo                  String      @db.VarChar(255)
+  DOCENTE                DOCENTE     @relation(fields: [idDocentePertenece], references: [id])
+  EXPERIENCIA            EXPERIENCIA @relation(fields: [idExperienciaPertenece], references: [id])
+
+  @@id([idDocentePertenece, idExperienciaPertenece])
+}
+
+model EXPERIENCIA {
+  id                        Int                         @id @default(autoincrement())
+  institucion               String                      @unique @db.VarChar(255)
+  DETALLEDOCENTEEXPERIENCIA DETALLEDOCENTEEXPERIENCIA[]
+}
+
+model TIPOPERIODO {
   id          Int       @id @default(autoincrement())
   tipoPeriodo String    @unique @db.VarChar(100)
   PERIODO     PERIODO[]
 }
 
-model modalidad {
+model MODALIDAD {
   id        Int    @id @default(autoincrement())
   modalidad String @unique @db.VarChar(100)
 }
@@ -148,7 +206,7 @@ model PERIODO {
   nombre                 String         @unique @db.VarChar(100)
   descripcion            String?        @db.VarChar(255)
   estado                 Boolean?
-  tipoPeriodo            tipoPeriodo    @relation(fields: [idTipoPeriodoPertenece], references: [id])
+  tipoPeriodo            TIPOPERIODO    @relation(fields: [idTipoPeriodoPertenece], references: [id])
   CALIFICACION           CALIFICACION[]
 }
 

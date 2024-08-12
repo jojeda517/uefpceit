@@ -42,10 +42,12 @@ import {
   ArrowPathIcon,
   CheckBadgeIcon,
   ChartBarIcon,
+  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import CircularProgress from "@mui/material/CircularProgress";
+import Link from "next/link";
 
 export default function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
@@ -61,8 +63,8 @@ export default function Sidebar({ roles }) {
 
   const handleSignOut = () => {
     setIsLoading(true);
-    const baseUrl = process.env.NEXTAUTH_URL;
-    signOut({ callbackUrl: baseUrl });
+    //const baseUrl = process.env.NEXTAUTH_URL;
+    signOut({ callbackUrl: "/" });
   };
 
   // Función para verificar si el usuario tiene un rol específico
@@ -88,14 +90,23 @@ export default function Sidebar({ roles }) {
           <CircularProgress size={50} />
         </div>
       )}
-      <IconButton variant="text" size="lg" onClick={openDrawer}>
+      <IconButton
+        className="hover:bg-blue-800 dark:hover:bg-gray-700"
+        variant="text"
+        size="lg"
+        onClick={openDrawer}
+      >
         {isDrawerOpen ? (
           <XMarkIcon className="h-8 w-8 stroke-2" />
         ) : (
           <Bars3Icon className="h-8 w-8 stroke-2 text-white" />
         )}
       </IconButton>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer} className="bg-blue-900">
+      <Drawer
+        open={isDrawerOpen}
+        onClose={closeDrawer}
+        className="bg-blue-900 dark:bg-gray-900"
+      >
         <Card
           color="transparent"
           shadow={false}
@@ -107,13 +118,13 @@ export default function Sidebar({ roles }) {
               Menú
             </Typography>
           </div>
-          <div className="p-2 text-white">
+          {/* <div className="p-2 text-white">
             <Input
               icon={<MagnifyingGlassIcon className="h-5 w-5 " />}
               label="Buscar"
               className="text-white placeholder:text-white"
             />
-          </div>
+          </div> */}
           <div className="overflow-y-auto h-[calc(100vh-10rem)]">
             <List className="text-white">
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
@@ -126,13 +137,64 @@ export default function Sidebar({ roles }) {
                     Periodos
                     <ListItemSuffix />
                   </ListItem>
+                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
+                  <Accordion
+                    open={open === 1}
+                    icon={
+                      <ChevronDownIcon
+                        strokeWidth={2.5}
+                        className={`mx-auto h-4 w-4 transition-transform ${
+                          open === 1 ? "rotate-180" : ""
+                        } `}
+                      />
+                    }
+                  >
+                    <ListItem className="p-0" selected={open === 1}>
+                      <AccordionHeader
+                        onClick={() => handleOpen(1)}
+                        className="border-b-0 p-3"
+                      >
+                        <ListItemPrefix>
+                          <UserCircleIcon className="h-5 w-5 text-white" />
+                        </ListItemPrefix>
+                        <Typography
+                          color="white"
+                          className="mr-auto font-normal"
+                        >
+                          Perfiles
+                        </Typography>
+                      </AccordionHeader>
+                    </ListItem>
 
-                  <ListItem>
-                    <ListItemPrefix>
-                      <UserCircleIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Perfil
-                  </ListItem>
+                    <AccordionBody className="py-1">
+                      <List className="p-0 text-white">
+                        <Link href="/administrador/perfilDocente">
+                          <ListItem>
+                            <ListItemPrefix>
+                              <BriefcaseIcon
+                                strokeWidth={3}
+                                className="h-3 w-5"
+                              />
+                            </ListItemPrefix>
+                            Docentes
+                          </ListItem>
+                        </Link>
+
+                        <Link href="/administrador/perfilEstudiante">
+                          <ListItem>
+                            <ListItemPrefix>
+                              <AcademicCapIcon
+                                strokeWidth={3}
+                                className="h-3 w-5"
+                              />
+                            </ListItemPrefix>
+                            Estudiantes
+                          </ListItem>
+                        </Link>
+                      </List>
+                    </AccordionBody>
+                  </Accordion>
+                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
 
                   <ListItem>
                     <ListItemPrefix>

@@ -3,11 +3,12 @@ CREATE TABLE `ROL` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `rol` VARCHAR(255) NOT NULL,
 
+    UNIQUE INDEX `ROL_rol_key`(`rol`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `DETALLE_ROL` (
+CREATE TABLE `DETALLEROL` (
     `idRolPertenece` INTEGER NOT NULL,
     `idUsuarioPertenece` INTEGER NOT NULL,
 
@@ -30,6 +31,7 @@ CREATE TABLE `USUARIO` (
 CREATE TABLE `PERSONA` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idCampusPertenece` INTEGER NOT NULL,
+    `idParroquiaPertenece` INTEGER NULL,
     `nombre` VARCHAR(50) NOT NULL,
     `apellido` VARCHAR(50) NOT NULL,
     `cedula` VARCHAR(10) NOT NULL,
@@ -37,11 +39,38 @@ CREATE TABLE `PERSONA` (
     `direccion` VARCHAR(100) NULL,
     `fechaNacimiento` DATETIME(3) NULL,
     `nacionalidad` VARCHAR(100) NULL,
-    `paisOrigen` VARCHAR(100) NULL,
     `telefono` VARCHAR(10) NULL,
+    `sexo` VARCHAR(50) NULL,
     `foto` VARCHAR(255) NULL,
 
     UNIQUE INDEX `PERSONA_cedula_key`(`cedula`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PROVINCIA` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `provincia` VARCHAR(255) NOT NULL,
+
+    UNIQUE INDEX `PROVINCIA_provincia_key`(`provincia`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CANTON` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `canton` VARCHAR(255) NOT NULL,
+    `idProvinciaPertenece` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PARROQUIA` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `parroquia` VARCHAR(255) NOT NULL,
+    `idCantonPertenece` INTEGER NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -55,7 +84,7 @@ CREATE TABLE `CAMPUS` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `ESTADO_CIVIL` (
+CREATE TABLE `ESTADOCIVIL` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `estadoCivil` VARCHAR(255) NOT NULL,
 
@@ -71,21 +100,22 @@ CREATE TABLE `ETNIA` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Discapacidad` (
+CREATE TABLE `DISCAPACIDAD` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `tipo` VARCHAR(50) NOT NULL,
-    `porcentaje` INTEGER NULL,
 
-    UNIQUE INDEX `Discapacidad_tipo_key`(`tipo`),
+    UNIQUE INDEX `DISCAPACIDAD_tipo_key`(`tipo`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `DETALLE_DISCAPACIDAD` (
+CREATE TABLE `DETALLEDISCAPACIDAD` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idDiscapacidadPertenece` INTEGER NOT NULL,
     `idEstudiantePertenece` INTEGER NOT NULL,
+    `porcentaje` INTEGER NULL,
 
-    PRIMARY KEY (`idDiscapacidadPertenece`, `idEstudiantePertenece`)
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -101,6 +131,9 @@ CREATE TABLE `ESTUDIANTE` (
     `rangoEdadHijo` VARCHAR(50) NULL,
     `bonoMies` BOOLEAN NOT NULL,
     `numeroCarnetDiscapacidad` VARCHAR(50) NULL,
+    `lugarNacimiento` VARCHAR(100) NULL,
+    `codigoElectricoUnico` VARCHAR(50) NULL,
+    `observacion` VARCHAR(255) NULL,
 
     UNIQUE INDEX `ESTUDIANTE_idPersonaPertenece_key`(`idPersonaPertenece`),
     UNIQUE INDEX `ESTUDIANTE_numeroCarnetDiscapacidad_key`(`numeroCarnetDiscapacidad`),
@@ -115,6 +148,7 @@ CREATE TABLE `REPRESENTANTE` (
     `apellido` VARCHAR(50) NOT NULL,
     `direccion` VARCHAR(100) NULL,
     `telefono` VARCHAR(10) NULL,
+    `ocupacion` VARCHAR(255) NULL,
 
     UNIQUE INDEX `REPRESENTANTE_cedula_key`(`cedula`),
     PRIMARY KEY (`id`)
@@ -124,29 +158,62 @@ CREATE TABLE `REPRESENTANTE` (
 CREATE TABLE `DOCENTE` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `idPersonaPertenece` INTEGER NOT NULL,
-    `titulo` VARCHAR(100) NULL,
-    `fechaIngreso` DATETIME(3) NULL,
-    `fechaSalida` DATETIME(3) NULL,
+    `tiempoExperiencia` INTEGER NULL,
 
     UNIQUE INDEX `DOCENTE_idPersonaPertenece_key`(`idPersonaPertenece`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `tipoPeriodo` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `tipoPeriodo` VARCHAR(100) NOT NULL,
+CREATE TABLE `DETALLEDOCENTETITULO` (
+    `idDocentePertenece` INTEGER NOT NULL,
+    `idTituloPertenece` INTEGER NOT NULL,
 
-    UNIQUE INDEX `tipoPeriodo_tipoPeriodo_key`(`tipoPeriodo`),
+    PRIMARY KEY (`idDocentePertenece`, `idTituloPertenece`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `TITULO` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `titulo` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `TITULO_titulo_key`(`titulo`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `modalidad` (
+CREATE TABLE `DETALLEDOCENTEEXPERIENCIA` (
+    `idDocentePertenece` INTEGER NOT NULL,
+    `idExperienciaPertenece` INTEGER NOT NULL,
+    `cargo` VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (`idDocentePertenece`, `idExperienciaPertenece`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `EXPERIENCIA` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `institucion` VARCHAR(255) NOT NULL,
+
+    UNIQUE INDEX `EXPERIENCIA_institucion_key`(`institucion`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `TIPOPERIODO` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `tipoPeriodo` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `TIPOPERIODO_tipoPeriodo_key`(`tipoPeriodo`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `MODALIDAD` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `modalidad` VARCHAR(100) NOT NULL,
 
-    UNIQUE INDEX `modalidad_modalidad_key`(`modalidad`),
+    UNIQUE INDEX `MODALIDAD_modalidad_key`(`modalidad`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -231,10 +298,10 @@ CREATE TABLE `APORTE` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `DETALLE_ROL` ADD CONSTRAINT `DETALLE_ROL_idRolPertenece_fkey` FOREIGN KEY (`idRolPertenece`) REFERENCES `ROL`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DETALLEROL` ADD CONSTRAINT `DETALLEROL_idRolPertenece_fkey` FOREIGN KEY (`idRolPertenece`) REFERENCES `ROL`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DETALLE_ROL` ADD CONSTRAINT `DETALLE_ROL_idUsuarioPertenece_fkey` FOREIGN KEY (`idUsuarioPertenece`) REFERENCES `USUARIO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DETALLEROL` ADD CONSTRAINT `DETALLEROL_idUsuarioPertenece_fkey` FOREIGN KEY (`idUsuarioPertenece`) REFERENCES `USUARIO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `USUARIO` ADD CONSTRAINT `USUARIO_idPersonaPertenece_fkey` FOREIGN KEY (`idPersonaPertenece`) REFERENCES `PERSONA`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -243,13 +310,22 @@ ALTER TABLE `USUARIO` ADD CONSTRAINT `USUARIO_idPersonaPertenece_fkey` FOREIGN K
 ALTER TABLE `PERSONA` ADD CONSTRAINT `PERSONA_idCampusPertenece_fkey` FOREIGN KEY (`idCampusPertenece`) REFERENCES `CAMPUS`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DETALLE_DISCAPACIDAD` ADD CONSTRAINT `DETALLE_DISCAPACIDAD_idDiscapacidadPertenece_fkey` FOREIGN KEY (`idDiscapacidadPertenece`) REFERENCES `Discapacidad`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `PERSONA` ADD CONSTRAINT `PERSONA_idParroquiaPertenece_fkey` FOREIGN KEY (`idParroquiaPertenece`) REFERENCES `PARROQUIA`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `DETALLE_DISCAPACIDAD` ADD CONSTRAINT `DETALLE_DISCAPACIDAD_idEstudiantePertenece_fkey` FOREIGN KEY (`idEstudiantePertenece`) REFERENCES `ESTUDIANTE`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `CANTON` ADD CONSTRAINT `CANTON_idProvinciaPertenece_fkey` FOREIGN KEY (`idProvinciaPertenece`) REFERENCES `PROVINCIA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ESTUDIANTE` ADD CONSTRAINT `ESTUDIANTE_idEstadoCivilPertenece_fkey` FOREIGN KEY (`idEstadoCivilPertenece`) REFERENCES `ESTADO_CIVIL`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `PARROQUIA` ADD CONSTRAINT `PARROQUIA_idCantonPertenece_fkey` FOREIGN KEY (`idCantonPertenece`) REFERENCES `CANTON`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DETALLEDISCAPACIDAD` ADD CONSTRAINT `DETALLEDISCAPACIDAD_idDiscapacidadPertenece_fkey` FOREIGN KEY (`idDiscapacidadPertenece`) REFERENCES `DISCAPACIDAD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DETALLEDISCAPACIDAD` ADD CONSTRAINT `DETALLEDISCAPACIDAD_idEstudiantePertenece_fkey` FOREIGN KEY (`idEstudiantePertenece`) REFERENCES `ESTUDIANTE`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ESTUDIANTE` ADD CONSTRAINT `ESTUDIANTE_idEstadoCivilPertenece_fkey` FOREIGN KEY (`idEstadoCivilPertenece`) REFERENCES `ESTADOCIVIL`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ESTUDIANTE` ADD CONSTRAINT `ESTUDIANTE_idEtniaPertenece_fkey` FOREIGN KEY (`idEtniaPertenece`) REFERENCES `ETNIA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -264,7 +340,19 @@ ALTER TABLE `ESTUDIANTE` ADD CONSTRAINT `ESTUDIANTE_idPersonaPertenece_fkey` FOR
 ALTER TABLE `DOCENTE` ADD CONSTRAINT `DOCENTE_idPersonaPertenece_fkey` FOREIGN KEY (`idPersonaPertenece`) REFERENCES `PERSONA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `PERIODO` ADD CONSTRAINT `PERIODO_idTipoPeriodoPertenece_fkey` FOREIGN KEY (`idTipoPeriodoPertenece`) REFERENCES `tipoPeriodo`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `DETALLEDOCENTETITULO` ADD CONSTRAINT `DETALLEDOCENTETITULO_idDocentePertenece_fkey` FOREIGN KEY (`idDocentePertenece`) REFERENCES `DOCENTE`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DETALLEDOCENTETITULO` ADD CONSTRAINT `DETALLEDOCENTETITULO_idTituloPertenece_fkey` FOREIGN KEY (`idTituloPertenece`) REFERENCES `TITULO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DETALLEDOCENTEEXPERIENCIA` ADD CONSTRAINT `DETALLEDOCENTEEXPERIENCIA_idDocentePertenece_fkey` FOREIGN KEY (`idDocentePertenece`) REFERENCES `DOCENTE`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DETALLEDOCENTEEXPERIENCIA` ADD CONSTRAINT `DETALLEDOCENTEEXPERIENCIA_idExperienciaPertenece_fkey` FOREIGN KEY (`idExperienciaPertenece`) REFERENCES `EXPERIENCIA`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PERIODO` ADD CONSTRAINT `PERIODO_idTipoPeriodoPertenece_fkey` FOREIGN KEY (`idTipoPeriodoPertenece`) REFERENCES `TIPOPERIODO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `DETALLECURSOMATERIADOCENTE` ADD CONSTRAINT `DETALLECURSOMATERIADOCENTE_idCursoPertenece_fkey` FOREIGN KEY (`idCursoPertenece`) REFERENCES `CURSO`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
