@@ -1687,45 +1687,68 @@ function PerfilEstudiante() {
               </Checkbox>
             </div>
 
-            <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-              {discapacidad && (
-                <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
-                  {discapacidades.map((discapacidad) => (
-                    <Popover
-                      key={discapacidad.Discapacidad.id}
-                      placement="bottom"
-                      showArrow={true}
-                    >
-                      <PopoverTrigger>
-                        <Chip
-                          variant="shadow"
-                          onClose={() => handleCloseDiscapacidad(discapacidad)}
-                          classNames={{
-                            base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30 cursor-pointer",
-                            content:
-                              "drop-shadow shadow-black text-white dark:text-black",
-                            closeButton: "text-red-400",
-                          }}
-                        >
-                          {discapacidad.Discapacidad.tipo}
-                        </Chip>
-                      </PopoverTrigger>
-                      <PopoverContent className="dark:bg-gray-700">
-                        <div className="px-1 py-2">
-                          <div className="text-small font-bold dark:text-white">
-                            {discapacidad.Discapacidad.tipo}
-                          </div>
-                          <div className="text-tiny dark:text-white">
-                            {discapacidad.porcentaje}%
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  ))}
+            {discapacidad && (
+              <div className="">
+                <label
+                  htmlFor="numeroCarnetDiscapacidad"
+                  className="block mb-2 text-sm font-medium text-blue-900 dark:text-white"
+                >
+                  Número de carnet
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-white bg-blue-900 dark:bg-gray-900 border rounded-l-lg border-blue-900 dark:border-black border-e-0 rounded-s-m">
+                    <IdentificationIcon className="w-6 h-6" />
+                  </span>
+                  <input
+                    type="text"
+                    pattern="\d{10}"
+                    id="numeroCarnetDiscapacidad"
+                    name="numeroCarnetDiscapacidad"
+                    className="rounded-none rounded-e-lg bg-white dark:bg-gray-800 border text-gray-900 dark:text-white focus:ring-blue-900 focus:border-blue-900 dark:focus:ring-black dark:focus:border-black block flex-1 min-w-0 w-full text-sm border-blue-900 dark:border-black p-2.5"
+                    placeholder="9999999999"
+                    required
+                    value={formData.numeroCarnetDiscapacidad}
+                    onChange={handleChange}
+                  />
                 </div>
-              )}
+              </div>
+            )}
 
-              {discapacidad && (
+            {discapacidad && (
+              <div className="flex flex-wrap gap-4 col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
+                {discapacidades.map((discapacidad) => (
+                  <Popover
+                    key={discapacidad.Discapacidad.id}
+                    placement="bottom"
+                    showArrow={true}
+                  >
+                    <PopoverTrigger>
+                      <Chip
+                        variant="shadow"
+                        onClose={() => handleCloseDiscapacidad(discapacidad)}
+                        classNames={{
+                          base: "bg-gradient-to-br from-indigo-500 dark:from-gray-200 to-blue-500 dark:to-gray-800 border-small border-white/50 shadow-blue-500/30 dark:shadow-gray-900/30 cursor-pointer",
+                          content:
+                            "drop-shadow shadow-black text-white dark:text-black",
+                          closeButton: "text-red-400",
+                        }}
+                      >
+                        {discapacidad.Discapacidad.tipo}
+                      </Chip>
+                    </PopoverTrigger>
+                    <PopoverContent className="dark:bg-gray-700">
+                      <div className="px-1 py-2">
+                        <div className="text-small font-bold dark:text-white">
+                          {discapacidad.Discapacidad.tipo}
+                        </div>
+                        <div className="text-tiny dark:text-white">
+                          {discapacidad.porcentaje}%
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ))}
+
                 <div className="ml-3 inline-flex items-center  text-sm text-blue-900 cursor-pointer">
                   <Chip
                     onClick={onOpenDiscapacidad}
@@ -1806,7 +1829,8 @@ function PerfilEstudiante() {
                                   Porcentaje
                                 </label>
                               }
-                              onChangeEnd={setAddPorcentajeDiscapacidad}
+                              value={addPorcentajeDiscapacidad}
+                              onChange={setAddPorcentajeDiscapacidad}
                               showTooltip={true}
                               step={1} // Cambia el paso a 1% en lugar de 0.01
                               maxValue={100} // El valor máximo ahora es 100
@@ -1814,7 +1838,7 @@ function PerfilEstudiante() {
                               marks={[
                                 {
                                   value: 20,
-                                  label:"20%",
+                                  label: "20%",
                                 },
                                 {
                                   value: 40,
@@ -1877,8 +1901,8 @@ function PerfilEstudiante() {
                     </ModalContent>
                   </Modal>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* botones: cancelar, dar de baja al usuario, guardar */}
             <div className="flex flex-wrap gap-4 justify-center col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 xl:col-span-3 2xl:col-span-3">
