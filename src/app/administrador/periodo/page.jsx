@@ -1,6 +1,5 @@
 "use client";
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableHeader,
@@ -14,6 +13,7 @@ import {
   Dropdown,
   DropdownMenu,
   DropdownItem,
+  Chip,
   Pagination,
 } from "@nextui-org/react";
 
@@ -25,90 +25,80 @@ import {
 
 function Periodo() {
   // Datos ficticios para los periodos
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      nombre: "Periodo 1",
-      estado: "Activo",
-      inicio: "2024-01-01",
-      fin: "2024-06-30",
-    },
-    {
-      id: 2,
-      nombre: "Periodo 2",
-      estado: "Inactivo",
-      inicio: "2024-07-01",
-      fin: "2024-12-31",
-    },
-  ]);
-
-  // Estados locales para la búsqueda, selección y ordenamiento
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState(new Set());
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
-  const [sortDescriptor, setSortDescriptor] = useState({});
+  const [sortDescriptor, setSortDescriptor] = useState({
+    column: "nombre",
+    direction: "ascending",
+  });
+  const [isClient, setIsClient] = useState(false);
 
-  // Funciones auxiliares
+  // Columnas para la tabla
+  const headerColumns = [
+    { name: "Nombre", uid: "nombre", sortable: true },
+    { name: "Estado", uid: "estado", sortable: true },
+    { name: "Inicio", uid: "inicio", sortable: true },
+    { name: "Fin", uid: "fin", sortable: true },
+    { name: "Acciones", uid: "acciones", sortable: false },
+  ];
+
+  useEffect(() => {
+    setIsClient(true);
+    const data = [
+      {
+        id: 1,
+        nombre: "Periodo 1",
+        estado: "Activo",
+        inicio: "2024-01-01",
+        fin: "2024-06-30",
+      },
+      {
+        id: 2,
+        nombre: "Periodo 2",
+        estado: "Inactivo",
+        inicio: "2024-07-01",
+        fin: "2024-12-31",
+      },
+    ];
+    setItems(data);
+    setFilteredItems(data); // Inicialmente sin filtros
+  }, []);
+
+  // Función para manejar la búsqueda
   const onSearchChange = (value) => {
-    setSearchTerm(value);
+    const filtered = items.filter((item) =>
+      item.nombre.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredItems(filtered);
   };
 
+  // Función para limpiar la búsqueda
   const onClear = () => {
-    setSearchTerm("");
+    setFilteredItems(items);
   };
 
+  // Función para renderizar las celdas de la tabla
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
-      case "nombre":
-        return item.nombre;
-      case "estado":
-        return item.estado;
-      case "inicio":
-        return item.inicio;
-      case "fin":
-        return item.fin;
+      case "acciones":
+        return <Chip color="primary">Acciones</Chip>;
       default:
-        return null;
+        return item[columnKey];
     }
   };
 
-  // Filtrar y ordenar los datos según los criterios actuales
-  const filteredItems = items
-    .filter(
-      (item) =>
-        item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (statusFilter.size === 0 || statusFilter.has(item.estado))
-    )
-    .sort((a, b) => {
-      if (sortDescriptor.columnKey) {
-        if (sortDescriptor.direction === "descending") {
-          return a[sortDescriptor.columnKey] < b[sortDescriptor.columnKey]
-            ? 1
-            : -1;
-        }
-        return a[sortDescriptor.columnKey] > b[sortDescriptor.columnKey]
-          ? 1
-          : -1;
-      }
-      return 0;
-    });
-
-  const headerColumns = [
-    { uid: "nombre", name: "Nombre", sortable: true },
-    { uid: "estado", name: "Estado", sortable: true },
-    { uid: "inicio", name: "Inicio", sortable: true },
-    { uid: "fin", name: "Fin", sortable: true },
-  ];
-
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 h-screen w-full px-10">
-      <div className="grid grid-cols-1 gap-2 pb-5">
-        <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
-          Periodos
-        </h2>
-        <p className="font-light text-lg text-black dark:text-white">
-          Gestión de periodos académicos
-        </p>
+      <div className="">
+        <div className="grid grid-cols-1 gap-2 pb-5">
+          <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
+            Periodos Académicos
+          </h2>
+          <p className="font-light text-lg text-black dark:text-white">
+            Gestión de los periodos académicos de la escuela.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -117,9 +107,8 @@ function Periodo() {
             className="w-full sm:max-w-[44%]"
             placeholder="Buscar por nombre..."
             startContent={<MagnifyingGlassIcon className="h-6 w-6" />}
-            value={searchTerm}
             onClear={onClear}
-            onValueChange={onSearchChange}
+            onValueChange={(e) => onSearchChange(e.target.value)}
           />
           <div className="flex gap-3">
             <Dropdown>
@@ -135,14 +124,11 @@ function Periodo() {
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
-                aria-label="Estados"
+                aria-label="Filtrar por estado"
                 closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
               >
-                <DropdownItem key="Activo">Activo</DropdownItem>
-                <DropdownItem key="Inactivo">Inactivo</DropdownItem>
+                <DropdownItem key="activo">Activo</DropdownItem>
+                <DropdownItem key="inactivo">Inactivo</DropdownItem>
               </DropdownMenu>
             </Dropdown>
 
@@ -150,7 +136,7 @@ function Periodo() {
               color="primary"
               endContent={<PlusIcon className="h-5 w-5" />}
             >
-              Agregar nuevo
+              Añadir Nuevo
             </Button>
           </div>
         </div>
@@ -160,7 +146,10 @@ function Periodo() {
           </span>
           <label className="flex items-center text-default-400 text-small">
             Filas por página:
-            <select className="bg-transparent outline-none text-default-400 text-small">
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              // Aquí podría agregarse lógica para manejar el cambio
+            >
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -169,7 +158,7 @@ function Periodo() {
         </div>
       </div>
 
-      <div>
+      {isClient && (
         <Table
           aria-label="Tabla de periodos académicos"
           isHeaderSticky
@@ -184,7 +173,7 @@ function Periodo() {
             {(column) => (
               <TableColumn
                 key={column.uid}
-                align={column.uid === "estado" ? "center" : "start"}
+                align={column.uid === "acciones" ? "center" : "start"}
                 allowsSorting={column.sortable}
               >
                 {column.name}
@@ -204,7 +193,7 @@ function Periodo() {
             )}
           </TableBody>
         </Table>
-      </div>
+      )}
     </div>
   );
 }
