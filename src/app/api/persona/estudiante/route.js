@@ -241,6 +241,26 @@ export async function POST(request) {
     },
   });
 
+  // Crear o actualizar detalles de discapacidad
+  await prisma.dETALLEDISCAPACIDAD.deleteMany({
+    where: { idEstudiantePertenece: estudiante.id },
+  });
+  if (body.discapacidades) {
+    for (const discapacidad of JSON.parse(body.discapacidades)) {
+      await prisma.dETALLEDISCAPACIDAD.create({
+        data: {
+          ESTUDIANTE: {
+            connect: { id: estudiante.id },
+          },
+          Discapacidad: {
+            connect: { id: discapacidad.Discapacidad.id },
+          },
+          porcentaje: discapacidad.porcentaje,
+        },
+      });
+    }
+  }
+
   // Retornar la respuesta
   return NextResponse.json(persona, { status: 201 });
 }

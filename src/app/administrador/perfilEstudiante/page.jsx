@@ -226,14 +226,6 @@ function PerfilEstudiante() {
           formPOST.append("rangoEdadHijo", JSON.stringify([0, 0])); // Valor por defecto
         }
         formPOST.append("bonoMies", bonoMies);
-        if (discapacidad) {
-          formPOST.append(
-            "numeroCarnetDiscapacidad",
-            formData.numeroCarnetDiscapacidad
-          );
-        } else {
-          formPOST.append("numeroCarnetDiscapacidad", "");
-        }
         formPOST.append("lugarNacimiento", formData.lugarNacimiento);
         formPOST.append("codigoElectricoUnico", formData.codigoElectricoUnico);
         formPOST.append("observacion", formData.observacion);
@@ -245,10 +237,17 @@ function PerfilEstudiante() {
           formPOST.append("foto", blob);
         }
 
-        /* // Agregar Experiencias
-        if (experiencias.length > 0) {
-          formPOST.append("experiencias", JSON.stringify(experiencias));
-        } */
+        // Agregar Discapacidades
+        if (discapacidades.length > 0 && discapacidad) {
+          formPOST.append(
+            "numeroCarnetDiscapacidad",
+            formData.numeroCarnetDiscapacidad
+          );
+          formPOST.append("discapacidades", JSON.stringify(discapacidades));
+        } else {
+          formPOST.append("numeroCarnetDiscapacidad", "");
+          formPOST.append("discapacidades", JSON.stringify([]));
+        }
 
         const response = await fetch("/api/persona/estudiante", {
           method: "POST",
@@ -437,22 +436,42 @@ function PerfilEstudiante() {
     setIsLoading(true); // Establece el estado de carga a true
     setFormData({
       id: "",
-      nombre: "",
-      apellido: "",
       correo: "",
       contrasena: "",
+      nombre: "",
+      apellido: "",
       nacionalidad: "",
+      lugarNacimiento: "",
+      fechaNacimiento: "",
       direccion: "",
       telefono: "",
-      fechaNacimiento: "",
       genero: "",
-      experiencia: 0,
+      codigoElectricoUnico: "",
+      numeroCarnetDiscapacidad: "",
+      observacion: "",
+      nombreTrabajo: "",
+      cedulaRepresentante: "",
+      nombreRepresentante: "",
+      apellidoRepresentante: "",
+      direccionRepresentante: "",
+      telefonoRepresentante: "",
+      ocupacionRepresentante: "",
     }); // Limpiar los datos del formulario
     setSelectedCampus(null);
     setSelectedProvincia(null);
     setSelectedCanton(null);
     setSelectedParroquia(null);
     setSelectedImage(null);
+    setSelectedEtnia(null);
+    setSelectedEstadoCivil(null);
+    setDiscapacidades([]);
+    setAddDiscapacidad({ id: "", tipo: "" });
+    setAddPorcentajeDiscapacidad(1);
+    setBonoMies(false);
+    setTrabaja(false);
+    setHijos(false);
+    setDiscapacidad(false);
+    setRangoEdadHijo([5, 15]);
     setCedula("");
     setIsLoading(false);
     setNotificacion({
@@ -621,10 +640,20 @@ function PerfilEstudiante() {
           }
 
           if (data.estudiante) {
-            if (data.estudiante.DETALLE_DISCAPACIDAD) {
+            if (
+              data.estudiante.DETALLE_DISCAPACIDAD.length > 0 ||
+              data.estudiante.numeroCarnetDiscapacidad != ""
+            ) {
+              // Si el estudiante tiene discapacidad
               setDiscapacidad(true);
               setDiscapacidades(data.estudiante.DETALLE_DISCAPACIDAD);
+            } else {
+              setDiscapacidad(false);
+              setDiscapacidades([]);
             }
+          } else {
+            setDiscapacidad(false);
+            setDiscapacidades([]);
           }
 
           setNotificacion({
@@ -1327,7 +1356,7 @@ function PerfilEstudiante() {
                     <p className="p-2.5">
                       {selectedEstadoCivil
                         ? selectedEstadoCivil.estadoCivil
-                        : "Seleccione una etnia"}
+                        : "Seleccione un estado civil"}
                     </p>
                     <ChevronDownIcon
                       aria-hidden="true"
