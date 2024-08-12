@@ -130,13 +130,15 @@ export default function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
-                  <ListItem className="text-white">
-                    <ListItemPrefix>
-                      <InboxIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Periodos
-                    <ListItemSuffix />
-                  </ListItem>
+                  <Link href="/administrador/periodo">
+                    <ListItem className="text-white">
+                      <ListItemPrefix>
+                        <InboxIcon className="h-5 w-5" />
+                      </ListItemPrefix>
+                      Periodos
+                      <ListItemSuffix />
+                    </ListItem>
+                  </Link>
                   {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
                   <Accordion
                     open={open === 1}
