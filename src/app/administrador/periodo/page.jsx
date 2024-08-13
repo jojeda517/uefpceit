@@ -14,6 +14,14 @@ import {
   DropdownMenu,
   DropdownItem,
   Chip,
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Autocomplete,
+  AutocompleteItem,
   Pagination,
 } from "@nextui-org/react";
 import {
@@ -22,10 +30,18 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
+import { BoltIcon } from "@heroicons/react/24/solid";
+
 function Periodo() {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
+  const [tiposPeriodos, setTiposPeriodos] = useState([]);
+  const {
+    isOpen: isOpenPeriodo,
+    onOpen: onOpenPeriodo,
+    onOpenChange: onOpenChangePeriodo,
+  } = useDisclosure();
   const [sortDescriptor, setSortDescriptor] = useState({
     column: "periodo",
     direction: "ascending",
@@ -69,6 +85,19 @@ function Periodo() {
     };
 
     fetchPeriodos();
+  }, []);
+
+  useEffect(() => {
+    const fetchTipoPeriodo = async () => {
+      try {
+        const response = await fetch("/api/tipoPeriodo");
+        const data = await response.json();
+        setTiposPeriodos(data);
+      } catch (error) {
+        console.error("Error fetching tipo de periodos:", error);
+      }
+    };
+    fetchTipoPeriodo();
   }, []);
 
   const onSearchChange = (value) => {
@@ -154,12 +183,88 @@ function Periodo() {
               </DropdownMenu>
             </Dropdown>
 
-            <Button
-              className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
-              endContent={<PlusIcon className="h-5 w-5" />}
-            >
-              Añadir Nuevo
-            </Button>
+            <div>
+              <Button
+                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
+                endContent={<PlusIcon className="h-5 w-5" />}
+                onClick={onOpenPeriodo}
+              >
+                Añadir Nuevo
+              </Button>
+              <Modal
+                isOpen={isOpenPeriodo}
+                onOpenChange={onOpenChangePeriodo}
+                placement="top-center"
+                classNames={{
+                  base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
+                  closeButton:
+                    "text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700",
+                }}
+              >
+                <ModalContent>
+                  {(onClose) => (
+                    <>
+                      <ModalHeader className="text-blue-900 dark:text-white">
+                        Abrir nuevo periodo
+                      </ModalHeader>
+                      <ModalBody>
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Tipo de periodo
+                            </label>
+                          }
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar discapacidad"
+                          startContent={
+                            <BoltIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={tiposPeriodos}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                          //onSelectionChange={handleInputChangeDiscapacidad}
+                        >
+                          {(tipo) => (
+                            <AutocompleteItem key={String(tipo.id)}>
+                              {tipo.metodo}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button
+                          className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
+                          onPress={onClose}
+                        >
+                          Cerrar
+                        </Button>
+                        <Button
+                          className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
+                          onPress={onClose}
+                        >
+                          Añadir
+                        </Button>
+                      </ModalFooter>
+                    </>
+                  )}
+                </ModalContent>
+              </Modal>
+            </div>
           </div>
         </div>
         <div className="flex justify-between items-center">
