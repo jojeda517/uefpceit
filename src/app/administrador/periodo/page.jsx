@@ -16,7 +16,6 @@ import {
   Chip,
   Pagination,
 } from "@nextui-org/react";
-
 import {
   ChevronDownIcon,
   PlusIcon,
@@ -24,65 +23,88 @@ import {
 } from "@heroicons/react/24/outline";
 
 function Periodo() {
-  // Datos ficticios para los periodos
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "nombre",
+    column: "periodo",
     direction: "ascending",
   });
+  const [searchValue, setSearchValue] = useState("");
   const [isClient, setIsClient] = useState(false);
 
-  // Columnas para la tabla
   const headerColumns = [
-    { name: "Nombre", uid: "nombre", sortable: true },
+    { name: "Periodo", uid: "periodo", sortable: true },
+    { name: "Tipo periodo", uid: "tipoPeriodo", sortable: true },
+    { name: "Evaluación", uid: "evaluacion", sortable: true },
+    { name: "Modalidades", uid: "modalidades", sortable: true },
+    { name: "Descripción", uid: "descripcion", sortable: true },
     { name: "Estado", uid: "estado", sortable: true },
-    { name: "Inicio", uid: "inicio", sortable: true },
-    { name: "Fin", uid: "fin", sortable: true },
-    { name: "Acciones", uid: "acciones", sortable: false },
   ];
 
   useEffect(() => {
-    setIsClient(true);
-    const data = [
-      {
-        id: 1,
-        nombre: "Periodo 1",
-        estado: "Activo",
-        inicio: "2024-01-01",
-        fin: "2024-06-30",
-      },
-      {
-        id: 2,
-        nombre: "Periodo 2",
-        estado: "Inactivo",
-        inicio: "2024-07-01",
-        fin: "2024-12-31",
-      },
-    ];
-    setItems(data);
-    setFilteredItems(data); // Inicialmente sin filtros
+    const fetchPeriodos = async () => {
+      try {
+        const response = await fetch("/api/periodo");
+        const data = await response.json();
+
+        const transformedData = data.map((periodo) => ({
+          id: periodo.id,
+          periodo: periodo.nombre,
+          tipoPeriodo: periodo.evaluacion.metodoEvaluacion.metodo,
+          evaluacion: periodo.evaluacion.evaluacion,
+          modalidades: periodo.periodosModalidad.map(
+            (pm) => pm.modalidad.modalidad
+          ),
+          estado: periodo.estado ? "Activo" : "Inactivo",
+          descripcion: periodo.descripcion,
+        }));
+
+        setItems(transformedData);
+        setFilteredItems(transformedData);
+        setIsClient(true);
+      } catch (error) {
+        console.error("Error fetching periodos:", error);
+      }
+    };
+
+    fetchPeriodos();
   }, []);
 
-  // Función para manejar la búsqueda
   const onSearchChange = (value) => {
+    setSearchValue(value);
     const filtered = items.filter((item) =>
-      item.nombre.toLowerCase().includes(value.toLowerCase())
+      item.periodo.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredItems(filtered);
   };
 
-  // Función para limpiar la búsqueda
   const onClear = () => {
+    setSearchValue("");
     setFilteredItems(items);
   };
 
-  // Función para renderizar las celdas de la tabla
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
-      case "acciones":
-        return <Chip color="primary">Acciones</Chip>;
+      case "modalidades":
+        return (
+          <div className="flex flex-col gap-1">
+            {item[columnKey].map((modalidad, index) => (
+              <Chip key={index} size="sm" variant="faded" className="w-max">
+                {modalidad}
+              </Chip>
+            ))}
+          </div>
+        );
+      case "estado":
+        return (
+          <Chip
+            color={item[columnKey] === "Activo" ? "success" : "danger"}
+            variant="dot"
+          >
+            {item[columnKey]}
+          </Chip>
+        );
       default:
         return item[columnKey];
     }
@@ -105,10 +127,10 @@ function Periodo() {
         <div className="flex justify-between gap-3 items-end">
           <Input
             className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por periodo..."
             startContent={<MagnifyingGlassIcon className="h-6 w-6" />}
-            onClear={onClear}
-            onValueChange={(e) => onSearchChange(e.target.value)}
+            value={searchValue}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
           <div className="flex gap-3">
             <Dropdown>
@@ -133,7 +155,7 @@ function Periodo() {
             </Dropdown>
 
             <Button
-              color="primary"
+              className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
               endContent={<PlusIcon className="h-5 w-5" />}
             >
               Añadir Nuevo
@@ -146,10 +168,7 @@ function Periodo() {
           </span>
           <label className="flex items-center text-default-400 text-small">
             Filas por página:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              // Aquí podría agregarse lógica para manejar el cambio
-            >
+            <select className="bg-transparent outline-none text-default-400 text-small">
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -162,12 +181,16 @@ function Periodo() {
         <Table
           aria-label="Tabla de periodos académicos"
           isHeaderSticky
-          classNames={{ wrapper: "max-h-[382px]" }}
+          classNames={{
+            wrapper: "max-h-[382px]  dark:bg-gray-600", // Es necesario ajustar la altura máxima de la tabla
+            th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white", // Es la cabecera
+            tr: "dark:text-white dark:hover:text-gray-900", // Es la fila
+          }}
           selectedKeys={selectedKeys}
-          selectionMode="multiple"
           sortDescriptor={sortDescriptor}
           onSelectionChange={setSelectedKeys}
           onSortChange={setSortDescriptor}
+          selectionMode="single"
         >
           <TableHeader columns={headerColumns}>
             {(column) => (
