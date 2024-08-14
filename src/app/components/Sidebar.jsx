@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import {
   IconButton,
   Typography,
@@ -44,30 +43,28 @@ import {
   ChartBarIcon,
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { signOut } from "next-auth/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Link from "next/link";
 
-export default function Sidebar({ roles }) {
+function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleOpen = (value) => {
-    setOpen(open === value ? 0 : value);
-  };
+  const handleOpen = useCallback((value) => {
+    setOpen((prevOpen) => (prevOpen === value ? 0 : value));
+  }, []);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
   const handleSignOut = () => {
     setIsLoading(true);
-    //const baseUrl = process.env.NEXTAUTH_URL;
     signOut({ callbackUrl: "/" });
   };
 
-  // Función para verificar si el usuario tiene un rol específico
   const hasRole = (role) => roles.includes(role);
 
   return (
@@ -463,3 +460,5 @@ export default function Sidebar({ roles }) {
     </>
   );
 }
+
+export default memo(Sidebar);

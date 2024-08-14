@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import Sidebar from "../components/Sidebar";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
 import CircularProgress from "@mui/material/CircularProgress";
 
 function Header() {
@@ -13,15 +12,16 @@ function Header() {
   const correo = session?.user?.correo || null;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [persona, setPersona] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = () => {
-    setIsLoading(true); // Establece el estado de carga a true
-    //const baseUrl = process.env.NEXTAUTH_URL;
+    setIsLoading(true);
     signOut({ callbackUrl: "/" });
   };
 
   const fetchPersona = useCallback(async () => {
+    if (!idPersonaPertenece) return;
+
     try {
       const response = await fetch(`/api/persona/${idPersonaPertenece}`);
       if (!response.ok) {
@@ -35,30 +35,28 @@ function Header() {
   }, [idPersonaPertenece]);
 
   useEffect(() => {
-    if (idPersonaPertenece) {
-      fetchPersona();
-    }
-  }, [fetchPersona, idPersonaPertenece]);
-
-  const toggleDropdown = () => {
-    setDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleOutsideClick = (event) => {
-    if (
-      !event.target.closest("#userDropdown") &&
-      !event.target.closest("#avatarButton")
-    ) {
-      setDropdownOpen(false);
-    }
-  };
+    fetchPersona();
+  }, [fetchPersona]);
 
   useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        !event.target.closest("#userDropdown") &&
+        !event.target.closest("#avatarButton")
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
     document.addEventListener("click", handleOutsideClick);
     return () => {
       document.removeEventListener("click", handleOutsideClick);
     };
   }, []);
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!isDropdownOpen);
+  };
 
   return (
     <div className="z-30 fixed bg-blue-900 dark:bg-gray-900 w-full h-12 flex justify-between items-center">
@@ -221,4 +219,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default memo(Header);
