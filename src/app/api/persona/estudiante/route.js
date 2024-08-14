@@ -143,6 +143,7 @@ export async function POST(request) {
   }
 
   // Crear o actualizar Estudiante
+  console.log(body.numeroCarnetDiscapacidad === "null" ? null : body.numeroCarnetDiscapacidad);
   const estudiante = await prisma.eSTUDIANTE.upsert({
     where: { idPersonaPertenece: id || 0 },
     update: {
@@ -169,7 +170,7 @@ export async function POST(request) {
       tieneHijo: body.tieneHijo === "true",
       rangoEdadHijo: body.rangoEdadHijo,
       bonoMies: body.bonoMies === "true",
-      numeroCarnetDiscapacidad: body.numeroCarnetDiscapacidad,
+      numeroCarnetDiscapacidad: body.numeroCarnetDiscapacidad === "null" ? null : body.numeroCarnetDiscapacidad,
       lugarNacimiento: body.lugarNacimiento,
       codigoElectricoUnico: body.codigoElectricoUnico,
       observacion: body.observacion,
@@ -198,7 +199,7 @@ export async function POST(request) {
       tieneHijo: body.tieneHijo === "true",
       rangoEdadHijo: body.rangoEdadHijo,
       bonoMies: body.bonoMies === "true",
-      numeroCarnetDiscapacidad: body.numeroCarnetDiscapacidad,
+      numeroCarnetDiscapacidad: body.numeroCarnetDiscapacidad === "null" ? null : body.numeroCarnetDiscapacidad,
       lugarNacimiento: body.lugarNacimiento,
       codigoElectricoUnico: body.codigoElectricoUnico,
       observacion: body.observacion,

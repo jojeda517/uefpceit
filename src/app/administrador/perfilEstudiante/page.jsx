@@ -61,9 +61,9 @@ function PerfilEstudiante() {
   const [provincias, setProvincias] = useState([]);
   const [cantones, setCantones] = useState([]);
   const [parroquias, setParroquias] = useState([]);
-  const [searchDiscapacidades, setSearchDiscapacidades] = useState([]); // Poblar Autocomplete
-  const [discapacidades, setDiscapacidades] = useState([]); // Discapacidades del estudiante
-  const [addDiscapacidad, setAddDiscapacidad] = useState({ id: "", tipo: "" }); // Discapacidad a añadir
+  const [searchDiscapacidades, setSearchDiscapacidades] = useState([]);
+  const [discapacidades, setDiscapacidades] = useState([]);
+  const [addDiscapacidad, setAddDiscapacidad] = useState({ id: "", tipo: "" });
   const [addPorcentajeDiscapacidad, setAddPorcentajeDiscapacidad] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCampus, setSelectedCampus] = useState(null);
@@ -72,7 +72,7 @@ function PerfilEstudiante() {
   const [selectedProvincia, setSelectedProvincia] = useState(null);
   const [selectedCanton, setSelectedCanton] = useState(null);
   const [selectedParroquia, setSelectedParroquia] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false);
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [bonoMies, setBonoMies] = useState(false);
   const [trabaja, setTrabaja] = useState(false);
@@ -107,6 +107,63 @@ function PerfilEstudiante() {
     telefonoRepresentante: "",
     ocupacionRepresentante: "",
   });
+
+  const fetchData = async (endpoint, setter) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      setter(data);
+    } catch (error) {
+      console.error(`Error fetching data from ${endpoint}:`, error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData("/api/discapacidad", setSearchDiscapacidades);
+    fetchData("/api/campus", setCampuses);
+    fetchData("/api/etnia", setEtnias);
+    fetchData("/api/estadoCivil", setEstadosCiviles);
+    fetchData("/api/provincia", setProvincias);
+  }, []);
+
+  useEffect(() => {
+    if (selectedProvincia) {
+      fetchData(`/api/canton/${selectedProvincia.id}`, setCantones);
+    }
+  }, [selectedProvincia]);
+
+  useEffect(() => {
+    if (selectedCanton) {
+      fetchData(`/api/parroquia/${selectedCanton.id}`, setParroquias);
+    }
+  }, [selectedCanton]);
+
+  const handleSelectProvincia = (provincia) => {
+    setSelectedProvincia(provincia);
+  };
+
+  const handleSelectCanton = (canton) => {
+    setSelectedCanton(canton);
+  };
+
+  const handleSelectParroquia = (parroquia) => {
+    setSelectedParroquia(parroquia);
+  };
+
+  const handleSelectCampus = (campus) => {
+    setSelectedCampus(campus);
+  };
+
+  const handleSelectEtnia = (etnia) => {
+    setSelectedEtnia(etnia);
+  };
+
+  const handleSelectEstadoCivil = (estadoCivil) => {
+    setSelectedEstadoCivil(estadoCivil);
+  };
 
   const handleAddDiscapacidad = async () => {
     try {
@@ -151,333 +208,13 @@ function PerfilEstudiante() {
     );
   };
 
-  const handleRangoEdadHijos = (newValue) => {
-    setRangoEdadHijo(newValue);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setIsLoading(true);
-      // Validar que Campus, Provincia, Cantón, Parroquia y Género estén seleccionados
-      if (
-        !selectedCampus ||
-        !selectedProvincia ||
-        !selectedCanton ||
-        !selectedParroquia ||
-        !formData.genero ||
-        !selectedEtnia
-      ) {
-        setNotificacion({
-          message: "Por favor, complete todos los campos obligatorios",
-          type: "warning",
-        });
-      } else {
-        const formPOST = new FormData();
-        // Agregar los datos del formulario
-        // Si id no esta vacio se añade al formData
-        if (formData.id) {
-          formPOST.append("id", formData.id);
-        }
-        formPOST.append("idCampusPertenece", selectedCampus.id);
-        formPOST.append("idParroquiaPertenece", selectedParroquia.id);
-        formPOST.append("nombre", formData.nombre);
-        formPOST.append("apellido", formData.apellido);
-        formPOST.append("cedula", cedula);
-        formPOST.append("direccion", formData.direccion);
-        const fecha = new Date(formData.fechaNacimiento);
-        formPOST.append("fechaNacimiento", fecha.toISOString());
-        formPOST.append("nacionalidad", formData.nacionalidad);
-        formPOST.append("telefono", formData.telefono);
-        formPOST.append("sexo", formData.genero);
-        formPOST.append("correo", formData.correo);
-        formPOST.append("contrasena", formData.contrasena);
-        formPOST.append("cedulaRepresentante", formData.cedulaRepresentante);
-        formPOST.append("nombresRepresentante", formData.nombreRepresentante);
-        formPOST.append(
-          "apellidosRepresentante",
-          formData.apellidoRepresentante
-        );
-        formPOST.append(
-          "direccionRepresentante",
-          formData.direccionRepresentante
-        );
-        formPOST.append(
-          "telefonoRepresentante",
-          formData.telefonoRepresentante
-        );
-        formPOST.append(
-          "ocupacionRepresentante",
-          formData.ocupacionRepresentante
-        );
-        formPOST.append("idEstadoCivilPertenece", selectedEstadoCivil.id);
-        formPOST.append("idEtniaPertenece", selectedEtnia.id);
-        formPOST.append("trabaja", trabaja);
-        if (trabaja) {
-          formPOST.append("nombreTrabajo", formData.nombreTrabajo);
-        } else {
-          formPOST.append("nombreTrabajo", "");
-        }
-        formPOST.append("tieneHijo", hijos);
-        if (hijos) {
-          formPOST.append("rangoEdadHijo", JSON.stringify(rangoEdadHijo)); // Convertir el array a un string JSON
-        } else {
-          formPOST.append("rangoEdadHijo", JSON.stringify([0, 0])); // Valor por defecto
-        }
-        formPOST.append("bonoMies", bonoMies);
-        formPOST.append("lugarNacimiento", formData.lugarNacimiento);
-        formPOST.append("codigoElectricoUnico", formData.codigoElectricoUnico);
-        formPOST.append("observacion", formData.observacion);
-
-        // Agregar foto
-        if (selectedImage) {
-          const response = await fetch(selectedImage);
-          const blob = await response.blob();
-          formPOST.append("foto", blob);
-        }
-
-        // Agregar Discapacidades
-        if (discapacidades.length > 0 && discapacidad) {
-          formPOST.append(
-            "numeroCarnetDiscapacidad",
-            formData.numeroCarnetDiscapacidad
-          );
-          formPOST.append("discapacidades", JSON.stringify(discapacidades));
-        } else {
-          formPOST.append("numeroCarnetDiscapacidad", "");
-          formPOST.append("discapacidades", JSON.stringify([]));
-        }
-
-        const response = await fetch("/api/persona/estudiante", {
-          method: "POST",
-          body: formPOST,
-        });
-
-        console.log("response", response);
-
-        if (response.ok) {
-          const result = await response.json();
-          setNotificacion({
-            message: "Datos actualizados correctamente",
-            type: "success",
-          });
-        } else {
-          const error = await response.json();
-          setNotificacion({
-            message: "Error. Verifique los datos e inténtelo nuevamente",
-            type: "error",
-          });
-        }
-      }
-    } catch (error) {
-      setNotificacion({
-        message: "Error. Verifique los datos e inténtelo nuevamente",
-        type: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchDiscapacidades = async () => {
-      try {
-        const response = await fetch("/api/discapacidad");
-        const data = await response.json();
-        setSearchDiscapacidades(data);
-      } catch (error) {
-        console.error("Error fetching discapacidades:", error);
-      }
-    };
-    fetchDiscapacidades();
-  }, []);
-
-  useEffect(() => {
-    const fetchCampuses = async () => {
-      try {
-        const response = await fetch("/api/campus");
-        const data = await response.json();
-        setCampuses(data);
-      } catch (error) {
-        console.error("Error fetching campuses:", error);
-      }
-    };
-
-    fetchCampuses();
-  }, []);
-
-  const handleSelectCampus = (campus) => {
-    setSelectedCampus(campus);
-  };
-
-  useEffect(() => {
-    const fetchEtnias = async () => {
-      try {
-        const response = await fetch("/api/etnia");
-        const data = await response.json();
-        setEtnias(data);
-      } catch (error) {
-        console.error("Error fetching etnias:", error);
-      }
-    };
-
-    fetchEtnias();
-  }, []);
-
-  const handleSelectEtnia = (etnia) => {
-    setSelectedEtnia(etnia);
-  };
-
-  useEffect(() => {
-    const fetchEstadosCiviles = async () => {
-      try {
-        const response = await fetch("/api/estadoCivil");
-        const data = await response.json();
-        setEstadosCiviles(data);
-      } catch (error) {
-        console.error("Error fetching estados civiles:", error);
-      }
-    };
-    fetchEstadosCiviles();
-  }, []);
-
-  const handleSelectEstadoCivil = (estadoCivil) => {
-    setSelectedEstadoCivil(estadoCivil);
-  };
-
-  useEffect(() => {
-    const fetchProvincias = async () => {
-      try {
-        const response = await fetch("/api/provincia");
-        const data = await response.json();
-        setProvincias(data);
-      } catch (error) {
-        console.error("Error fetching provincias:", error);
-      }
-    };
-
-    fetchProvincias();
-  }, []);
-
-  const handleSelectProvincia = (provincia) => {
-    setSelectedProvincia(provincia);
-  };
-
-  useEffect(() => {
-    const fetchCantones = async () => {
-      if (selectedProvincia) {
-        try {
-          const response = await fetch(`/api/canton/${selectedProvincia.id}`);
-          const data = await response.json();
-          setCantones(data);
-
-          // Selecciona automáticamente el cantón si es parte de los datos del usuario
-          if (formData && formData.parroquia) {
-            const selectedCanton = data.find(
-              (canton) => canton.id === formData.parroquia.CANTON.id
-            );
-            setSelectedCanton(selectedCanton);
-          }
-        } catch (error) {
-          console.error("Error fetching cantones:", error);
-        }
-      }
-    };
-
-    fetchCantones();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProvincia]);
-
-  const handleSelectCanton = (canton) => {
-    setSelectedCanton(canton);
-  };
-
-  useEffect(() => {
-    const fetchParroquias = async () => {
-      if (selectedCanton) {
-        try {
-          const response = await fetch(`/api/parroquia/${selectedCanton.id}`);
-          const data = await response.json();
-          setParroquias(data);
-
-          // Selecciona automáticamente la parroquia si es parte de los datos del usuario
-          if (formData && formData.parroquia) {
-            const selectedParroquia = data.find(
-              (parroquia) => parroquia.id === formData.parroquia.id
-            );
-            setSelectedParroquia(selectedParroquia);
-          }
-        } catch (error) {
-          console.error("Error fetching parroquias:", error);
-        }
-      }
-    };
-
-    fetchParroquias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCanton]);
-
-  const handleSelectParroquia = (parroquia) => {
-    setSelectedParroquia(parroquia);
-  };
-
   // Maneja los cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [name]: value,
-    });
-  };
-
-  // Manejar limpieza de datos
-  const handleClear = async (event) => {
-    setIsLoading(true); // Establece el estado de carga a true
-    setFormData({
-      id: "",
-      correo: "",
-      contrasena: "",
-      nombre: "",
-      apellido: "",
-      nacionalidad: "",
-      lugarNacimiento: "",
-      fechaNacimiento: "",
-      direccion: "",
-      telefono: "",
-      genero: "",
-      codigoElectricoUnico: "",
-      numeroCarnetDiscapacidad: "",
-      observacion: "",
-      nombreTrabajo: "",
-      cedulaRepresentante: "",
-      nombreRepresentante: "",
-      apellidoRepresentante: "",
-      direccionRepresentante: "",
-      telefonoRepresentante: "",
-      ocupacionRepresentante: "",
-    }); // Limpiar los datos del formulario
-    setSelectedCampus(null);
-    setSelectedProvincia(null);
-    setSelectedCanton(null);
-    setSelectedParroquia(null);
-    setSelectedImage(null);
-    setSelectedEtnia(null);
-    setSelectedEstadoCivil(null);
-    setDiscapacidades([]);
-    setAddDiscapacidad({ id: "", tipo: "" });
-    setAddPorcentajeDiscapacidad(1);
-    setBonoMies(false);
-    setTrabaja(false);
-    setHijos(false);
-    setDiscapacidad(false);
-    setRangoEdadHijo([5, 15]);
-    setCedula("");
-    setIsLoading(false);
-    setNotificacion({
-      message: "Formulario limpiado correctamente",
-      type: "success",
-    });
+    }));
   };
 
   // Manejar el cambio en el campo de cédula
@@ -509,6 +246,8 @@ function PerfilEstudiante() {
             : "",
           numeroCarnetDiscapacidad: data.estudiante
             ? data.estudiante.numeroCarnetDiscapacidad
+              ? data.estudiante.numeroCarnetDiscapacidad
+              : ""
             : "",
           observacion: data.estudiante
             ? data.estudiante.observacion
@@ -640,10 +379,7 @@ function PerfilEstudiante() {
           }
 
           if (data.estudiante) {
-            if (
-              data.estudiante.DETALLE_DISCAPACIDAD.length > 0 ||
-              data.estudiante.numeroCarnetDiscapacidad != ""
-            ) {
+            if (data.estudiante.numeroCarnetDiscapacidad) {
               // Si el estudiante tiene discapacidad
               setDiscapacidad(true);
               setDiscapacidades(data.estudiante.DETALLE_DISCAPACIDAD);
@@ -679,12 +415,9 @@ function PerfilEstudiante() {
     }
   };
 
-  // Efecto secundario para depurar los datos de formData
-  useEffect(() => {
-    console.log("FormData actualizado:", formData);
-    console.log("discapacidades:", discapacidades);
-    console.log("addDiscapacidad:", addDiscapacidad);
-  }, [formData, discapacidades, addDiscapacidad]);
+  const handleRangoEdadHijos = (newValue) => {
+    setRangoEdadHijo(newValue);
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -731,6 +464,175 @@ function PerfilEstudiante() {
         tipo: selectedItem.tipo,
       });
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setIsLoading(true);
+      // Validar que Campus, Provincia, Cantón, Parroquia y Género estén seleccionados
+      if (
+        !selectedCampus ||
+        !selectedProvincia ||
+        !selectedCanton ||
+        !selectedParroquia ||
+        !formData.genero ||
+        !selectedEtnia
+      ) {
+        setNotificacion({
+          message: "Por favor, complete todos los campos obligatorios",
+          type: "warning",
+        });
+      } else {
+        const formPOST = new FormData();
+        // Agregar los datos del formulario
+        // Si id no esta vacio se añade al formData
+        if (formData.id) {
+          formPOST.append("id", formData.id);
+        }
+        formPOST.append("idCampusPertenece", selectedCampus.id);
+        formPOST.append("idParroquiaPertenece", selectedParroquia.id);
+        formPOST.append("nombre", formData.nombre);
+        formPOST.append("apellido", formData.apellido);
+        formPOST.append("cedula", cedula);
+        formPOST.append("direccion", formData.direccion);
+        const fecha = new Date(formData.fechaNacimiento);
+        formPOST.append("fechaNacimiento", fecha.toISOString());
+        formPOST.append("nacionalidad", formData.nacionalidad);
+        formPOST.append("telefono", formData.telefono);
+        formPOST.append("sexo", formData.genero);
+        formPOST.append("correo", formData.correo);
+        formPOST.append("contrasena", formData.contrasena);
+        formPOST.append("cedulaRepresentante", formData.cedulaRepresentante);
+        formPOST.append("nombresRepresentante", formData.nombreRepresentante);
+        formPOST.append(
+          "apellidosRepresentante",
+          formData.apellidoRepresentante
+        );
+        formPOST.append(
+          "direccionRepresentante",
+          formData.direccionRepresentante
+        );
+        formPOST.append(
+          "telefonoRepresentante",
+          formData.telefonoRepresentante
+        );
+        formPOST.append(
+          "ocupacionRepresentante",
+          formData.ocupacionRepresentante
+        );
+        formPOST.append("idEstadoCivilPertenece", selectedEstadoCivil.id);
+        formPOST.append("idEtniaPertenece", selectedEtnia.id);
+        formPOST.append("trabaja", trabaja);
+        if (trabaja) {
+          formPOST.append("nombreTrabajo", formData.nombreTrabajo);
+        } else {
+          formPOST.append("nombreTrabajo", "");
+        }
+        formPOST.append("tieneHijo", hijos);
+        if (hijos) {
+          formPOST.append("rangoEdadHijo", JSON.stringify(rangoEdadHijo)); // Convertir el array a un string JSON
+        } else {
+          formPOST.append("rangoEdadHijo", JSON.stringify([0, 0])); // Valor por defecto
+        }
+        formPOST.append("bonoMies", bonoMies);
+        formPOST.append("lugarNacimiento", formData.lugarNacimiento);
+        formPOST.append("codigoElectricoUnico", formData.codigoElectricoUnico);
+        formPOST.append("observacion", formData.observacion);
+
+        // Agregar foto
+        if (selectedImage) {
+          const response = await fetch(selectedImage);
+          const blob = await response.blob();
+          formPOST.append("foto", blob);
+        }
+
+        // Agregar Discapacidades
+        if (discapacidad) {
+          formPOST.append(
+            "numeroCarnetDiscapacidad",
+            formData.numeroCarnetDiscapacidad
+          );
+          formPOST.append("discapacidades", JSON.stringify(discapacidades));
+        } else {
+          formPOST.append("numeroCarnetDiscapacidad", null);
+          formPOST.append("discapacidades", JSON.stringify([]));
+        }
+
+        const response = await fetch("/api/persona/estudiante", {
+          method: "POST",
+          body: formPOST,
+        });
+
+        console.log("response", response);
+
+        if (response.ok) {
+          const result = await response.json();
+          setNotificacion({
+            message: "Datos actualizados correctamente",
+            type: "success",
+          });
+        } else {
+          const error = await response.json();
+          setNotificacion({
+            message: "Error. Verifique los datos e inténtelo nuevamente",
+            type: "error",
+          });
+        }
+      }
+    } catch (error) {
+      setNotificacion({
+        message: "Error. Verifique los datos e inténtelo nuevamente",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setIsLoading(true);
+    setFormData({
+      id: "",
+      correo: "",
+      contrasena: "",
+      nombre: "",
+      apellido: "",
+      nacionalidad: "",
+      lugarNacimiento: "",
+      fechaNacimiento: "",
+      direccion: "",
+      telefono: "",
+      genero: "",
+      codigoElectricoUnico: "",
+      numeroCarnetDiscapacidad: "",
+      observacion: "",
+      nombreTrabajo: "",
+      cedulaRepresentante: "",
+      nombreRepresentante: "",
+      apellidoRepresentante: "",
+      direccionRepresentante: "",
+      telefonoRepresentante: "",
+      ocupacionRepresentante: "",
+    });
+    setSelectedCampus(null);
+    setSelectedProvincia(null);
+    setSelectedCanton(null);
+    setSelectedParroquia(null);
+    setSelectedImage(null);
+    setSelectedEtnia(null);
+    setSelectedEstadoCivil(null);
+    setDiscapacidades([]);
+    setAddDiscapacidad({ id: "", tipo: "" });
+    setAddPorcentajeDiscapacidad(1);
+    setBonoMies(false);
+    setTrabaja(false);
+    setHijos(false);
+    setDiscapacidad(false);
+    setRangoEdadHijo([5, 15]);
+    setCedula("");
+    setIsLoading(false);
   };
 
   return (
