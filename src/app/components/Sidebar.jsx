@@ -47,11 +47,13 @@ import React, { useState, useCallback, memo } from "react";
 import { signOut } from "next-auth/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleOpen = useCallback((value) => {
     setOpen((prevOpen) => (prevOpen === value ? 0 : value));
@@ -59,6 +61,17 @@ function Sidebar({ roles }) {
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
+
+  const handleNavigation = (path) => {
+    try {
+      setIsLoading(true);
+      router.push(path);
+    } catch (error) {
+      console.error("Navigation error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSignOut = () => {
     setIsLoading(true);
@@ -127,15 +140,15 @@ function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
-                  <Link href="/administrador/periodo">
-                    <ListItem className="text-white">
-                      <ListItemPrefix>
-                        <InboxIcon className="h-5 w-5" />
-                      </ListItemPrefix>
-                      Periodos
-                      <ListItemSuffix />
-                    </ListItem>
-                  </Link>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/periodo")}
+                  >
+                    <ListItemPrefix>
+                      <InboxIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Periodos
+                  </ListItem>
                   {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
                   <Accordion
                     open={open === 1}
@@ -167,29 +180,33 @@ function Sidebar({ roles }) {
 
                     <AccordionBody className="py-1">
                       <List className="p-0 text-white">
-                        <Link href="/administrador/perfilDocente">
-                          <ListItem>
-                            <ListItemPrefix>
-                              <BriefcaseIcon
-                                strokeWidth={3}
-                                className="h-3 w-5"
-                              />
-                            </ListItemPrefix>
-                            Docentes
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          onClick={() =>
+                            handleNavigation("/administrador/perfilDocente")
+                          }
+                        >
+                          <ListItemPrefix>
+                            <BriefcaseIcon
+                              strokeWidth={3}
+                              className="h-3 w-5"
+                            />
+                          </ListItemPrefix>
+                          Docentes
+                        </ListItem>
 
-                        <Link href="/administrador/perfilEstudiante">
-                          <ListItem>
-                            <ListItemPrefix>
-                              <AcademicCapIcon
-                                strokeWidth={3}
-                                className="h-3 w-5"
-                              />
-                            </ListItemPrefix>
-                            Estudiantes
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          onClick={() =>
+                            handleNavigation("/administrador/perfilEstudiante")
+                          }
+                        >
+                          <ListItemPrefix>
+                            <AcademicCapIcon
+                              strokeWidth={3}
+                              className="h-3 w-5"
+                            />
+                          </ListItemPrefix>
+                          Estudiantes
+                        </ListItem>
                       </List>
                     </AccordionBody>
                   </Accordion>
