@@ -22,6 +22,11 @@ import {
   ModalFooter,
   Autocomplete,
   AutocompleteItem,
+  Select,
+  SelectItem,
+  Textarea,
+  DateRangePicker,
+  DateInput,
   Pagination,
 } from "@nextui-org/react";
 import {
@@ -32,11 +37,19 @@ import {
 
 import { BoltIcon } from "@heroicons/react/24/solid";
 
+import { CalendarDate, parseDate } from "@internationalized/date";
+import { ClassNames } from "@emotion/react";
+
 function Periodo() {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [tiposPeriodos, setTiposPeriodos] = useState([]);
+  const [idTipoPeriodo, setIdTipoPeriodo] = useState("");
+  const [evaluaciones, setEvaluaciones] = useState([]);
+  const [idEvaluacion, setIdEvaluacion] = useState("");
+  const [modalidades, setModalidades] = useState([]);
+  const [selectedModalidades, setSelectedModalidades] = useState([]);
   const {
     isOpen: isOpenPeriodo,
     onOpen: onOpenPeriodo,
@@ -54,6 +67,8 @@ function Periodo() {
     { name: "Tipo periodo", uid: "tipoPeriodo", sortable: true },
     { name: "Evaluación", uid: "evaluacion", sortable: true },
     { name: "Modalidades", uid: "modalidades", sortable: true },
+    { name: "Inicio", uid: "fechaInicio", sortable: true },
+    { name: "Fin", uid: "fechaFin", sortable: true },
     { name: "Descripción", uid: "descripcion", sortable: true },
     { name: "Estado", uid: "estado", sortable: true },
   ];
@@ -72,7 +87,11 @@ function Periodo() {
           modalidades: periodo.periodosModalidad.map(
             (pm) => pm.modalidad.modalidad
           ),
-          estado: periodo.estado ? "Activo" : "Inactivo",
+          fechaInicio: new Date(periodo.fechaInicio)
+            .toISOString()
+            .split("T")[0],
+          fechaFin: new Date(periodo.fechaFin).toISOString().split("T")[0],
+          estado: periodo.estado ? "Cerrado" : "Activo",
           descripcion: periodo.descripcion,
         }));
 
@@ -98,6 +117,44 @@ function Periodo() {
       }
     };
     fetchTipoPeriodo();
+  }, []);
+
+  const onSelectionTipoPeriodo = (id) => {
+    setIdTipoPeriodo(id);
+  };
+
+  useEffect(() => {
+    const fetchEvaluacion = async () => {
+      if (idTipoPeriodo) {
+        try {
+          const response = await fetch("/api/evaluacion/" + idTipoPeriodo);
+          const data = await response.json();
+          setEvaluaciones(data);
+        } catch (error) {
+          console.error("Error fetching evaluaciones:", error);
+        }
+      } else {
+        setEvaluaciones([]); // Clear evaluaciones when no tipoPeriodo is selected
+      }
+    };
+    fetchEvaluacion();
+  }, [idTipoPeriodo]);
+
+  const onSelectionEvaluacion = (id) => {
+    setIdEvaluacion(id);
+  };
+
+  useEffect(() => {
+    const fetchModalidad = async () => {
+      try {
+        const response = await fetch("/api/modalidad");
+        const data = await response.json();
+        setModalidades(data);
+      } catch (error) {
+        console.error("Error fetching modalidades:", error);
+      }
+    };
+    fetchModalidad();
   }, []);
 
   const onSearchChange = (value) => {
@@ -216,7 +273,8 @@ function Periodo() {
                           }
                           isRequired={true}
                           labelPlacement="inside"
-                          placeholder="Buscar discapacidad"
+                          placeholder="Buscar tipo de periodo"
+                          onSelectionChange={onSelectionTipoPeriodo}
                           startContent={
                             <BoltIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
@@ -237,7 +295,6 @@ function Periodo() {
                             popoverContent:
                               "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
                           }}
-                          //onSelectionChange={handleInputChangeDiscapacidad}
                         >
                           {(tipo) => (
                             <AutocompleteItem key={String(tipo.id)}>
@@ -245,6 +302,153 @@ function Periodo() {
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
+
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Evaluaciones
+                            </label>
+                          }
+                          isRequired={true}
+                          isDisabled={!idTipoPeriodo} // Disable when no tipoPeriodo is selected
+                          labelPlacement="inside"
+                          placeholder="Buscar evaluaciones"
+                          onSelectionChange={onSelectionEvaluacion}
+                          startContent={
+                            <BoltIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={evaluaciones}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(evaluacion) => (
+                            <AutocompleteItem key={String(evaluacion.id)}>
+                              {evaluacion.evaluacion}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+                        {/* <p className="text-pink-500">{idEvaluacion}</p> */}
+
+                        <Select
+                          items={modalidades}
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Modalidades
+                            </label>
+                          }
+                          variant="bordered"
+                          isMultiline={true}
+                          selectionMode="multiple"
+                          placeholder="Selecciona las modalidades"
+                          labelPlacement="inside"
+                          selectedKeys={selectedModalidades}
+                          onSelectionChange={setSelectedModalidades}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+                            selectorIcon: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                            trigger: "min-h-12 py-2",
+                          }}
+                          renderValue={(items) => {
+                            return (
+                              <div className="flex flex-wrap gap-2">
+                                {items.map((item) => (
+                                  <Chip
+                                    key={item.key}
+                                    color="primary"
+                                    variant="bordered"
+                                    classNames={{
+                                      base: "dark:text-white dark:border-gray-900",
+                                    }}
+                                  >
+                                    {item.data.modalidad}
+                                  </Chip>
+                                ))}
+                              </div>
+                            );
+                          }}
+                        >
+                          {(modalidad) => (
+                            <SelectItem
+                              key={modalidad.id}
+                              textValue={modalidad.modalidad}
+                            >
+                              <div className="flex gap-2 items-center">
+                                <div className="flex flex-col">
+                                  <span className="text-small">
+                                    {modalidad.modalidad}
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          )}
+                        </Select>
+                        {/* <p className="text-small text-default-500">
+                          Selected: {Array.from(selectedModalidades).join(", ")}
+                        </p> */}
+
+                        <DateRangePicker
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Periodo académico
+                            </label>
+                          }
+                          vocab="es"
+                          variant="bordered"
+                          visibleMonths={2}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-blue-900",
+                            selectorIcon: "text-blue-900 dark:text-white",
+                            separator: "text-blue-900 dark:text-white",
+                            segment: "text-blue-900 dark:text-white",
+                            segmentActive: "bg-blue-900 text-white",
+                            calendarContent: "bg-gray-100 dark:bg-gray-600",
+                          }}
+                          calendarProps={{
+                            classNames: {
+                              headerWrapper: "bg-gray-300 dark:bg-gray-800",
+                              gridHeader: "bg-gray-300 dark:bg-gray-800",
+                              gridHeaderCell: "text-blue-900 dark:text-white",
+                              nextButton: "text-blue-900 dark:text-white",
+                              prevButton: "text-blue-900 dark:text-white",
+                              title: "text-blue-900 dark:text-white",
+                            },
+                          }}
+                          /* defaultValue={{
+                            start: parseDate("2025-01-01"),
+                            end: parseDate("2025-05-01"),
+                          }} */
+                        />
+
+                        <Textarea
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Descripción del periodo
+                            </label>
+                          }
+                          variant="bordered"
+                          placeholder="Escribe una descripción del periodo"
+                          disableAnimation
+                          maxRows={3}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black dark:text-white",
+                          }}
+                        />
                       </ModalBody>
                       <ModalFooter>
                         <Button

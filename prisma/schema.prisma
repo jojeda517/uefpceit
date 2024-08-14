@@ -208,6 +208,8 @@ model PERIODO {
   id                    Int                       @id @default(autoincrement())
   idEvaluacionPertenece Int
   nombre                String                    @unique @db.VarChar(255)
+  fechaInicio           DateTime?                 @db.DateTime
+  fechaFin              DateTime?                 @db.DateTime
   descripcion           String?                   @db.VarChar(255)
   estado                Boolean?
   CALIFICACION          CALIFICACION[]
