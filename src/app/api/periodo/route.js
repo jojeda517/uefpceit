@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/libs/prisma";
+import prisma from "@/libs/prisma";
 
 export async function GET() {
   try {
@@ -102,7 +102,7 @@ export async function POST(request) {
     let periodo;
     try {
       periodo = await prisma.pERIODO.upsert({
-        where: { id: parseInt(body.id, 10) },
+        where: { id: (body.id ? parseInt(body.id, 10) : null) || 0 },
         update: {
           idEvaluacionPertenece: evaluacion.id,
           nombre: nombre,
@@ -136,7 +136,7 @@ export async function POST(request) {
       });
 
       if (body.modalidades) {
-        for (const modalidad of body.modalidades) {
+        for (const modalidad of JSON.parse(body.modalidades)) {
           await prisma.dETALLEPERIODOMODALIDAD.create({
             data: {
               periodo: {

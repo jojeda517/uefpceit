@@ -40,6 +40,7 @@ import {
 import { BoltIcon } from "@heroicons/react/24/solid";
 
 import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import Notification from "@/app/components/Notification";
 import { useDateFormatter } from "@react-aria/i18n";
 
 function Periodo() {
@@ -53,6 +54,7 @@ function Periodo() {
   const [modalidades, setModalidades] = useState([]);
   const [selectedModalidades, setSelectedModalidades] = useState([]);
   const [descripcion, setDescripcion] = useState("");
+  const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [rangoFechas, setRangoFechas] = useState({
     start: parseDate("2025-01-01"),
     end: parseDate("2025-05-01"),
@@ -179,6 +181,57 @@ function Periodo() {
     setFilteredItems(items);
   };
 
+  const handleAbrirPeriodo = async () => {
+    try {
+      // Transformar selectedModalidades a la estructura requerida
+      const modalidadesSeleccionadas = Array.from(selectedModalidades).map( // Array.from(selectedModalidades).map(
+        (idModalidad) => ({
+          idModalidad: parseInt(idModalidad, 10),
+        })
+      );
+
+      const fechaI = new Date(
+        rangoFechas.start.toDate(getLocalTimeZone()).toISOString().split("T")[0]
+      );
+      const fechaF = new Date(
+        rangoFechas.end.toDate(getLocalTimeZone()).toISOString().split("T")[0]
+      );
+
+      const response = await fetch("/api/periodo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idEvaluacionPertenece: idEvaluacion,
+          fechaInicio: fechaI,
+          fechaFin: fechaF,
+          descripcion: descripcion,
+          modalidades: JSON.stringify(modalidadesSeleccionadas),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNotificacion({
+          message: data.message || "Periodo guardado exitosamente",
+          type: "success",
+        });
+      } else {
+        setNotificacion({
+          message: data.message || "Ocurrió un error al guardar el periodo",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      setNotificacion({
+        message: "Error de red o de servidor",
+        type: "error",
+      });
+    }
+  };
+
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
       case "modalidades":
@@ -226,7 +279,12 @@ function Periodo() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 h-screen w-full px-10">
+    <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 h-auto w-full px-10">
+      <Notification
+        message={notificacion.message}
+        type={notificacion.type}
+        onClose={() => setNotificacion({ message: "", type: "" })}
+      />
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
@@ -465,34 +523,6 @@ function Periodo() {
                             end: parseDate("2025-05-01"),
                           }} */
                         />
-                        <p className="text-sm">
-                          Selected date:{" "}
-                          {rangoFechas
-                            ? formatter.formatRange(
-                                rangoFechas.start.toDate(getLocalTimeZone()),
-                                rangoFechas.end.toDate(getLocalTimeZone())
-                              )
-                            : "--"}
-                        </p>
-                        {/* fecha de inicio dd-mm-yyyy */}
-                        <p>
-                          {rangoFechas
-                            ? rangoFechas.start
-                                .toDate(getLocalTimeZone())
-                                .toISOString()
-                                .split("T")[0]
-                            : "--"}
-                        </p>
-
-                        {/* fecha de fin dd-mm-yyyy */}
-                        <p>
-                          {rangoFechas
-                            ? rangoFechas.end
-                                .toDate(getLocalTimeZone())
-                                .toISOString()
-                                .split("T")[0]
-                            : "--"}
-                        </p>
 
                         <Textarea
                           label={
@@ -521,7 +551,10 @@ function Periodo() {
                         </Button>
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
-                          onPress={onClose}
+                          onPress={handleAbrirPeriodo}
+                          /* onPress={() => {
+                            handleAbrirPeriodo();
+                          }} */
                         >
                           Añadir
                         </Button>

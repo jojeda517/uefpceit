@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/libs/prisma";
+import prisma from '@/libs/prisma';
 import bcrypt from "bcrypt";
 import path from "path";
 import { writeFile } from "fs/promises";
