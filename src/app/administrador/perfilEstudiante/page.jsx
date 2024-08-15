@@ -109,8 +109,8 @@ function PerfilEstudiante() {
   });
 
   const fetchData = async (endpoint, setter) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const response = await fetch(endpoint);
       const data = await response.json();
       setter(data);
@@ -122,11 +122,18 @@ function PerfilEstudiante() {
   };
 
   useEffect(() => {
-    fetchData("/api/discapacidad", setSearchDiscapacidades);
-    fetchData("/api/campus", setCampuses);
-    fetchData("/api/etnia", setEtnias);
-    fetchData("/api/estadoCivil", setEstadosCiviles);
-    fetchData("/api/provincia", setProvincias);
+    // Agrupar llamadas a la API que no dependen de estados
+    const fetchInitialData = async () => {
+      await Promise.all([
+        fetchData("/api/discapacidad", setSearchDiscapacidades),
+        fetchData("/api/campus", setCampuses),
+        fetchData("/api/etnia", setEtnias),
+        fetchData("/api/estadoCivil", setEstadosCiviles),
+        fetchData("/api/provincia", setProvincias),
+      ]);
+    };
+
+    fetchInitialData();
   }, []);
 
   useEffect(() => {

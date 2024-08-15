@@ -26,19 +26,21 @@ import {
   SelectItem,
   Textarea,
   DateRangePicker,
-  DateInput,
+  Tooltip,
   Pagination,
 } from "@nextui-org/react";
 import {
   ChevronDownIcon,
   PlusIcon,
   MagnifyingGlassIcon,
+  PencilSquareIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 
 import { BoltIcon } from "@heroicons/react/24/solid";
 
-import { CalendarDate, parseDate } from "@internationalized/date";
-import { ClassNames } from "@emotion/react";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { useDateFormatter } from "@react-aria/i18n";
 
 function Periodo() {
   const [items, setItems] = useState([]);
@@ -50,6 +52,12 @@ function Periodo() {
   const [idEvaluacion, setIdEvaluacion] = useState("");
   const [modalidades, setModalidades] = useState([]);
   const [selectedModalidades, setSelectedModalidades] = useState([]);
+  const [descripcion, setDescripcion] = useState("");
+  const [rangoFechas, setRangoFechas] = useState({
+    start: parseDate("2025-01-01"),
+    end: parseDate("2025-05-01"),
+  });
+  let formatter = useDateFormatter({ dateStyle: "full" });
   const {
     isOpen: isOpenPeriodo,
     onOpen: onOpenPeriodo,
@@ -71,6 +79,7 @@ function Periodo() {
     { name: "Fin", uid: "fechaFin", sortable: true },
     { name: "Descripción", uid: "descripcion", sortable: true },
     { name: "Estado", uid: "estado", sortable: true },
+    { name: "Acciones", uid: "acciones", sortable: false },
   ];
 
   useEffect(() => {
@@ -91,7 +100,7 @@ function Periodo() {
             .toISOString()
             .split("T")[0],
           fechaFin: new Date(periodo.fechaFin).toISOString().split("T")[0],
-          estado: periodo.estado ? "Cerrado" : "Activo",
+          estado: periodo.estado ? "Activo" : "Cerrado",
           descripcion: periodo.descripcion,
         }));
 
@@ -190,6 +199,26 @@ function Periodo() {
           >
             {item[columnKey]}
           </Chip>
+        );
+      case "acciones":
+        return (
+          <div className="relative flex items-center gap-2">
+            {/* <Tooltip content="Details">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon />
+              </span>
+            </Tooltip> */}
+            <Tooltip content="Editar periodo">
+              <span className="text-lg text-blue-900 cursor-pointer active:opacity-50">
+                <PencilSquareIcon className="h-6 w-6" />
+              </span>
+            </Tooltip>
+            <Tooltip color="danger" content="Cerrar periodo">
+              <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                <LockClosedIcon className="h-6 w-6" />
+              </span>
+            </Tooltip>
+          </div>
         );
       default:
         return item[columnKey];
@@ -411,6 +440,8 @@ function Periodo() {
                           vocab="es"
                           variant="bordered"
                           visibleMonths={2}
+                          value={rangoFechas}
+                          onChange={setRangoFechas}
                           classNames={{
                             base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-blue-900",
                             selectorIcon: "text-blue-900 dark:text-white",
@@ -434,6 +465,34 @@ function Periodo() {
                             end: parseDate("2025-05-01"),
                           }} */
                         />
+                        <p className="text-sm">
+                          Selected date:{" "}
+                          {rangoFechas
+                            ? formatter.formatRange(
+                                rangoFechas.start.toDate(getLocalTimeZone()),
+                                rangoFechas.end.toDate(getLocalTimeZone())
+                              )
+                            : "--"}
+                        </p>
+                        {/* fecha de inicio dd-mm-yyyy */}
+                        <p>
+                          {rangoFechas
+                            ? rangoFechas.start
+                                .toDate(getLocalTimeZone())
+                                .toISOString()
+                                .split("T")[0]
+                            : "--"}
+                        </p>
+
+                        {/* fecha de fin dd-mm-yyyy */}
+                        <p>
+                          {rangoFechas
+                            ? rangoFechas.end
+                                .toDate(getLocalTimeZone())
+                                .toISOString()
+                                .split("T")[0]
+                            : "--"}
+                        </p>
 
                         <Textarea
                           label={
@@ -444,11 +503,14 @@ function Periodo() {
                           variant="bordered"
                           placeholder="Escribe una descripción del periodo"
                           disableAnimation
+                          value={descripcion}
+                          onValueChange={setDescripcion}
                           maxRows={3}
                           classNames={{
                             base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black dark:text-white",
                           }}
                         />
+                        <p>{descripcion}</p>
                       </ModalBody>
                       <ModalFooter>
                         <Button
