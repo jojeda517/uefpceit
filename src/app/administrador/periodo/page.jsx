@@ -93,6 +93,7 @@ function Periodo() {
   useEffect(() => {
     const fetchPeriodos = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch("/api/periodo");
         const data = await response.json();
 
@@ -118,20 +119,24 @@ function Periodo() {
         setIsClient(true);
       } catch (error) {
         console.error("Error fetching periodos:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
     fetchPeriodos();
   }, []);
 
   useEffect(() => {
     const fetchTipoPeriodo = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch("/api/tipoPeriodo");
         const data = await response.json();
         setTiposPeriodos(data);
       } catch (error) {
         console.error("Error fetching tipo de periodos:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchTipoPeriodo();
@@ -141,11 +146,14 @@ function Periodo() {
     const fetchEvaluacion = async () => {
       if (idTipoPeriodo) {
         try {
+          setIsLoading(true);
           const response = await fetch("/api/evaluacion/" + idTipoPeriodo);
           const data = await response.json();
           setEvaluaciones(data);
         } catch (error) {
           console.error("Error fetching evaluaciones:", error);
+        } finally {
+          setIsLoading(false);
         }
       } else {
         setEvaluaciones([]); // Clear evaluaciones when no tipoPeriodo is selected
@@ -157,11 +165,14 @@ function Periodo() {
   useEffect(() => {
     const fetchModalidad = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch("/api/modalidad");
         const data = await response.json();
         setModalidades(data);
       } catch (error) {
         console.error("Error fetching modalidades:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchModalidad();
@@ -327,11 +338,7 @@ function Periodo() {
         <div className="fixed inset-0 w-full h-full flex justify-center items-center bg-white/10 z-50">
           <CircularProgress
             size="lg"
-            label={
-              <span className="text-blue-900 dark:text-white">
-                Procesando...
-              </span>
-            }
+            label={<span className="text-blue-900">Procesando...</span>}
           />
         </div>
       )}
