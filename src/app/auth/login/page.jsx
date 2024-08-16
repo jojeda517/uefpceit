@@ -11,7 +11,7 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import MeetingRoomTwoToneIcon from "@mui/icons-material/MeetingRoomTwoTone";
-import CircularProgress from "@mui/material/CircularProgress";
+import CircularProgress from "@/app/components/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { ThemeProvider } from "@mui/material/styles";
 import Copyright from "@/app/components/Copyright";
@@ -193,24 +193,7 @@ export default function Login() {
                 >
                   Ingresar
                 </Button>
-                {isLoading && (
-                  <Box
-                    sx={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "rgba(255, 255, 255, 0.1)", // Semi-transparent background
-                      zIndex: 9999,
-                    }}
-                  >
-                    <CircularProgress size={50} />
-                  </Box>
-                )}
+                {isLoading && <CircularProgress />}
               </Box>
               <Grid textAlign={"end"}>
                 <Link href="#" variant="body2">

@@ -46,8 +46,8 @@ import {
   Tooltip,
 } from "@nextui-org/react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
+import CircularProgress from "@/app/components/CircularProgress";
 import HandThumbUpIcon from "@/app/components/HandThumbUpIcon.jsx";
 import HeartSolidIcon from "@/app/components/HeartIcon.jsx";
 import { useState, useEffect } from "react";
@@ -644,24 +644,7 @@ function PerfilEstudiante() {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 w-full flex justify-center pt-24 pb-10">
-      {isLoading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress size={50} />
-        </div>
-      )}
+      {isLoading && <CircularProgress />}
 
       <Notification
         message={notificacion.message}

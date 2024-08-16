@@ -45,8 +45,7 @@ import {
 } from "@heroicons/react/24/outline";
 import React, { useState, useCallback, memo } from "react";
 import { signOut } from "next-auth/react";
-import CircularProgress from "@mui/material/CircularProgress";
-import Link from "next/link";
+import CircularProgress from "@/app/components/CircularProgress";
 import { useRouter } from "next/navigation";
 
 function Sidebar({ roles }) {
@@ -82,24 +81,7 @@ function Sidebar({ roles }) {
 
   return (
     <>
-      {isLoading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress size={50} />
-        </div>
-      )}
+      {isLoading && <CircularProgress />}
       <IconButton
         className="hover:bg-blue-800 dark:hover:bg-gray-700"
         variant="text"

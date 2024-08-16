@@ -24,7 +24,6 @@ import {
   DateRangePicker,
   Tooltip,
   Pagination,
-  CircularProgress,
 } from "@nextui-org/react";
 import {
   ChevronDownIcon,
@@ -43,6 +42,7 @@ import {
 
 import { parseDate, getLocalTimeZone } from "@internationalized/date";
 import Notification from "@/app/components/Notification";
+import CircularProgress from "@/app/components/CircularProgress";
 import { useDateFormatter } from "@react-aria/i18n";
 
 function Periodo() {
@@ -334,14 +334,7 @@ function Periodo() {
         type={notificacion.type}
         onClose={() => setNotificacion({ message: "", type: "" })}
       />
-      {isLoading && (
-        <div className="fixed inset-0 w-full h-full flex justify-center items-center bg-white/10 z-50">
-          <CircularProgress
-            size="lg"
-            label={<span className="text-blue-900">Procesando...</span>}
-          />
-        </div>
-      )}
+      {isLoading && <CircularProgress />}
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
