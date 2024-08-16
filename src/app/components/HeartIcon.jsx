@@ -1,6 +1,8 @@
-import React from "react";
-export const HeartSolidIcon = ({ size, height, width, ...props }) => {
-  // avoid passing non-DOM attributes to svg
+import React, { memo } from "react";
+
+// Componente que representa un ícono de corazón sólido
+const HeartSolidIcon = memo(({ size, height, width, ...props }) => {
+  // Desestructurar y omitir propiedades no DOM para evitar pasarlas al elemento svg
   const { isSelected, isIndeterminate, disableAnimation, ...otherProps } =
     props;
 
@@ -9,7 +11,7 @@ export const HeartSolidIcon = ({ size, height, width, ...props }) => {
       width={size || width || 24}
       height={size || height || 24}
       viewBox="0 0 24 24"
-      fill="fill"
+      fill="none" // Ajustar si es necesario
       xmlns="http://www.w3.org/2000/svg"
       {...otherProps}
     >
@@ -19,4 +21,9 @@ export const HeartSolidIcon = ({ size, height, width, ...props }) => {
       />
     </svg>
   );
-};
+});
+
+// Establecer el nombre de visualización para facilitar la depuración
+HeartSolidIcon.displayName = "HeartSolidIcon";
+
+export default HeartSolidIcon;

@@ -48,8 +48,8 @@ import {
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
-import { HandThumbUpIcon } from "@/app/components/HandThumbUpIcon.jsx";
-import { HeartSolidIcon } from "@/app/components/HeartIcon.jsx";
+import HandThumbUpIcon from "@/app/components/HandThumbUpIcon.jsx";
+import HeartSolidIcon from "@/app/components/HeartIcon.jsx";
 import { useState, useEffect } from "react";
 
 function PerfilEstudiante() {
