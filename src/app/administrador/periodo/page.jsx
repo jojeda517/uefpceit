@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableHeader,
@@ -9,10 +9,6 @@ import {
   TableCell,
   Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
   Chip,
   useDisclosure,
   Modal,
@@ -28,6 +24,7 @@ import {
   DateRangePicker,
   Tooltip,
   Pagination,
+  CircularProgress,
 } from "@nextui-org/react";
 import {
   ChevronDownIcon,
@@ -37,7 +34,12 @@ import {
   LockClosedIcon,
 } from "@heroicons/react/24/outline";
 
-import { BoltIcon } from "@heroicons/react/24/solid";
+import {
+  BoltIcon,
+  ClipboardDocumentListIcon,
+  AdjustmentsVerticalIcon,
+  CalendarDateRangeIcon,
+} from "@heroicons/react/24/solid";
 
 import { parseDate, getLocalTimeZone } from "@internationalized/date";
 import Notification from "@/app/components/Notification";
@@ -45,6 +47,7 @@ import { useDateFormatter } from "@react-aria/i18n";
 
 function Periodo() {
   const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [tiposPeriodos, setTiposPeriodos] = useState([]);
@@ -55,6 +58,9 @@ function Periodo() {
   const [selectedModalidades, setSelectedModalidades] = useState([]);
   const [descripcion, setDescripcion] = useState("");
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
+  const [pages, setPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
   const [rangoFechas, setRangoFechas] = useState({
     start: parseDate("2025-01-01"),
     end: parseDate("2025-05-01"),
@@ -73,14 +79,14 @@ function Periodo() {
   const [isClient, setIsClient] = useState(false);
 
   const headerColumns = [
-    { name: "Periodo", uid: "periodo", sortable: true },
-    { name: "Tipo periodo", uid: "tipoPeriodo", sortable: true },
-    { name: "Evaluación", uid: "evaluacion", sortable: true },
-    { name: "Modalidades", uid: "modalidades", sortable: true },
-    { name: "Inicio", uid: "fechaInicio", sortable: true },
-    { name: "Fin", uid: "fechaFin", sortable: true },
-    { name: "Descripción", uid: "descripcion", sortable: true },
-    { name: "Estado", uid: "estado", sortable: true },
+    { name: "Periodo", uid: "periodo", sortable: false },
+    { name: "Tipo periodo", uid: "tipoPeriodo", sortable: false },
+    { name: "Evaluación", uid: "evaluacion", sortable: false },
+    { name: "Modalidades", uid: "modalidades", sortable: false },
+    { name: "Inicio", uid: "fechaInicio", sortable: false },
+    { name: "Fin", uid: "fechaFin", sortable: false },
+    { name: "Descripción", uid: "descripcion", sortable: false },
+    { name: "Estado", uid: "estado", sortable: false },
     { name: "Acciones", uid: "acciones", sortable: false },
   ];
 
@@ -107,6 +113,7 @@ function Periodo() {
         }));
 
         setItems(transformedData);
+        setPages(Math.ceil(transformedData.length / rowsPerPage));
         setFilteredItems(transformedData);
         setIsClient(true);
       } catch (error) {
@@ -130,10 +137,6 @@ function Periodo() {
     fetchTipoPeriodo();
   }, []);
 
-  const onSelectionTipoPeriodo = (id) => {
-    setIdTipoPeriodo(id);
-  };
-
   useEffect(() => {
     const fetchEvaluacion = async () => {
       if (idTipoPeriodo) {
@@ -151,10 +154,6 @@ function Periodo() {
     fetchEvaluacion();
   }, [idTipoPeriodo]);
 
-  const onSelectionEvaluacion = (id) => {
-    setIdEvaluacion(id);
-  };
-
   useEffect(() => {
     const fetchModalidad = async () => {
       try {
@@ -167,6 +166,13 @@ function Periodo() {
     };
     fetchModalidad();
   }, []);
+
+  const paginatedItems = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return filteredItems.slice(start, end);
+  }, [page, filteredItems, rowsPerPage]);
 
   const onSearchChange = (value) => {
     setSearchValue(value);
@@ -181,10 +187,41 @@ function Periodo() {
     setFilteredItems(items);
   };
 
+  const onSelectionEvaluacion = (id) => {
+    setIdEvaluacion(id);
+  };
+
+  const onSelectionTipoPeriodo = (id) => {
+    setIdTipoPeriodo(id);
+  };
+
+  const handleClear = () => {
+    try {
+      setIsLoading(true);
+      setIdTipoPeriodo("");
+      setIdEvaluacion("");
+      setSelectedModalidades([]);
+      setRangoFechas({
+        start: parseDate("2025-01-01"),
+        end: parseDate("2025-05-01"),
+      });
+      setDescripcion("");
+    } catch (error) {
+      setNotificacion({
+        message: "Error al limpiar los campos",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAbrirPeriodo = async () => {
     try {
+      setIsLoading(true);
       // Transformar selectedModalidades a la estructura requerida
-      const modalidadesSeleccionadas = Array.from(selectedModalidades).map( // Array.from(selectedModalidades).map(
+      const modalidadesSeleccionadas = Array.from(selectedModalidades).map(
+        // Array.from(selectedModalidades).map(
         (idModalidad) => ({
           idModalidad: parseInt(idModalidad, 10),
         })
@@ -229,6 +266,9 @@ function Periodo() {
         message: "Error de red o de servidor",
         type: "error",
       });
+    } finally {
+      handleClear();
+      setIsLoading(false);
     }
   };
 
@@ -249,6 +289,9 @@ function Periodo() {
           <Chip
             color={item[columnKey] === "Activo" ? "success" : "danger"}
             variant="dot"
+            classNames={{
+              base: "border border-transparent dark:text-white",
+            }}
           >
             {item[columnKey]}
           </Chip>
@@ -256,11 +299,6 @@ function Periodo() {
       case "acciones":
         return (
           <div className="relative flex items-center gap-2">
-            {/* <Tooltip content="Details">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon />
-              </span>
-            </Tooltip> */}
             <Tooltip content="Editar periodo">
               <span className="text-lg text-blue-900 cursor-pointer active:opacity-50">
                 <PencilSquareIcon className="h-6 w-6" />
@@ -279,19 +317,31 @@ function Periodo() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 h-auto w-full px-10">
+    <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
       <Notification
         message={notificacion.message}
         type={notificacion.type}
         onClose={() => setNotificacion({ message: "", type: "" })}
       />
+      {isLoading && (
+        <div className="fixed inset-0 w-full h-full flex justify-center items-center bg-white/10 z-50">
+          <CircularProgress
+            size="lg"
+            label={
+              <span className="text-blue-900 dark:text-white">
+                Procesando...
+              </span>
+            }
+          />
+        </div>
+      )}
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
             Periodos Académicos
           </h2>
           <p className="font-light text-lg text-black dark:text-white">
-            Gestión de los periodos académicos de la escuela.
+            Gestión de los periodos académicos.
           </p>
         </div>
       </div>
@@ -303,30 +353,16 @@ function Periodo() {
             placeholder="Buscar por periodo..."
             startContent={<MagnifyingGlassIcon className="h-6 w-6" />}
             value={searchValue}
+            vaariant="bordered"
             onChange={(e) => onSearchChange(e.target.value)}
+            classNames={{
+              base: "",
+              input: "text-gray-900 dark:text-white",
+              inputWrapper:
+                "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+            }}
           />
           <div className="flex gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={
-                    <ChevronDownIcon className="text-small h-3 w-3" />
-                  }
-                  variant="flat"
-                >
-                  Estado
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Filtrar por estado"
-                closeOnSelect={false}
-              >
-                <DropdownItem key="activo">Activo</DropdownItem>
-                <DropdownItem key="inactivo">Inactivo</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-
             <div>
               <Button
                 className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
@@ -402,7 +438,7 @@ function Periodo() {
                           placeholder="Buscar evaluaciones"
                           onSelectionChange={onSelectionEvaluacion}
                           startContent={
-                            <BoltIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                            <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
                           defaultItems={evaluaciones}
                           variant="bordered"
@@ -442,6 +478,9 @@ function Periodo() {
                           selectionMode="multiple"
                           placeholder="Selecciona las modalidades"
                           labelPlacement="inside"
+                          startContent={
+                            <AdjustmentsVerticalIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
                           selectedKeys={selectedModalidades}
                           onSelectionChange={setSelectedModalidades}
                           classNames={{
@@ -485,9 +524,6 @@ function Periodo() {
                             </SelectItem>
                           )}
                         </Select>
-                        {/* <p className="text-small text-default-500">
-                          Selected: {Array.from(selectedModalidades).join(", ")}
-                        </p> */}
 
                         <DateRangePicker
                           label={
@@ -498,6 +534,9 @@ function Periodo() {
                           vocab="es"
                           variant="bordered"
                           visibleMonths={2}
+                          startContent={
+                            <CalendarDateRangeIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
                           value={rangoFechas}
                           onChange={setRangoFechas}
                           classNames={{
@@ -518,10 +557,6 @@ function Periodo() {
                               title: "text-blue-900 dark:text-white",
                             },
                           }}
-                          /* defaultValue={{
-                            start: parseDate("2025-01-01"),
-                            end: parseDate("2025-05-01"),
-                          }} */
                         />
 
                         <Textarea
@@ -540,21 +575,43 @@ function Periodo() {
                             base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black dark:text-white",
                           }}
                         />
-                        <p>{descripcion}</p>
                       </ModalBody>
                       <ModalFooter>
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-red-500 text-white shadow-red-500 shadow-lg"
-                          onPress={onClose}
+                          onPress={() => {
+                            handleClear();
+                            onClose();
+                          }}
                         >
                           Cerrar
                         </Button>
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
-                          onPress={handleAbrirPeriodo}
-                          /* onPress={() => {
-                            handleAbrirPeriodo();
-                          }} */
+                          onPress={() => {
+                            console.log("idEvaluacion", idEvaluacion);
+                            console.log(
+                              "selectedModalidades",
+                              selectedModalidades.size
+                            );
+                            console.log("descripcion", descripcion);
+                            console.log("rangoFechas", rangoFechas);
+                            if (
+                              idEvaluacion &&
+                              selectedModalidades.size > 0 &&
+                              descripcion &&
+                              rangoFechas
+                            ) {
+                              handleAbrirPeriodo();
+                              onClose();
+                            } else {
+                              setNotificacion({
+                                message:
+                                  "Complete todos los campos para continuar",
+                                type: "error",
+                              });
+                            }
+                          }}
                         >
                           Añadir
                         </Button>
@@ -570,14 +627,6 @@ function Periodo() {
           <span className="text-default-400 text-small">
             Total {filteredItems.length} periodos
           </span>
-          <label className="flex items-center text-default-400 text-small">
-            Filas por página:
-            <select className="bg-transparent outline-none text-default-400 text-small">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-            </select>
-          </label>
         </div>
       </div>
 
@@ -586,10 +635,30 @@ function Periodo() {
           aria-label="Tabla de periodos académicos"
           isHeaderSticky
           classNames={{
-            wrapper: "max-h-[382px]  dark:bg-gray-600", // Es necesario ajustar la altura máxima de la tabla
-            th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white", // Es la cabecera
-            tr: "dark:text-white dark:hover:text-gray-900", // Es la fila
+            wrapper: "dark:bg-gray-700", // Es necesario ajustar la altura máxima de la tabla
+            th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center", // Es la cabecera
+            tr: "dark:text-white dark:hover:text-gray-900 text-justify", // Es la fila
           }}
+          bottomContent={
+            <div className="flex w-full justify-center">
+              <Pagination
+                loop
+                isCompact
+                showControls
+                //color="primary"
+                page={page}
+                total={pages}
+                onChange={(page) => setPage(page)}
+                classNames={{
+                  prev: "bg-gradient-to-b dark:from-default-600 dark:to-default-900 bg-gray-300 dark:text-white text-blue-900 font-bold",
+                  next: "bg-gradient-to-b dark:from-default-600 dark:to-default-900 bg-gray-300 dark:text-white text-blue-900 font-bold",
+                  item: "dark:bg-default-700 bg-gray-200 dark:text-white text-blue-900 font-bold",
+                  cursor:
+                    "bg-gradient-to-b dark:from-default-500 dark:to-default-800 text-white font-bold hover:bg-pink-900",
+                }}
+              />
+            </div>
+          }
           selectedKeys={selectedKeys}
           sortDescriptor={sortDescriptor}
           onSelectionChange={setSelectedKeys}
@@ -607,7 +676,22 @@ function Periodo() {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody
+          <TableBody>
+            {paginatedItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.periodo}</TableCell>
+                <TableCell>{item.tipoPeriodo}</TableCell>
+                <TableCell>{item.evaluacion}</TableCell>
+                <TableCell>{renderCell(item, "modalidades")}</TableCell>
+                <TableCell>{item.fechaInicio}</TableCell>
+                <TableCell>{item.fechaFin}</TableCell>
+                <TableCell>{item.descripcion}</TableCell>
+                <TableCell>{renderCell(item, "estado")}</TableCell>
+                <TableCell>{renderCell(item, "acciones")}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          {/* <TableBody
             emptyContent={"No se encontraron periodos"}
             items={filteredItems}
           >
@@ -618,7 +702,7 @@ function Periodo() {
                 )}
               </TableRow>
             )}
-          </TableBody>
+          </TableBody> */}
         </Table>
       )}
     </div>
