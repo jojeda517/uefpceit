@@ -79,6 +79,7 @@ function PerfilEstudiante() {
   const [hijos, setHijos] = useState(false);
   const [discapacidad, setDiscapacidad] = useState(false);
   const [rangoEdadHijo, setRangoEdadHijo] = useState([5, 15]);
+  const [edad, setEdad] = useState(null);
   const {
     isOpen: isOpenDiscapacidad,
     onOpen: onOpenDiscapacidad,
@@ -299,6 +300,10 @@ function PerfilEstudiante() {
             : "",
         });
 
+        setEdad(calcularEdadCompleta(String(data.fechaNacimiento)));
+
+        //setEdad(calcularEdad(String(data.fechaNacimiento)));
+
         if (data.estudiante) {
           if (data.estudiante.rangoEdadHijo) {
             // Convertir el string JSON a un array
@@ -421,6 +426,37 @@ function PerfilEstudiante() {
       setIsLoading(false); // Establece el estado de carga
     }
   };
+
+  function calcularEdadCompleta(fechaNacimiento) {
+    // Convierte la fecha de nacimiento a un objeto Date
+    const fechaNacimientoObj = new Date(fechaNacimiento);
+
+    // Obtén la fecha actual
+    const fechaActual = new Date();
+
+    // Calcula la diferencia en años
+    let edadAnios =
+      fechaActual.getFullYear() - fechaNacimientoObj.getFullYear();
+    let edadMeses = fechaActual.getMonth() - fechaNacimientoObj.getMonth();
+    let edadDias = fechaActual.getDate() - fechaNacimientoObj.getDate();
+
+    // Ajusta la diferencia en meses y días
+    if (edadDias < 0) {
+      edadMeses--;
+      const ultimoDiaDelMes = new Date(
+        fechaActual.getFullYear(),
+        fechaActual.getMonth(),
+        0
+      ).getDate();
+      edadDias += ultimoDiaDelMes;
+    }
+    if (edadMeses < 0) {
+      edadAnios--;
+      edadMeses += 12;
+    }
+
+    return `${edadAnios} años ${edadMeses} meses ${edadDias} días`;
+  }
 
   const handleRangoEdadHijos = (newValue) => {
     setRangoEdadHijo(newValue);
@@ -599,47 +635,53 @@ function PerfilEstudiante() {
   };
 
   const handleClear = () => {
-    setIsLoading(true);
-    setFormData({
-      id: "",
-      correo: "",
-      contrasena: "",
-      nombre: "",
-      apellido: "",
-      nacionalidad: "",
-      lugarNacimiento: "",
-      fechaNacimiento: "",
-      direccion: "",
-      telefono: "",
-      genero: "",
-      codigoElectricoUnico: "",
-      numeroCarnetDiscapacidad: "",
-      observacion: "",
-      nombreTrabajo: "",
-      cedulaRepresentante: "",
-      nombreRepresentante: "",
-      apellidoRepresentante: "",
-      direccionRepresentante: "",
-      telefonoRepresentante: "",
-      ocupacionRepresentante: "",
-    });
-    setSelectedCampus(null);
-    setSelectedProvincia(null);
-    setSelectedCanton(null);
-    setSelectedParroquia(null);
-    setSelectedImage(null);
-    setSelectedEtnia(null);
-    setSelectedEstadoCivil(null);
-    setDiscapacidades([]);
-    setAddDiscapacidad({ id: "", tipo: "" });
-    setAddPorcentajeDiscapacidad(1);
-    setBonoMies(false);
-    setTrabaja(false);
-    setHijos(false);
-    setDiscapacidad(false);
-    setRangoEdadHijo([5, 15]);
-    setCedula("");
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setFormData({
+        id: "",
+        correo: "",
+        contrasena: "",
+        nombre: "",
+        apellido: "",
+        nacionalidad: "",
+        lugarNacimiento: "",
+        fechaNacimiento: "",
+        direccion: "",
+        telefono: "",
+        genero: "",
+        codigoElectricoUnico: "",
+        numeroCarnetDiscapacidad: "",
+        observacion: "",
+        nombreTrabajo: "",
+        cedulaRepresentante: "",
+        nombreRepresentante: "",
+        apellidoRepresentante: "",
+        direccionRepresentante: "",
+        telefonoRepresentante: "",
+        ocupacionRepresentante: "",
+      });
+      setSelectedCampus(null);
+      setSelectedProvincia(null);
+      setSelectedCanton(null);
+      setSelectedParroquia(null);
+      setSelectedImage(null);
+      setSelectedEtnia(null);
+      setSelectedEstadoCivil(null);
+      setDiscapacidades([]);
+      setAddDiscapacidad({ id: "", tipo: "" });
+      setAddPorcentajeDiscapacidad(1);
+      setBonoMies(false);
+      setTrabaja(false);
+      setHijos(false);
+      setDiscapacidad(false);
+      setRangoEdadHijo([5, 15]);
+      setCedula("");
+      setEdad(null);
+    } catch (error) {
+      console.error("Error al limpiar los campos:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -697,6 +739,9 @@ function PerfilEstudiante() {
                   onChange={handleFileChange}
                 />
               </div>
+              <p className="pt-2 text-lg text-blue-900 dark:text-white font-semibold">
+                {edad}
+              </p>
             </div>
 
             <div className="">
