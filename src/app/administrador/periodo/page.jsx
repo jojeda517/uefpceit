@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Table,
   TableHeader,
@@ -46,6 +46,7 @@ import CircularProgress from "@/app/components/CircularProgress";
 import { useDateFormatter } from "@react-aria/i18n";
 
 function Periodo() {
+  const [id, setId] = useState("");
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [filteredItems, setFilteredItems] = useState([]);
@@ -58,14 +59,14 @@ function Periodo() {
   const [selectedModalidades, setSelectedModalidades] = useState([]);
   const [descripcion, setDescripcion] = useState("");
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
+  const [selectedPeriodo, setSelectedPeriodo] = useState(null);
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
+  const rowsPerPage = 10;
   const [rangoFechas, setRangoFechas] = useState({
     start: parseDate("2025-01-01"),
     end: parseDate("2025-05-01"),
   });
-  let formatter = useDateFormatter({ dateStyle: "full" });
   const {
     isOpen: isOpenPeriodo,
     onOpen: onOpenPeriodo,
@@ -90,93 +91,75 @@ function Periodo() {
     { name: "Acciones", uid: "acciones", sortable: false },
   ];
 
-  useEffect(() => {
-    const fetchPeriodos = async () => {
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [periodosRes, tipoPeriodoRes, modalidadRes] = await Promise.all([
+        fetch("/api/periodo"),
+        fetch("/api/tipoPeriodo"),
+        fetch("/api/modalidad"),
+      ]);
+
+      const [periodosData, tipoPeriodoData, modalidadData] = await Promise.all([
+        periodosRes.json(),
+        tipoPeriodoRes.json(),
+        modalidadRes.json(),
+      ]);
+
+      const transformedPeriodos = periodosData.map((periodo) => ({
+        id: periodo.id,
+        periodo: periodo.nombre,
+        tipoPeriodo: periodo.evaluacion.metodoEvaluacion.metodo,
+        evaluacion: periodo.evaluacion.evaluacion,
+        modalidades: periodo.periodosModalidad.map(
+          (pm) => pm.modalidad.modalidad
+        ),
+        fechaInicio: new Date(periodo.fechaInicio).toISOString().split("T")[0],
+        fechaFin: new Date(periodo.fechaFin).toISOString().split("T")[0],
+        estado: periodo.estado ? "Activo" : "Cerrado",
+        descripcion: periodo.descripcion,
+      }));
+
+      // Ordenar por el ID en orden descendente
+      const sortedPeriodos = transformedPeriodos.sort((a, b) => b.id - a.id);
+
+      setItems(sortedPeriodos);
+      setPages(Math.ceil(transformedPeriodos.length / rowsPerPage));
+      setFilteredItems(transformedPeriodos);
+      setTiposPeriodos(tipoPeriodoData);
+      setModalidades(modalidadData);
+      setIsClient(true);
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchEvaluacion = useCallback(async () => {
+    if (idTipoPeriodo) {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const response = await fetch("/api/periodo");
+        const response = await fetch(`/api/evaluacion/${idTipoPeriodo}`);
         const data = await response.json();
-
-        const transformedData = data.map((periodo) => ({
-          id: periodo.id,
-          periodo: periodo.nombre,
-          tipoPeriodo: periodo.evaluacion.metodoEvaluacion.metodo,
-          evaluacion: periodo.evaluacion.evaluacion,
-          modalidades: periodo.periodosModalidad.map(
-            (pm) => pm.modalidad.modalidad
-          ),
-          fechaInicio: new Date(periodo.fechaInicio)
-            .toISOString()
-            .split("T")[0],
-          fechaFin: new Date(periodo.fechaFin).toISOString().split("T")[0],
-          estado: periodo.estado ? "Activo" : "Cerrado",
-          descripcion: periodo.descripcion,
-        }));
-
-        setItems(transformedData);
-        setPages(Math.ceil(transformedData.length / rowsPerPage));
-        setFilteredItems(transformedData);
-        setIsClient(true);
+        setEvaluaciones(data);
       } catch (error) {
-        console.error("Error fetching periodos:", error);
+        console.error("Error fetching evaluaciones:", error);
       } finally {
         setIsLoading(false);
       }
-    };
-    fetchPeriodos();
-  }, []);
-
-  useEffect(() => {
-    const fetchTipoPeriodo = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/tipoPeriodo");
-        const data = await response.json();
-        setTiposPeriodos(data);
-      } catch (error) {
-        console.error("Error fetching tipo de periodos:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchTipoPeriodo();
-  }, []);
-
-  useEffect(() => {
-    const fetchEvaluacion = async () => {
-      if (idTipoPeriodo) {
-        try {
-          setIsLoading(true);
-          const response = await fetch("/api/evaluacion/" + idTipoPeriodo);
-          const data = await response.json();
-          setEvaluaciones(data);
-        } catch (error) {
-          console.error("Error fetching evaluaciones:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setEvaluaciones([]); // Clear evaluaciones when no tipoPeriodo is selected
-      }
-    };
-    fetchEvaluacion();
+    } else {
+      setEvaluaciones([]);
+    }
   }, [idTipoPeriodo]);
 
   useEffect(() => {
-    const fetchModalidad = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/modalidad");
-        const data = await response.json();
-        setModalidades(data);
-      } catch (error) {
-        console.error("Error fetching modalidades:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchModalidad();
-  }, []);
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    fetchEvaluacion();
+  }, [fetchEvaluacion]);
 
   const paginatedItems = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -193,9 +176,46 @@ function Periodo() {
     setFilteredItems(filtered);
   };
 
-  const onClear = () => {
-    setSearchValue("");
-    setFilteredItems(items);
+  const handleEditClick = (item) => {
+    try {
+      setIsLoading(true);
+      setId(item.id);
+      setSelectedPeriodo(item);
+      setIdTipoPeriodo(
+        tiposPeriodos.find((tp) => tp.metodo === item.tipoPeriodo).id
+      );
+      setDescripcion(item.descripcion);
+      setRangoFechas({
+        start: parseDate(item.fechaInicio),
+        end: parseDate(item.fechaFin),
+      });
+      onOpenPeriodo();
+
+      // Obtener las modalidades seleccionadas ej.: ["1", "2", "3"]
+      const selectedModalidadesIds = item.modalidades
+        .map((modalidad) => {
+          const modalidadData = modalidades.find(
+            (m) => m.modalidad === modalidad
+          );
+          // Verificar si modalidadData existe y tiene la propiedad id
+          return modalidadData ? String(modalidadData.id) : null;
+        })
+        .filter((id) => id !== null); // Filtrar valores nulos si no se encontró la modalidad
+
+      setSelectedModalidades(selectedModalidadesIds);
+    } catch (error) {
+      setNotificacion({
+        message: "Error al editar el periodo",
+        type: "error",
+      });
+    } finally {
+      if (idTipoPeriodo) {
+        setIdEvaluacion(
+          evaluaciones.find((e) => e.evaluacion === item.evaluacion).id
+        );
+      }
+      setIsLoading(false);
+    }
   };
 
   const onSelectionEvaluacion = (id) => {
@@ -209,6 +229,7 @@ function Periodo() {
   const handleClear = () => {
     try {
       setIsLoading(true);
+      setId("");
       setIdTipoPeriodo("");
       setIdEvaluacion("");
       setSelectedModalidades([]);
@@ -217,6 +238,7 @@ function Periodo() {
         end: parseDate("2025-05-01"),
       });
       setDescripcion("");
+      setSelectedPeriodo(null);
     } catch (error) {
       setNotificacion({
         message: "Error al limpiar los campos",
@@ -245,23 +267,32 @@ function Periodo() {
         rangoFechas.end.toDate(getLocalTimeZone()).toISOString().split("T")[0]
       );
 
+      const body = {
+        idEvaluacionPertenece: idEvaluacion,
+        fechaInicio: fechaI,
+        fechaFin: fechaF,
+        descripcion: descripcion,
+        modalidades: JSON.stringify(modalidadesSeleccionadas),
+      };
+
+      // Verifica si el `id` existe y, si es así, lo agrega al body
+      if (id) {
+        body.id = id;
+      }
+
       const response = await fetch("/api/periodo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          idEvaluacionPertenece: idEvaluacion,
-          fechaInicio: fechaI,
-          fechaFin: fechaF,
-          descripcion: descripcion,
-          modalidades: JSON.stringify(modalidadesSeleccionadas),
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Actualizar la lista de periodos con el nuevo periodo creado
+        fetchInitialData();
         setNotificacion({
           message: data.message || "Periodo guardado exitosamente",
           type: "success",
@@ -311,7 +342,10 @@ function Periodo() {
         return (
           <div className="relative flex items-center gap-2">
             <Tooltip content="Editar periodo">
-              <span className="text-lg text-blue-900 cursor-pointer active:opacity-50">
+              <span
+                onClick={() => handleEditClick(item)}
+                className="text-lg text-blue-900 cursor-pointer active:opacity-50"
+              >
                 <PencilSquareIcon className="h-6 w-6" />
               </span>
             </Tooltip>
@@ -402,6 +436,7 @@ function Periodo() {
                             <BoltIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
                           defaultItems={tiposPeriodos}
+                          defaultSelectedKey={String(idTipoPeriodo)}
                           variant="bordered"
                           inputProps={{
                             className: "dark:text-white",
@@ -437,6 +472,7 @@ function Periodo() {
                           labelPlacement="inside"
                           placeholder="Buscar evaluaciones"
                           onSelectionChange={onSelectionEvaluacion}
+                          defaultSelectedKey={String(idEvaluacion)}
                           startContent={
                             <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
@@ -478,6 +514,7 @@ function Periodo() {
                           selectionMode="multiple"
                           placeholder="Selecciona las modalidades"
                           labelPlacement="inside"
+                          defaultSelectedKeys={selectedModalidades}
                           startContent={
                             <AdjustmentsVerticalIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
@@ -589,16 +626,9 @@ function Periodo() {
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                           onPress={() => {
-                            console.log("idEvaluacion", idEvaluacion);
-                            console.log(
-                              "selectedModalidades",
-                              selectedModalidades.size
-                            );
-                            console.log("descripcion", descripcion);
-                            console.log("rangoFechas", rangoFechas);
                             if (
                               idEvaluacion &&
-                              selectedModalidades.size > 0 &&
+                              (selectedModalidades.length > 0 || selectedModalidades.size > 0) &&
                               descripcion &&
                               rangoFechas
                             ) {
@@ -624,8 +654,8 @@ function Periodo() {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">
-            Total {filteredItems.length} periodos
+          <span className="text-default-400 dark:text-gray-300 text-small">
+            Total: {filteredItems.length} periodos
           </span>
         </div>
       </div>
