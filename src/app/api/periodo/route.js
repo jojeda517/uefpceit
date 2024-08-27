@@ -109,7 +109,6 @@ export async function POST(request) {
           fechaInicio: inicio,
           fechaFin: fin,
           descripcion: body.descripcion,
-          estado: true,
         },
         create: {
           idEvaluacionPertenece: evaluacion.id,
