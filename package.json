@@ -20,7 +20,7 @@
     "@mui/material": "^5.15.15",
     "@nextui-org/chip": "^2.0.32",
     "@nextui-org/react": "^2.4.6",
-    "@prisma/client": "^5.12.1",
+    "@prisma/client": "^5.19.0",
     "bcrypt": "^5.1.1",
     "framer-motion": "^11.3.21",
     "multer": "^1.4.5-lts.1",
