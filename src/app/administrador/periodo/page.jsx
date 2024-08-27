@@ -666,7 +666,7 @@ function Periodo() {
           isHeaderSticky
           classNames={{
             wrapper: "dark:bg-gray-700", // Es necesario ajustar la altura máxima de la tabla
-            th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center", // Es la cabecera
+            th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase", // Es la cabecera
             tr: "dark:text-white dark:hover:text-gray-900 text-justify", // Es la fila
           }}
           bottomContent={

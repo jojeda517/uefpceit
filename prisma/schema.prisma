@@ -135,7 +135,7 @@ model ESTUDIANTE {
   REPRESENTANTE            REPRESENTANTE         @relation(fields: [idRepresentantePertenece], references: [id])
   PERSONA                  PERSONA               @relation(fields: [idPersonaPertenece], references: [id])
   DETALLE_DISCAPACIDAD     DETALLEDISCAPACIDAD[]
-  Matricula                Matricula[]
+  MATRICULA                MATRICULA[]
 }
 
 model REPRESENTANTE {
@@ -156,7 +156,7 @@ model DOCENTE {
   PERSONA                   PERSONA                     @relation(fields: [idPersonaPertenece], references: [id])
   DETALLEDOCENTETITULO      DETALLEDOCENTETITULO[]
   DETALLEDOCENTEEXPERIENCIA DETALLEDOCENTEEXPERIENCIA[]
-  Matricula                 Matricula[]
+  MATRICULA                 MATRICULA[]
 }
 
 model DETALLEDOCENTETITULO {
@@ -215,7 +215,7 @@ model PERIODO {
   estado                Boolean?
   periodosModalidad     DETALLEPERIODOMODALIDAD[]
   evaluacion            EVALUACION                @relation(fields: [idEvaluacionPertenece], references: [id])
-  Matricula             Matricula[]
+  MATRICULA             MATRICULA[]
 }
 
 model METODOEVALUACION {
@@ -291,10 +291,10 @@ model DETALLEMATERIA {
   idDetalleNivelParaleloPertenece Int
   MATERIA                         MATERIA              @relation(fields: [idMateriaPertenece], references: [id])
   DETALLENIVELPARALELO            DETALLENIVELPARALELO @relation(fields: [idDetalleNivelParaleloPertenece], references: [id])
-  Matricula                       Matricula[]
+  MATRICULA                       MATRICULA[]
 }
 
-model Matricula {
+model MATRICULA {
   id                        Int            @id @default(autoincrement())
   idDetalleMateriaPertenece Int
   idPeriodoPertenece        Int
@@ -316,13 +316,14 @@ model PARCIAL {
 }
 
 model CALIFICACION {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   idMatricula Int
   idParcial   Int
-  promedio    Float     @db.Float
-  PARCIAL     PARCIAL   @relation(fields: [idParcial], references: [id])
-  Matricula   Matricula @relation(fields: [idMatricula], references: [id])
+  promedio    Float      @db.Float
+  PARCIAL     PARCIAL    @relation(fields: [idParcial], references: [id])
   APORTE      APORTE[]
+  MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
+  mATRICULAId Int?
 }
 
 model APORTE {
@@ -333,8 +334,9 @@ model APORTE {
 }
 
 model EXAMEN {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   idMatricula Int
-  nota        Float     @db.Float
-  Matricula   Matricula @relation(fields: [idMatricula], references: [id])
+  nota        Float      @db.Float
+  MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
+  mATRICULAId Int?
 }
