@@ -26,6 +26,7 @@ import {
   FolderArrowDownIcon,
   TagIcon,
   LockClosedIcon,
+  BuildingOffice2Icon
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -68,6 +69,7 @@ function Sidebar({ roles }) {
     } catch (error) {
       console.error("Navigation error:", error);
     } finally {
+      closeDrawer();
       setIsLoading(false);
     }
   };
@@ -122,6 +124,15 @@ function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/campus")}
+                  >
+                    <ListItemPrefix>
+                      <BuildingOffice2Icon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Campus
+                  </ListItem>
                   <ListItem
                     className="text-white cursor-pointer"
                     onClick={() => handleNavigation("/administrador/periodo")}
