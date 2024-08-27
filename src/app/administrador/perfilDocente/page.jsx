@@ -46,10 +46,9 @@ import {
   Input,
 } from "@nextui-org/react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import CircularProgress from "@mui/material/CircularProgress";
 import Notification from "@/app/components/Notification";
+import CircularProgress from "@/app/components/CircularProgress";
 import { useState, useEffect } from "react";
-import { color } from "framer-motion";
 
 function PerfilDocente() {
   const [showPassword, setShowPassword] = useState(false);
@@ -100,6 +99,95 @@ function PerfilDocente() {
     administrador: false,
     docente: true,
   });
+
+  useEffect(() => {
+    // Fetch all required data at once
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [provinciaRes, tituloRes, experienciaRes, campusRes] =
+          await Promise.all([
+            fetch("/api/provincia"),
+            fetch("/api/titulo"),
+            fetch("/api/experiencia"),
+            fetch("/api/campus"),
+          ]);
+
+        const [provinciaData, tituloData, experienciaData, campusData] =
+          await Promise.all([
+            provinciaRes.json(),
+            tituloRes.json(),
+            experienciaRes.json(),
+            campusRes.json(),
+          ]);
+
+        setProvincias(provinciaData);
+        setSearchTitulos(tituloData);
+        setSearchExperiencias(experienciaData);
+        setCampuses(campusData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Solo ejecuta al montar el componente
+
+  useEffect(() => {
+    if (selectedProvincia) {
+      const fetchCantones = async () => {
+        try {
+          setIsLoading(true);
+          const response = await fetch(`/api/canton/${selectedProvincia.id}`);
+          const data = await response.json();
+          setCantones(data);
+
+          if (formData && formData.parroquia) {
+            const selectedCanton = data.find(
+              (canton) => canton.id === formData.parroquia.CANTON.id
+            );
+            setSelectedCanton(selectedCanton);
+          }
+        } catch (error) {
+          console.error("Error fetching cantones:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchCantones();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProvincia]); // Solo ejecuta cuando selectedProvincia cambie
+
+  useEffect(() => {
+    if (selectedCanton) {
+      const fetchParroquias = async () => {
+        try {
+          setIsLoading(true);
+          const response = await fetch(`/api/parroquia/${selectedCanton.id}`);
+          const data = await response.json();
+          setParroquias(data);
+
+          if (formData && formData.parroquia) {
+            const selectedParroquia = data.find(
+              (parroquia) => parroquia.id === formData.parroquia.id
+            );
+            setSelectedParroquia(selectedParroquia);
+          }
+        } catch (error) {
+          console.error("Error fetching parroquias:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchParroquias();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCanton]); // Solo ejecuta cuando selectedCanton cambie
 
   const handleAddTitulo = async () => {
     try {
@@ -308,121 +396,17 @@ function PerfilDocente() {
     }
   };
 
-  useEffect(() => {
-    const fetchTitulos = async () => {
-      try {
-        const response = await fetch("/api/titulo");
-        const data = await response.json();
-        setSearchTitulos(data);
-      } catch (error) {
-        console.error("Error fetching titulos:", error);
-      }
-    };
-    fetchTitulos();
-  }, []);
-
-  useEffect(() => {
-    const fetchExperiencias = async () => {
-      try {
-        const response = await fetch("/api/experiencia");
-        const data = await response.json();
-        setSearchExperiencias(data);
-      } catch (error) {
-        console.error("Error fetching experiencias:", error);
-      }
-    };
-    fetchExperiencias();
-  }, []);
-
-  useEffect(() => {
-    const fetchCampuses = async () => {
-      try {
-        const response = await fetch("/api/campus");
-        const data = await response.json();
-        setCampuses(data);
-      } catch (error) {
-        console.error("Error fetching campuses:", error);
-      }
-    };
-
-    fetchCampuses();
-  }, []);
-
   const handleSelectCampus = (campus) => {
     setSelectedCampus(campus);
   };
-
-  useEffect(() => {
-    const fetchProvincias = async () => {
-      try {
-        const response = await fetch("/api/provincia");
-        const data = await response.json();
-        setProvincias(data);
-      } catch (error) {
-        console.error("Error fetching provincias:", error);
-      }
-    };
-
-    fetchProvincias();
-  }, []);
 
   const handleSelectProvincia = (provincia) => {
     setSelectedProvincia(provincia);
   };
 
-  useEffect(() => {
-    const fetchCantones = async () => {
-      if (selectedProvincia) {
-        try {
-          const response = await fetch(`/api/canton/${selectedProvincia.id}`);
-          const data = await response.json();
-          setCantones(data);
-
-          // Selecciona automáticamente el cantón si es parte de los datos del usuario
-          if (formData && formData.parroquia) {
-            const selectedCanton = data.find(
-              (canton) => canton.id === formData.parroquia.CANTON.id
-            );
-            setSelectedCanton(selectedCanton);
-          }
-        } catch (error) {
-          console.error("Error fetching cantones:", error);
-        }
-      }
-    };
-
-    fetchCantones();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProvincia]);
-
   const handleSelectCanton = (canton) => {
     setSelectedCanton(canton);
   };
-
-  useEffect(() => {
-    const fetchParroquias = async () => {
-      if (selectedCanton) {
-        try {
-          const response = await fetch(`/api/parroquia/${selectedCanton.id}`);
-          const data = await response.json();
-          setParroquias(data);
-
-          // Selecciona automáticamente la parroquia si es parte de los datos del usuario
-          if (formData && formData.parroquia) {
-            const selectedParroquia = data.find(
-              (parroquia) => parroquia.id === formData.parroquia.id
-            );
-            setSelectedParroquia(selectedParroquia);
-          }
-        } catch (error) {
-          console.error("Error fetching parroquias:", error);
-        }
-      }
-    };
-
-    fetchParroquias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCanton]);
 
   const handleSelectParroquia = (parroquia) => {
     setSelectedParroquia(parroquia);
@@ -583,14 +567,6 @@ function PerfilDocente() {
     }
   };
 
-  // Efecto secundario para depurar los datos de formData
-  /* useEffect(() => {
-    console.log("FormData actualizado:", formData);
-    console.log("Expereincias actualizadas:", experiencias);
-    console.log("Titulos actualizados:", titulos);
-    console.log("Roles actualizados:", roles);
-  }, [formData, experiencias, titulos, roles]); */
-
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
@@ -648,24 +624,7 @@ function PerfilDocente() {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 w-full flex justify-center pt-24 pb-10">
-      {isLoading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress size={50} />
-        </div>
-      )}
+      {isLoading && <CircularProgress />}
 
       <Notification
         message={notificacion.message}

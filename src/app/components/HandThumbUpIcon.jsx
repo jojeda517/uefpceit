@@ -1,15 +1,21 @@
-import React from "react";
-export const HandThumbUpIcon = ({ size, height, width, ...props }) => {
-  // avoid passing non-DOM attributes to svg
+import React, { memo } from "react";
+
+// Memoizando el componente para prevenir renders innecesarios
+const HandThumbUpIcon = memo(({ size, height, width, ...props }) => {
+  // Desestructurar y omitir propiedades no DOM para evitar pasarlas al elemento svg
   const { isSelected, isIndeterminate, disableAnimation, ...otherProps } =
     props;
 
+  // Calcular el ancho y alto final, con un valor predeterminado de 24 si no se proporcionan size, width o height
+  const finalWidth = size || width || 24;
+  const finalHeight = size || height || 24;
+
   return (
     <svg
-      width={size || width || 24}
-      height={size || height || 24}
+      width={finalWidth}
+      height={finalHeight}
       viewBox="0 0 24 24"
-      fill="fill"
+      fill="none" // Asumiendo que no hay un relleno predeterminado; reemplazar con "currentColor" si es necesario
       xmlns="http://www.w3.org/2000/svg"
       {...otherProps}
     >
@@ -19,4 +25,9 @@ export const HandThumbUpIcon = ({ size, height, width, ...props }) => {
       />
     </svg>
   );
-};
+});
+
+// Establecer el nombre de visualización para facilitar la depuración
+HandThumbUpIcon.displayName = "HandThumbUpIcon";
+
+export default HandThumbUpIcon;

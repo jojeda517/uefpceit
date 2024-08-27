@@ -1,9 +1,13 @@
 "use client";
-import * as React from "react";
+import React, { memo } from "react";
 import Link from "@mui/material/Link";
 import Typography from "@mui/material/Typography";
+import { useMemo } from "react";
+
+const currentYear = new Date().getFullYear();
 
 function Copyright(props) {
+  const { href = "https://mui.com/", color = "inherit" } = props;
   return (
     <Typography
       variant="body2"
@@ -12,13 +16,13 @@ function Copyright(props) {
       {...props}
     >
       {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
+      <Link color={color} href={href}>
         Unidad Educativa Fiscomisional PCEI Tungurahua
       </Link>{" "}
-      {new Date().getFullYear()}
+      {currentYear}
       {"."}
     </Typography>
   );
 }
 
-export default Copyright;
+export default memo(Copyright);

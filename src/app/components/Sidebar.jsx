@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import {
   IconButton,
   Typography,
@@ -44,52 +43,45 @@ import {
   ChartBarIcon,
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { signOut } from "next-auth/react";
-import CircularProgress from "@mui/material/CircularProgress";
-import Link from "next/link";
+import CircularProgress from "@/app/components/CircularProgress";
+import { useRouter } from "next/navigation";
 
-export default function Sidebar({ roles }) {
+function Sidebar({ roles }) {
   const [open, setOpen] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const handleOpen = (value) => {
-    setOpen(open === value ? 0 : value);
-  };
+  const handleOpen = useCallback((value) => {
+    setOpen((prevOpen) => (prevOpen === value ? 0 : value));
+  }, []);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
 
+  const handleNavigation = (path) => {
+    try {
+      setIsLoading(true);
+      router.push(path);
+    } catch (error) {
+      console.error("Navigation error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSignOut = () => {
     setIsLoading(true);
-    //const baseUrl = process.env.NEXTAUTH_URL;
     signOut({ callbackUrl: "/" });
   };
 
-  // Función para verificar si el usuario tiene un rol específico
   const hasRole = (role) => roles.includes(role);
 
   return (
     <>
-      {isLoading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(255, 255, 255, 0.1)", // Fondo semi-transparente
-            zIndex: 9999,
-          }}
-        >
-          <CircularProgress size={50} />
-        </div>
-      )}
+      {isLoading && <CircularProgress />}
       <IconButton
         className="hover:bg-blue-800 dark:hover:bg-gray-700"
         variant="text"
@@ -130,12 +122,14 @@ export default function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
-                  <ListItem className="text-white">
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/periodo")}
+                  >
                     <ListItemPrefix>
                       <InboxIcon className="h-5 w-5" />
                     </ListItemPrefix>
                     Periodos
-                    <ListItemSuffix />
                   </ListItem>
                   {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
                   <Accordion
@@ -168,29 +162,33 @@ export default function Sidebar({ roles }) {
 
                     <AccordionBody className="py-1">
                       <List className="p-0 text-white">
-                        <Link href="/administrador/perfilDocente">
-                          <ListItem>
-                            <ListItemPrefix>
-                              <BriefcaseIcon
-                                strokeWidth={3}
-                                className="h-3 w-5"
-                              />
-                            </ListItemPrefix>
-                            Docentes
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          onClick={() =>
+                            handleNavigation("/administrador/perfilDocente")
+                          }
+                        >
+                          <ListItemPrefix>
+                            <BriefcaseIcon
+                              strokeWidth={3}
+                              className="h-3 w-5"
+                            />
+                          </ListItemPrefix>
+                          Docentes
+                        </ListItem>
 
-                        <Link href="/administrador/perfilEstudiante">
-                          <ListItem>
-                            <ListItemPrefix>
-                              <AcademicCapIcon
-                                strokeWidth={3}
-                                className="h-3 w-5"
-                              />
-                            </ListItemPrefix>
-                            Estudiantes
-                          </ListItem>
-                        </Link>
+                        <ListItem
+                          onClick={() =>
+                            handleNavigation("/administrador/perfilEstudiante")
+                          }
+                        >
+                          <ListItemPrefix>
+                            <AcademicCapIcon
+                              strokeWidth={3}
+                              className="h-3 w-5"
+                            />
+                          </ListItemPrefix>
+                          Estudiantes
+                        </ListItem>
                       </List>
                     </AccordionBody>
                   </Accordion>
@@ -461,3 +459,5 @@ export default function Sidebar({ roles }) {
     </>
   );
 }
+
+export default memo(Sidebar);

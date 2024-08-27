@@ -3,11 +3,11 @@ import prisma from '@/libs/prisma';
 
 export async function GET() {
   try {
-    const estadosCiviles = await prisma.eSTADOCIVIL.findMany();
-    return NextResponse.json(estadosCiviles);
+    const metodoEvaluacion = await prisma.mETODOEVALUACION.findMany();
+    return NextResponse.json(metodoEvaluacion);
   } catch (error) {
     return NextResponse.json(
-      { message: "Error al obtener datos de los estados civiles." },
+      { message: "Error al obtener datos de los metodos de evaluación" },
       { status: 500 }
     );
   }

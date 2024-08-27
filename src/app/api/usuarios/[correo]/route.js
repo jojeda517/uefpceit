@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/libs/prisma";
+import prisma from '@/libs/prisma';
 
 // get para el login recibe el email
 export async function GET(request, { params }) {
