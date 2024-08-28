@@ -709,13 +709,13 @@ function Periodo() {
           <TableBody>
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
-                <TableCell>{item.periodo}</TableCell>
-                <TableCell>{item.tipoPeriodo}</TableCell>
-                <TableCell>{item.evaluacion}</TableCell>
-                <TableCell>{renderCell(item, "modalidades")}</TableCell>
-                <TableCell>{item.fechaInicio}</TableCell>
-                <TableCell>{item.fechaFin}</TableCell>
-                <TableCell>{item.descripcion}</TableCell>
+                <TableCell className="text-center capitalize">{item.periodo}</TableCell>
+                <TableCell className="text-center capitalize">{item.tipoPeriodo}</TableCell>
+                <TableCell className="text-center capitalize">{item.evaluacion}</TableCell>
+                <TableCell className="text-center capitalize">{renderCell(item, "modalidades")}</TableCell>
+                <TableCell className="text-center capitalize">{item.fechaInicio}</TableCell>
+                <TableCell className="text-center capitalize">{item.fechaFin}</TableCell>
+                <TableCell className="text-center capitalize">{item.descripcion}</TableCell>
                 <TableCell>{renderCell(item, "estado")}</TableCell>
                 <TableCell>{renderCell(item, "acciones")}</TableCell>
               </TableRow>

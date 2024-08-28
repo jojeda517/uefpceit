@@ -26,7 +26,8 @@ import {
   FolderArrowDownIcon,
   TagIcon,
   LockClosedIcon,
-  BuildingOffice2Icon
+  BuildingOffice2Icon,
+  BarsArrowUpIcon
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -141,6 +142,15 @@ function Sidebar({ roles }) {
                       <InboxIcon className="h-5 w-5" />
                     </ListItemPrefix>
                     Periodos
+                  </ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/nivel")}
+                  >
+                    <ListItemPrefix>
+                      <BarsArrowUpIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Niveles
                   </ListItem>
                   {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
                   <Accordion
