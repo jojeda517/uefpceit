@@ -24,7 +24,7 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 
-import { BuildingOfficeIcon, MapPinIcon } from "@heroicons/react/24/solid";
+import { BarsArrowUpIcon } from "@heroicons/react/24/solid";
 
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
@@ -269,7 +269,7 @@ function Nivel() {
                             </label>
                           }
                           startContent={
-                            <BuildingOfficeIcon className="h-6 w-6 text-blue-900 dark:text-white" />
+                            <BarsArrowUpIcon className="h-6 w-6 text-blue-900 dark:text-white" />
                           }
                           placeholder="Octavo"
                           variant="bordered"
