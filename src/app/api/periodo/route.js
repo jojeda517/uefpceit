@@ -105,17 +105,17 @@ export async function POST(request) {
         where: { id: (body.id ? parseInt(body.id, 10) : null) || 0 },
         update: {
           idEvaluacionPertenece: evaluacion.id,
-          nombre: nombre,
+          nombre: nombre.toLowerCase(),
           fechaInicio: inicio,
           fechaFin: fin,
-          descripcion: body.descripcion,
+          descripcion: body.descripcion.toLowerCase(),
         },
         create: {
           idEvaluacionPertenece: evaluacion.id,
-          nombre: nombre,
+          nombre: nombre.toLowerCase(),
           fechaInicio: inicio,
           fechaFin: fin,
-          descripcion: body.descripcion,
+          descripcion: body.descripcion.toLowerCase(),
           estado: true,
         },
       });

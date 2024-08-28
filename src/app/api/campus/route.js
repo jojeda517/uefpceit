@@ -29,7 +29,7 @@ export async function POST(request) {
     if (!body.id) {
       const campusExistente = await prisma.cAMPUS.findFirst({
         where: {
-          nombre: body.nombre,
+          nombre: body.nombre.toLowerCase(),
         },
       });
 
@@ -42,7 +42,7 @@ export async function POST(request) {
     } else {
       const campusExistente = await prisma.cAMPUS.findFirst({
         where: {
-          nombre: body.nombre,
+          nombre: body.nombre.toLowerCase(),
           id: {
             not: parseInt(body.id, 10),
           },
@@ -60,12 +60,12 @@ export async function POST(request) {
     const campus = await prisma.cAMPUS.upsert({
       where: { id: (body.id ? parseInt(body.id, 10) : null) || 0 },
       update: {
-        nombre: body.nombre,
-        direccion: body.direccion,
+        nombre: body.nombre.toLowerCase(),
+        direccion: body.direccion.toLowerCase(),
       },
       create: {
-        nombre: body.nombre,
-        direccion: body.direccion,
+        nombre: body.nombre.toLowerCase(),
+        direccion: body.direccion.toLowerCase(),
       },
     });
 
