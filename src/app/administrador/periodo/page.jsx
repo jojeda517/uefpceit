@@ -408,6 +408,9 @@ function Periodo() {
               <Modal
                 isOpen={isOpenPeriodo}
                 onOpenChange={onOpenChangePeriodo}
+                onClose={() => {
+                  handleClear();
+                }}
                 placement="top-center"
                 classNames={{
                   base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
@@ -628,7 +631,8 @@ function Periodo() {
                           onPress={() => {
                             if (
                               idEvaluacion &&
-                              (selectedModalidades.length > 0 || selectedModalidades.size > 0) &&
+                              (selectedModalidades.length > 0 ||
+                                selectedModalidades.size > 0) &&
                               descripcion &&
                               rangoFechas
                             ) {
@@ -709,13 +713,27 @@ function Periodo() {
           <TableBody>
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="text-center capitalize">{item.periodo}</TableCell>
-                <TableCell className="text-center capitalize">{item.tipoPeriodo}</TableCell>
-                <TableCell className="text-center capitalize">{item.evaluacion}</TableCell>
-                <TableCell className="text-center capitalize">{renderCell(item, "modalidades")}</TableCell>
-                <TableCell className="text-center capitalize">{item.fechaInicio}</TableCell>
-                <TableCell className="text-center capitalize">{item.fechaFin}</TableCell>
-                <TableCell className="text-center capitalize">{item.descripcion}</TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.periodo}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.tipoPeriodo}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.evaluacion}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {renderCell(item, "modalidades")}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.fechaInicio}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.fechaFin}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.descripcion}
+                </TableCell>
                 <TableCell>{renderCell(item, "estado")}</TableCell>
                 <TableCell>{renderCell(item, "acciones")}</TableCell>
               </TableRow>

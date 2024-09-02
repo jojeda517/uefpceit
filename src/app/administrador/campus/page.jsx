@@ -142,7 +142,6 @@ function Periodo() {
   const handleAbrirCampus = async () => {
     try {
       setIsLoading(true);
-      handleClear();
       const body = {
         nombre: nombreCampus,
         direccion: direccionCampus,
@@ -254,6 +253,9 @@ function Periodo() {
               <Modal
                 isOpen={isOpenCampus}
                 onOpenChange={onOpenChangeCampus}
+                onClose={() => {
+                  handleClear();
+                }}
                 placement="top-center"
                 classNames={{
                   base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
