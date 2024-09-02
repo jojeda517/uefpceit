@@ -27,7 +27,7 @@ import {
   TagIcon,
   LockClosedIcon,
   BuildingOffice2Icon,
-  BarsArrowUpIcon
+  BarsArrowUpIcon,
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -125,34 +125,6 @@ function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
-                  <ListItem
-                    className="text-white cursor-pointer"
-                    onClick={() => handleNavigation("/administrador/campus")}
-                  >
-                    <ListItemPrefix>
-                      <BuildingOffice2Icon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Campus
-                  </ListItem>
-                  <ListItem
-                    className="text-white cursor-pointer"
-                    onClick={() => handleNavigation("/administrador/periodo")}
-                  >
-                    <ListItemPrefix>
-                      <InboxIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Periodos
-                  </ListItem>
-                  <ListItem
-                    className="text-white cursor-pointer"
-                    onClick={() => handleNavigation("/administrador/nivel")}
-                  >
-                    <ListItemPrefix>
-                      <BarsArrowUpIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Niveles
-                  </ListItem>
-                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
                   <Accordion
                     open={open === 1}
                     icon={
@@ -213,7 +185,48 @@ function Sidebar({ roles }) {
                       </List>
                     </AccordionBody>
                   </Accordion>
-                  {/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */}
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/campus")}
+                  >
+                    <ListItemPrefix>
+                      <BuildingOffice2Icon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Campus
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/periodo")}
+                  >
+                    <ListItemPrefix>
+                      <InboxIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Periodos
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/nivel")}
+                  >
+                    <ListItemPrefix>
+                      <BarsArrowUpIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Niveles
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigation("/administrador/especialidad")
+                    }
+                  >
+                    <ListItemPrefix>
+                      <PuzzlePieceIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Especialidades
+                  </ListItem>
 
                   <ListItem>
                     <ListItemPrefix>
@@ -241,13 +254,6 @@ function Sidebar({ roles }) {
                       <ClipboardDocumentCheckIcon className="h-5 w-5" />
                     </ListItemPrefix>
                     Tipos de matricula
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemPrefix>
-                      <PuzzlePieceIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Especialidades
                   </ListItem>
 
                   <ListItem>

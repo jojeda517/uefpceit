@@ -136,7 +136,6 @@ function Nivel() {
   const handleAbrirNivel = async () => {
     try {
       setIsLoading(true);
-      handleClear();
       const body = {
         nivel: nombreNivel,
       };
@@ -247,6 +246,9 @@ function Nivel() {
               <Modal
                 isOpen={isOpenNivel}
                 onOpenChange={onOpenChangeNivel}
+                onClose={() => {
+                  handleClear();
+                }}
                 placement="top-center"
                 classNames={{
                   base: "bg-white dark:bg-gray-800 border border-blue-900 dark:border-black",
