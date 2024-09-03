@@ -37,12 +37,25 @@ export async function GET() {
       campus.DETALLECAMPUSESPECIALIDAD.forEach((detalleEspecialidad) => {
         detalleEspecialidad.ESPECIALIDAD.DETALLEESPECIALIDADNIVEL.forEach(
           (detalleNivel) => {
-            const paralelos = detalleNivel.NIVEL.DETALLENIVELPARALELO.map(
-              (np) => ({
-                id: np.PARALELO.id, // Asegúrate de tener un `id` único para el paralelo
-                nombre: np.PARALELO.paralelo,
-              })
-            );
+            // Utiliza un objeto para asegurarte de que los paralelos sean únicos
+            const paralelosUnicos = {};
+
+            detalleNivel.NIVEL.DETALLENIVELPARALELO.forEach((np) => {
+              // Verifica si el paralelo pertenece al nivel, especialidad y campus actuales
+              if (
+                np.idCampusPertenece === campus.id &&
+                np.idEspecialidadPertenece === detalleEspecialidad.ESPECIALIDAD.id
+              ) {
+                const paraleloId = np.PARALELO.id;
+
+                if (!paralelosUnicos[paraleloId]) {
+                  paralelosUnicos[paraleloId] = {
+                    id: paraleloId,
+                    nombre: np.PARALELO.paralelo,
+                  };
+                }
+              }
+            });
 
             formattedData.push({
               id: uuidv4(), // Genera un `id` único para cada fila
@@ -58,7 +71,7 @@ export async function GET() {
                 id: detalleNivel.NIVEL.id,
                 nombre: detalleNivel.NIVEL.nivel,
               },
-              paralelos: paralelos,
+              paralelos: Object.values(paralelosUnicos), // Convierte el objeto de paralelos únicos en un array
             });
           }
         );

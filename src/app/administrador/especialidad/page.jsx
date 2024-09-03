@@ -453,6 +453,7 @@ function Especialidad() {
                               Primer nivel
                             </label>
                           }
+                          isDisabled={id=="" ? false : true} // Desactivar si se está editando
                           isRequired={true}
                           labelPlacement="inside"
                           placeholder="Buscar primer nivel"
@@ -495,6 +496,7 @@ function Especialidad() {
                               Último nivel
                             </label>
                           }
+                          isDisabled={id=="" ? false : true} // Desactivar si se está editando
                           isRequired={true}
                           labelPlacement="inside"
                           placeholder="Buscar último nivel"
