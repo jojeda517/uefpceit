@@ -69,7 +69,7 @@ export async function POST(request) {
       },
     });
 
-    // Verificar si existe el paralelo "A"
+    /* // Verificar si existe el paralelo "A"
     let paralelo = await prisma.pARALELO.findUnique({
       where: {
         paralelo: "A",
@@ -97,7 +97,7 @@ export async function POST(request) {
           },
         },
       },
-    });
+    }); */
 
     return NextResponse.json({
       message: "Nivel creado exitosamente",

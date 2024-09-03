@@ -92,11 +92,11 @@ export async function POST(request) {
         fin.getUTCMonth()
       )} ${fin.getUTCFullYear()}`;
     } else {
-      nombre = `${inicio.getUTCDay()} de ${obtenerNombreMes(
+      nombre = `${obtenerNombreMes(
         inicio.getUTCMonth()
-      )} de ${inicio.getUTCFullYear()} - ${fin.getUTCDay()} de ${obtenerNombreMes(
+      )} ${inicio.getUTCFullYear()} - ${obtenerNombreMes(
         fin.getUTCMonth()
-      )} de ${fin.getUTCFullYear()}`;
+      )} ${fin.getUTCFullYear()}`;
     }
 
     let periodo;
