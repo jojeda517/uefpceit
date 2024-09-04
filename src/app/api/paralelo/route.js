@@ -44,7 +44,8 @@ export async function GET() {
               // Verifica si el paralelo pertenece al nivel, especialidad y campus actuales
               if (
                 np.idCampusPertenece === campus.id &&
-                np.idEspecialidadPertenece === detalleEspecialidad.ESPECIALIDAD.id
+                np.idEspecialidadPertenece ===
+                  detalleEspecialidad.ESPECIALIDAD.id
               ) {
                 const paraleloId = np.PARALELO.id;
 
@@ -82,6 +83,95 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { message: "Error al obtener datos de los paralelos" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request) {
+  try {
+    const body = await request.json();
+
+    // Validar entrada
+    if (
+      !body.idCampusPertenece ||
+      !body.idEspecialidadPertenece ||
+      !body.idNivelPertenece
+    ) {
+      return NextResponse.json(
+        { message: "Datos de entrada incompletos" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar paralelos ya asignados
+    const paralelosAsignados = await prisma.dETALLENIVELPARALELO.findMany({
+      where: {
+        idCampusPertenece: parseInt(body.idCampusPertenece, 10),
+        idEspecialidadPertenece: parseInt(body.idEspecialidadPertenece, 10),
+        idNivelPertenece: parseInt(body.idNivelPertenece, 10),
+      },
+      select: {
+        PARALELO: {
+          select: {
+            paralelo: true, // Obtén el nombre del paralelo asignado
+          },
+        },
+      },
+    });
+
+    // Obtener todos los paralelos disponibles
+    const todosLosParalelos = await prisma.pARALELO.findMany({
+      select: {
+        paralelo: true, // Obtén el nombre del paralelo
+        id: true, // Obtén el ID del paralelo
+      },
+    });
+
+    // Determinar el próximo paralelo disponible
+    const paralelosDisponibles = todosLosParalelos.map((p) => p.paralelo); // Crear lista de paralelos disponibles
+    const paralelosAsignadosList = paralelosAsignados.map(
+      (p) => p.PARALELO.paralelo
+    ); // Obtener paralelos ya asignados
+    const nextParalelo = paralelosDisponibles.find(
+      (p) => !paralelosAsignadosList.includes(p)
+    ); // Buscar el próximo paralelo no asignado
+
+    if (!nextParalelo) {
+      return NextResponse.json(
+        { message: "No hay paralelos disponibles" },
+        { status: 400 }
+      );
+    }
+
+    // Obtener el ID del próximo paralelo disponible
+    const paraleloData = await prisma.pARALELO.findUnique({
+      where: {
+        paralelo: nextParalelo,
+      },
+      select: {
+        id: true, // Obtener el ID del paralelo
+      },
+    });
+
+    // Crear nuevo registro con el paralelo asignado
+    await prisma.dETALLENIVELPARALELO.create({
+      data: {
+        idCampusPertenece: parseInt(body.idCampusPertenece, 10),
+        idEspecialidadPertenece: parseInt(body.idEspecialidadPertenece, 10),
+        idNivelPertenece: parseInt(body.idNivelPertenece, 10),
+        idParaleloPertenece: parseInt(paraleloData.id, 10), // Usar el ID del paralelo
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Paralelo asignado exitosamente" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error al crear un paralelo:", error);
+    return NextResponse.json(
+      { message: "Error al crear un paralelo" },
       { status: 500 }
     );
   }

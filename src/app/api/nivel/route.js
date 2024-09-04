@@ -69,36 +69,6 @@ export async function POST(request) {
       },
     });
 
-    /* // Verificar si existe el paralelo "A"
-    let paralelo = await prisma.pARALELO.findUnique({
-      where: {
-        paralelo: "A",
-      },
-    });
-
-    if (!paralelo) {
-      paralelo = await prisma.pARALELO.create({
-        data: {
-          paralelo: "A",
-        },
-      });
-    }
-
-    await prisma.dETALLENIVELPARALELO.create({
-      data: {
-        NIVEL: {
-          connect: {
-            id: nivel.id,
-          },
-        },
-        PARALELO: {
-          connect: {
-            id: paralelo.id,
-          },
-        },
-      },
-    }); */
-
     return NextResponse.json({
       message: "Nivel creado exitosamente",
       status: 200,
