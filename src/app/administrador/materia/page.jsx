@@ -24,7 +24,7 @@ import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 import {
   LightBulbIcon,
-  BuildingOffice2Icon,
+  BookOpenIcon,
   ScaleIcon,
 } from "@heroicons/react/24/solid";
 
@@ -37,9 +37,8 @@ function Paralelo() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
 
-  const [campus, setCampus] = useState([]);
-  const [idCampus, setIdCampus] = useState("");
-  const [selectedCampus, setSelectedCampus] = useState(null);
+  const [asignaturas, setAsignaturas] = useState([]);
+  const [asignatura, setAsignatura] = useState("");
 
   const [especialidades, setEspecialidades] = useState([]);
   const [idEspecialidad, setIdEspecialidad] = useState("");
@@ -59,47 +58,50 @@ function Paralelo() {
     onOpenChange: onOpenChangeParalelo,
   } = useDisclosure();
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "paralelo",
+    column: "especialidad",
     direction: "ascending",
   });
   const [searchValue, setSearchValue] = useState("");
   const [isClient, setIsClient] = useState(false);
 
   const headerColumns = [
-    { name: "campus", uid: "campus", sortable: false },
     { name: "especialidad", uid: "especialidad", sortable: false },
     { name: "nivel", uid: "nivel", sortable: false },
-    { name: "paralelos", uid: "paralelos", sortable: false },
+    { name: "materias", uid: "materias", sortable: false },
   ];
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [paralelosRes, campusRes] = await Promise.all([
-        fetch("/api/paralelo"),
-        fetch("/api/campus"),
-      ]);
+      const [materiasRes, especialidadesRes, asignaturasRes] =
+        await Promise.all([
+          fetch("/api/materia"),
+          fetch("/api/especialidad/especialidad"),
+          fetch("/api/materia/asignatura"),
+        ]);
 
-      const [paralelosData, campusData] = await Promise.all([
-        paralelosRes.json(),
-        campusRes.json(),
-      ]);
+      const [materiasData, especialidadesData, asignaturasData] =
+        await Promise.all([
+          materiasRes.json(),
+          especialidadesRes.json(),
+          asignaturasRes.json(),
+        ]);
 
-      const transformedParalelos = paralelosData.map((paralelo) => ({
-        id: paralelo.id,
-        campus: paralelo.campus.nombre,
-        especialidad: paralelo.especialidad.nombre,
-        nivel: paralelo.nivel.nombre,
-        paralelos: paralelo.paralelos.map((p) => p.nombre),
+      const transformedMaterias = materiasData.map((materia) => ({
+        id: materia.id,
+        especialidad: materia.especialidad,
+        nivel: materia.nivel,
+        materias: materia.materias.map((m) => m.nombre),
       }));
 
       // Ordenar por el ID en orden descendente
-      const sortedParalelos = transformedParalelos.sort((a, b) => b.id - a.id);
+      const sortedMaterias = transformedMaterias.sort((a, b) => b.id - a.id);
 
-      setItems(sortedParalelos);
-      setPages(Math.ceil(transformedParalelos.length / rowsPerPage));
-      setFilteredItems(transformedParalelos);
-      setCampus(campusData);
+      setItems(sortedMaterias);
+      setPages(Math.ceil(transformedMaterias.length / rowsPerPage));
+      setFilteredItems(transformedMaterias);
+      setEspecialidades(especialidadesData);
+      setAsignaturas(asignaturasData);
       setIsClient(true);
     } catch (error) {
       console.error("Error fetching initial data:", error);
@@ -111,25 +113,6 @@ function Paralelo() {
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
-
-  useEffect(() => {
-    if (!selectedCampus) return; // No hacer nada si no hay campus seleccionado
-
-    const fetchEspecialidades = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/especialidad/campus/${selectedCampus}`);
-        const data = await res.json();
-        setEspecialidades(data);
-      } catch (error) {
-        console.error("Error fetching especialidades:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEspecialidades();
-  }, [selectedCampus]);
 
   useEffect(() => {
     if (!selectedEspecialidad) return; // No hacer nada si no hay especialidad seleccionada
@@ -162,14 +145,13 @@ function Paralelo() {
   const onSearchChange = (value) => {
     setSearchValue(value);
     const filtered = items.filter((item) =>
-      item.campus.toLowerCase().includes(value.toLowerCase())
+      item.especialidad.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredItems(filtered);
   };
 
-  const onSelectionCampus = (id) => {
-    setIdCampus(id);
-    setSelectedCampus(id);
+  const handleInputChangeAsignatura = (value) => {
+    setAsignatura(value);
   };
 
   const onSelectionEspecialidad = (id) => {
@@ -185,15 +167,12 @@ function Paralelo() {
   const handleClear = () => {
     try {
       setIsLoading(true);
-
-      setIdCampus("");
-      setSelectedCampus(null);
       setIdEspecialidad("");
       setSelectedEspecialidad(null);
-      setEspecialidades([]);
       setIdNivel("");
       setSelectedNivel(null);
       setNiveles([]);
+      setAsignatura("");
     } catch (error) {
       setNotificacion({
         message: "Error al limpiar los campos",
@@ -204,17 +183,17 @@ function Paralelo() {
     }
   };
 
-  const handleAbrirEspecialidad = async () => {
+  const handleAbrirAsignatura = async () => {
     try {
       setIsLoading(true);
 
       const body = {
-        idCampusPertenece: idCampus,
-        idEspecialidadPertenece: idEspecialidad,
-        idNivelPertenece: idNivel,
+        idEspecialidad: idEspecialidad,
+        idNivel: idNivel,
+        nombre: asignatura,
       };
 
-      const response = await fetch("/api/paralelo", {
+      const response = await fetch("/api/materia", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,13 +207,12 @@ function Paralelo() {
         // Actualizar la lista de especialidades con la nueva especialidad creada
         fetchInitialData();
         setNotificacion({
-          message: data.message || "Paralelo abierto exitosamente",
+          message: data.message || "Asignatura abierta exitosamente",
           type: "success",
         });
       } else {
         setNotificacion({
-          message:
-            data.message || "Ocurrió un error al guardar la especialidad",
+          message: data.message || "Ocurrió un error al guardar la asignatura",
           type: "error",
         });
       }
@@ -251,18 +229,17 @@ function Paralelo() {
 
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
-      case "paralelos":
+      case "materias":
         return (
           <div className="flex flex-col gap-1 place-self-center">
-            {item[columnKey].map((paralelo, index) => (
+            {item[columnKey].map((materia, index) => (
               <Chip
                 key={index}
                 size="sm"
                 variant="faded"
                 className="w-max mx-auto"
               >
-                {/* poner los paralelos entre "" */}
-                {paralelo}
+                {materia}
               </Chip>
             ))}
           </div>
@@ -283,10 +260,10 @@ function Paralelo() {
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
-            Paralelos
+            Asignaturas
           </h2>
           <p className="font-light text-lg text-black dark:text-white">
-            Gestión de los paralelos de la institución.
+            Gestión de las asignaturas de la institución.
           </p>
         </div>
       </div>
@@ -295,7 +272,7 @@ function Paralelo() {
         <div className="flex justify-between gap-3 items-end">
           <Input
             className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por paralelos..."
+            placeholder="Buscar por especialidad..."
             startContent={<MagnifyingGlassIcon className="h-6 w-6" />}
             value={searchValue}
             vaariant="bordered"
@@ -333,51 +310,9 @@ function Paralelo() {
                   {(onClose) => (
                     <>
                       <ModalHeader className="text-blue-900 dark:text-white">
-                        Abrir nuevo paralelo
+                        Abrir nueva asignatura
                       </ModalHeader>
                       <ModalBody>
-                        <Autocomplete
-                          label={
-                            <label className="text-blue-900 dark:text-white">
-                              Campus
-                            </label>
-                          }
-                          isRequired={true}
-                          labelPlacement="inside"
-                          placeholder="Buscar campus"
-                          onSelectionChange={onSelectionCampus}
-                          startContent={
-                            <BuildingOffice2Icon className="text-blue-900 dark:text-white h-6 w-6 " />
-                          }
-                          defaultItems={campus}
-                          defaultSelectedKey={String(idCampus)}
-                          variant="bordered"
-                          inputProps={{
-                            className: "dark:text-white capitalize",
-                          }}
-                          classNames={{
-                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
-
-                            listboxWrapper: "", // Es el contenedor del listbox
-                            listbox:
-                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
-                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
-                            clearButton: "text-red-400",
-                            selectorButton: "text-blue-900 dark:text-black",
-                            popoverContent:
-                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
-                          }}
-                        >
-                          {(c) => (
-                            <AutocompleteItem
-                              key={String(c.id)}
-                              className="capitalize"
-                            >
-                              {c.nombre}
-                            </AutocompleteItem>
-                          )}
-                        </Autocomplete>
-
                         <Autocomplete
                           label={
                             <label className="text-blue-900 dark:text-white">
@@ -461,6 +396,50 @@ function Paralelo() {
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
+
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Asignatura
+                            </label>
+                          }
+                          allowsCustomValue
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar el nivel"
+                          //onSelectionChange={onSelectionAsignatura}
+                          onInputChange={handleInputChangeAsignatura}
+                          startContent={
+                            <BookOpenIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={asignaturas}
+                          //defaultSelectedKey={String(idAsignatura)}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white capitalize",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(a) => (
+                            <AutocompleteItem
+                              key={String(a.id)}
+                              className="capitalize"
+                            >
+                              {a.nombre}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
                       </ModalBody>
                       <ModalFooter>
                         <Button
@@ -475,7 +454,7 @@ function Paralelo() {
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                           onPress={() => {
-                            handleAbrirEspecialidad();
+                            handleAbrirAsignatura();
                             onClose();
                           }}
                         >
@@ -491,7 +470,7 @@ function Paralelo() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 dark:text-gray-300 text-small">
-            Total: {filteredItems.length} paralelos.
+            Total: {filteredItems.length} niveles.
           </span>
         </div>
       </div>
@@ -546,16 +525,13 @@ function Paralelo() {
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="text-center capitalize">
-                  {item.campus}
-                </TableCell>
-                <TableCell className="text-center capitalize">
                   {item.especialidad}
                 </TableCell>
                 <TableCell className="text-center capitalize">
                   {item.nivel}
                 </TableCell>
                 <TableCell className="text-center capitalize">
-                  {renderCell(item, "paralelos")}
+                  {renderCell(item, "materias")}
                 </TableCell>
               </TableRow>
             ))}

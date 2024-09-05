@@ -239,7 +239,10 @@ function Sidebar({ roles }) {
                     Paralelos
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/materia")}
+                  >
                     <ListItemPrefix>
                       <BookOpenIcon className="h-5 w-5" />
                     </ListItemPrefix>
