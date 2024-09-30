@@ -303,7 +303,7 @@ model MATRICULA {
   idDetalleMateriaPertenece Int
   idPeriodoPertenece        Int
   idEstudiantePertenece     Int
-  idDocentePertenece        Int
+  idDocentePertenece        Int 
   estado                    Boolean
   DETALLEMATERIA            DETALLEMATERIA @relation(fields: [idDetalleMateriaPertenece], references: [id])
   PERIODO                   PERIODO        @relation(fields: [idPeriodoPertenece], references: [id])
