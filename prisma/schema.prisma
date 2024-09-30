@@ -242,8 +242,9 @@ model ESPECIALIDAD {
 model DETALLECAMPUSESPECIALIDAD {
   idCampusPertenece       Int
   idEspecialidadPertenece Int
-  CAMPUS                  CAMPUS       @relation(fields: [idCampusPertenece], references: [id])
-  ESPECIALIDAD            ESPECIALIDAD @relation(fields: [idEspecialidadPertenece], references: [id])
+  CAMPUS                  CAMPUS                 @relation(fields: [idCampusPertenece], references: [id])
+  ESPECIALIDAD            ESPECIALIDAD           @relation(fields: [idEspecialidadPertenece], references: [id])
+  DETALLENIVELPARALELO    DETALLENIVELPARALELO[]
 
   @@id([idCampusPertenece, idEspecialidadPertenece])
 }
@@ -271,12 +272,15 @@ model PARALELO {
 }
 
 model DETALLENIVELPARALELO {
-  id                  Int              @id @default(autoincrement())
-  idNivelPertenece    Int
-  idParaleloPertenece Int
-  NIVEL               NIVEL            @relation(fields: [idNivelPertenece], references: [id])
-  PARALELO            PARALELO         @relation(fields: [idParaleloPertenece], references: [id])
-  DETALLEMATERIA      DETALLEMATERIA[]
+  id                      Int                       @id @default(autoincrement())
+  idNivelPertenece        Int
+  idParaleloPertenece     Int
+  idCampusPertenece       Int
+  idEspecialidadPertenece Int
+  NIVEL                   NIVEL                     @relation(fields: [idNivelPertenece], references: [id])
+  PARALELO                PARALELO                  @relation(fields: [idParaleloPertenece], references: [id])
+  CAMPUSESPECIALIDAD      DETALLECAMPUSESPECIALIDAD @relation(fields: [idCampusPertenece, idEspecialidadPertenece], references: [idCampusPertenece, idEspecialidadPertenece])
+  DETALLEMATERIA          DETALLEMATERIA[]
 }
 
 model MATERIA {
@@ -299,7 +303,7 @@ model MATRICULA {
   idDetalleMateriaPertenece Int
   idPeriodoPertenece        Int
   idEstudiantePertenece     Int
-  idDocentePertenece        Int
+  idDocentePertenece        Int 
   estado                    Boolean
   DETALLEMATERIA            DETALLEMATERIA @relation(fields: [idDetalleMateriaPertenece], references: [id])
   PERIODO                   PERIODO        @relation(fields: [idPeriodoPertenece], references: [id])

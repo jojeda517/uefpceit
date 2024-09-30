@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
-import upload from "@/libs/multer";
 
 export async function GET() {
   try {
@@ -66,57 +65,109 @@ export async function POST(request) {
       },
     });
 
-    console.log(especialidad);
-
     // Crear detalle campus especialidad
-    await prisma.dETALLECAMPUSESPECIALIDAD.deleteMany({
+    for (const campus of JSON.parse(body.campus)) {
+      const campusExistente = await prisma.dETALLECAMPUSESPECIALIDAD.findUnique(
+        {
+          where: {
+            idCampusPertenece_idEspecialidadPertenece: {
+              idCampusPertenece: parseInt(campus.idCampus, 10),
+              idEspecialidadPertenece: especialidad.id,
+            },
+          },
+        }
+      );
+
+      if (!campusExistente) {
+        await prisma.dETALLECAMPUSESPECIALIDAD.create({
+          data: {
+            CAMPUS: {
+              connect: {
+                id: parseInt(campus.idCampus, 10),
+              },
+            },
+            ESPECIALIDAD: {
+              connect: {
+                id: especialidad.id,
+              },
+            },
+          },
+        });
+      }
+    }
+
+    // Verificar si existe el paralelo "A"
+    let paralelo = await prisma.pARALELO.findUnique({
       where: {
-        idEspecialidadPertenece: especialidad.id,
+        paralelo: "A",
       },
     });
-    for (const campus of JSON.parse(body.campus)) {
-      await prisma.dETALLECAMPUSESPECIALIDAD.create({
+
+    if (!paralelo) {
+      paralelo = await prisma.pARALELO.create({
         data: {
-          CAMPUS: {
-            connect: {
-              id: parseInt(campus.idCampus, 10)
-            },
-          },
-          ESPECIALIDAD: {
-            connect: {
-              id: especialidad.id,
-            },
-          },
+          paralelo: "A",
         },
       });
     }
 
     // Crear detalle especialidad nivel desde el nivel inicial hasta el último nivel
-    await prisma.dETALLEESPECIALIDADNIVEL.deleteMany({
-      where: {
-        idEspecialidadPertenece: especialidad.id,
-      },
-    });
 
     for (
       let idNivel = parseInt(body.idNivel, 10);
       idNivel <= parseInt(body.idUltimoNivel, 10);
       idNivel++
     ) {
-      await prisma.dETALLEESPECIALIDADNIVEL.create({
-        data: {
-          NIVEL: {
-            connect: {
-              id: idNivel,
-            },
-          },
-          ESPECIALIDAD: {
-            connect: {
-              id: especialidad.id,
-            },
+      const nivelExistente = await prisma.dETALLEESPECIALIDADNIVEL.findUnique({
+        where: {
+          idEspecialidadPertenece_idNivelPertenece: {
+            idNivelPertenece: idNivel,
+            idEspecialidadPertenece: especialidad.id,
           },
         },
       });
+
+      if(!nivelExistente) {
+        await prisma.dETALLEESPECIALIDADNIVEL.create({
+          data: {
+            NIVEL: {
+              connect: {
+                id: idNivel,
+              },
+            },
+            ESPECIALIDAD: {
+              connect: {
+                id: especialidad.id,
+              },
+            },
+          },
+        });
+
+        for (const campus of JSON.parse(body.campus)) {
+          await prisma.dETALLENIVELPARALELO.create({
+            data: {
+              NIVEL: {
+                connect: {
+                  id: idNivel,
+                },
+              },
+              PARALELO: {
+                connect: {
+                  id: parseInt(paralelo.id, 10),
+                },
+              },
+              CAMPUSESPECIALIDAD: {
+                connect: {
+                  idCampusPertenece_idEspecialidadPertenece: {
+                    idCampusPertenece: parseInt(campus.idCampus, 10),
+                    idEspecialidadPertenece: especialidad.id,
+                  },
+                },
+              },
+            },
+          });
+        }
+      }
     }
 
     return NextResponse.json({

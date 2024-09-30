@@ -18,115 +18,88 @@ import {
   ModalFooter,
   Autocomplete,
   AutocompleteItem,
-  Select,
-  SelectItem,
-  Textarea,
-  DateRangePicker,
-  Tooltip,
   Pagination,
 } from "@nextui-org/react";
-import {
-  ChevronDownIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 import {
   LightBulbIcon,
-  TrophyIcon,
   BuildingOffice2Icon,
-  PuzzlePieceIcon,
+  ScaleIcon,
 } from "@heroicons/react/24/solid";
 
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
 
-function Especialidad() {
-  const [id, setId] = useState("");
+function Paralelo() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
 
-  const [especialidad, setEspecialidad] = useState("");
+  const [campus, setCampus] = useState([]);
+  const [idCampus, setIdCampus] = useState("");
+  const [selectedCampus, setSelectedCampus] = useState(null);
+
+  const [especialidades, setEspecialidades] = useState([]);
+  const [idEspecialidad, setIdEspecialidad] = useState("");
+  const [selectedEspecialidad, setSelectedEspecialidad] = useState(null);
 
   const [niveles, setNiveles] = useState([]);
   const [idNivel, setIdNivel] = useState("");
-
-  const [idUltimoNivel, setIdUltimoNivel] = useState("");
-
-  const [campus, setCampus] = useState([]);
-  const [selectedCampus, setSelectedCampus] = useState([]);
+  const [selectedNivel, setSelectedNivel] = useState(null);
 
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
-  const [selectedEspecialidad, setSelectedEspecialidad] = useState(null);
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const {
-    isOpen: isOpenEspecialidad,
-    onOpen: onOpenEspecialidad,
-    onOpenChange: onOpenChangeEspecialidad,
+    isOpen: isOpenParalelo,
+    onOpen: onOpenParalelo,
+    onOpenChange: onOpenChangeParalelo,
   } = useDisclosure();
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "especialidad",
+    column: "paralelo",
     direction: "ascending",
   });
   const [searchValue, setSearchValue] = useState("");
   const [isClient, setIsClient] = useState(false);
 
   const headerColumns = [
-    { name: "especialidad", uid: "especialidad", sortable: false },
     { name: "campus", uid: "campus", sortable: false },
-    { name: "primer nivel", uid: "primerNivel", sortable: false },
-    { name: "último nivel", uid: "ultimoNivel", sortable: false },
-    { name: "# niveles", uid: "niveles", sortable: false },
-    { name: "Acciones", uid: "acciones", sortable: false },
+    { name: "especialidad", uid: "especialidad", sortable: false },
+    { name: "nivel", uid: "nivel", sortable: false },
+    { name: "paralelos", uid: "paralelos", sortable: false },
   ];
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [especialidadesRes, nivelesRes, campusRes] = await Promise.all([
-        fetch("/api/especialidad"),
-        fetch("/api/nivel"),
+      const [paralelosRes, campusRes] = await Promise.all([
+        fetch("/api/paralelo"),
         fetch("/api/campus"),
       ]);
 
-      const [especialidadesData, nivelesData, campusData] = await Promise.all([
-        especialidadesRes.json(),
-        nivelesRes.json(),
+      const [paralelosData, campusData] = await Promise.all([
+        paralelosRes.json(),
         campusRes.json(),
       ]);
 
-      const transformedEspecialidades = especialidadesData.map(
-        (especialidad) => ({
-          id: especialidad.id,
-          especialidad: especialidad.especialidad,
-          campus: especialidad.DETALLECAMPUSESPECIALIDAD.map(
-            (c) => c.CAMPUS.nombre
-          ),
-          primerNivel: especialidad.DETALLEESPECIALIDADNIVEL[0].NIVEL.nivel,
-          ultimoNivel:
-            especialidad.DETALLEESPECIALIDADNIVEL[
-              especialidad.DETALLEESPECIALIDADNIVEL.length - 1
-            ].NIVEL.nivel,
-          cantidadNiveles: especialidad.cantidadNiveles,
-        })
-      );
+      const transformedParalelos = paralelosData.map((paralelo) => ({
+        id: paralelo.id,
+        campus: paralelo.campus.nombre,
+        especialidad: paralelo.especialidad.nombre,
+        nivel: paralelo.nivel.nombre,
+        paralelos: paralelo.paralelos.map((p) => p.nombre),
+      }));
 
       // Ordenar por el ID en orden descendente
-      const sortedEspecialidades = transformedEspecialidades.sort(
-        (a, b) => b.id - a.id
-      );
+      const sortedParalelos = transformedParalelos.sort((a, b) => b.id - a.id);
 
-      setItems(sortedEspecialidades);
-      setPages(Math.ceil(transformedEspecialidades.length / rowsPerPage));
-      setFilteredItems(transformedEspecialidades);
+      setItems(sortedParalelos);
+      setPages(Math.ceil(transformedParalelos.length / rowsPerPage));
+      setFilteredItems(transformedParalelos);
       setCampus(campusData);
-      setNiveles(nivelesData);
       setIsClient(true);
     } catch (error) {
       console.error("Error fetching initial data:", error);
@@ -139,6 +112,46 @@ function Especialidad() {
     fetchInitialData();
   }, [fetchInitialData]);
 
+  useEffect(() => {
+    if (!selectedCampus) return; // No hacer nada si no hay campus seleccionado
+
+    const fetchEspecialidades = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/especialidad/campus/${selectedCampus}`);
+        const data = await res.json();
+        setEspecialidades(data);
+      } catch (error) {
+        console.error("Error fetching especialidades:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEspecialidades();
+  }, [selectedCampus]);
+
+  useEffect(() => {
+    if (!selectedEspecialidad) return; // No hacer nada si no hay especialidad seleccionada
+
+    const fetchNiveles = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/nivel/especialidad/${selectedEspecialidad}`
+        );
+        const data = await res.json();
+        setNiveles(data);
+      } catch (error) {
+        console.error("Error fetching niveles:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNiveles();
+  }, [selectedEspecialidad]);
+
   const paginatedItems = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -149,58 +162,38 @@ function Especialidad() {
   const onSearchChange = (value) => {
     setSearchValue(value);
     const filtered = items.filter((item) =>
-      item.especialidad.toLowerCase().includes(value.toLowerCase())
+      item.campus.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredItems(filtered);
   };
 
-  const handleEditClick = (item) => {
-    try {
-      setIsLoading(true);
-      setId(item.id);
-      setSelectedEspecialidad(item);
-      setEspecialidad(item.especialidad);
-      setIdNivel(niveles.find((n) => n.nivel === item.primerNivel).id);
-      setIdUltimoNivel(niveles.find((n) => n.nivel === item.ultimoNivel).id);
-      onOpenEspecialidad();
+  const onSelectionCampus = (id) => {
+    setIdCampus(id);
+    setSelectedCampus(id);
+  };
 
-      // Obtener los campus seleccionados ej.: ["1", "2", "3"]
-      const selectedCampusIds = item.campus
-        .map((c) => {
-          const campusData = campus.find((ca) => ca.nombre === c);
-          // Verificar si campusData existe y tiene la propiedad id
-          return campusData ? String(campusData.id) : null;
-        })
-        .filter((id) => id !== null); // Filtrar valores nulos si no se encontró la modalidad
-
-      setSelectedCampus(selectedCampusIds);
-    } catch (error) {
-      setNotificacion({
-        message: "Error al editar la especialidad",
-        type: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const onSelectionEspecialidad = (id) => {
+    setIdEspecialidad(id);
+    setSelectedEspecialidad(id);
   };
 
   const onSelectionNivel = (id) => {
     setIdNivel(id);
-  };
-
-  const onSelectionUltimoNivel = (id) => {
-    setIdUltimoNivel(id);
+    setSelectedNivel(id);
   };
 
   const handleClear = () => {
     try {
       setIsLoading(true);
-      setId("");
-      setEspecialidad("");
-      setSelectedCampus([]);
-      setIdNivel("");
-      setIdUltimoNivel("");
+
+      setIdCampus("");
+      setSelectedCampus(null);
+      setIdEspecialidad("");
       setSelectedEspecialidad(null);
+      setEspecialidades([]);
+      setIdNivel("");
+      setSelectedNivel(null);
+      setNiveles([]);
     } catch (error) {
       setNotificacion({
         message: "Error al limpiar los campos",
@@ -214,26 +207,14 @@ function Especialidad() {
   const handleAbrirEspecialidad = async () => {
     try {
       setIsLoading(true);
-      // Transformar selectedCampus a la estructura requerida
-      const campusSeleccionados = Array.from(selectedCampus).map(
-        (idcampus) => ({
-          idCampus: parseInt(idcampus, 10),
-        })
-      );
 
       const body = {
-        especialidad: especialidad,
-        campus: JSON.stringify(campusSeleccionados),
-        idNivel: parseInt(idNivel, 10),
-        idUltimoNivel: parseInt(idUltimoNivel, 10),
+        idCampusPertenece: idCampus,
+        idEspecialidadPertenece: idEspecialidad,
+        idNivelPertenece: idNivel,
       };
 
-      // Verifica si el `id` existe y, si es así, lo agrega al body
-      if (id) {
-        body.id = id;
-      }
-
-      const response = await fetch("/api/especialidad", {
+      const response = await fetch("/api/paralelo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -247,7 +228,7 @@ function Especialidad() {
         // Actualizar la lista de especialidades con la nueva especialidad creada
         fetchInitialData();
         setNotificacion({
-          message: data.message || "Especialidad guardada exitosamente",
+          message: data.message || "Paralelo abierto exitosamente",
           type: "success",
         });
       } else {
@@ -270,32 +251,20 @@ function Especialidad() {
 
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
-      case "campus":
+      case "paralelos":
         return (
           <div className="flex flex-col gap-1 place-self-center">
-            {item[columnKey].map((modalidad, index) => (
+            {item[columnKey].map((paralelo, index) => (
               <Chip
                 key={index}
                 size="sm"
                 variant="faded"
                 className="w-max mx-auto"
               >
-                {modalidad}
+                {/* poner los paralelos entre "" */}
+                {paralelo}
               </Chip>
             ))}
-          </div>
-        );
-      case "acciones":
-        return (
-          <div className="relative flex items-center place-self-center gap-2">
-            <Tooltip content="Editar especialidad">
-              <span
-                onClick={() => handleEditClick(item)}
-                className="text-lg text-blue-900 cursor-pointer active:opacity-50 mx-auto"
-              >
-                <PencilSquareIcon className="h-6 w-6" />
-              </span>
-            </Tooltip>
           </div>
         );
       default:
@@ -314,10 +283,10 @@ function Especialidad() {
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
-            Especialidades
+            Paralelos
           </h2>
           <p className="font-light text-lg text-black dark:text-white">
-            Gestión de las especialidades de la institución.
+            Gestión de los paralelos de la institución.
           </p>
         </div>
       </div>
@@ -326,7 +295,7 @@ function Especialidad() {
         <div className="flex justify-between gap-3 items-end">
           <Input
             className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por especialidades..."
+            placeholder="Buscar por paralelos..."
             startContent={<MagnifyingGlassIcon className="h-6 w-6" />}
             value={searchValue}
             vaariant="bordered"
@@ -343,13 +312,13 @@ function Especialidad() {
               <Button
                 className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
                 endContent={<PlusIcon className="h-5 w-5" />}
-                onClick={onOpenEspecialidad}
+                onClick={onOpenParalelo}
               >
                 Añadir Nuevo
               </Button>
               <Modal
-                isOpen={isOpenEspecialidad}
-                onOpenChange={onOpenChangeEspecialidad}
+                isOpen={isOpenParalelo}
+                onOpenChange={onOpenChangeParalelo}
                 onClose={() => {
                   handleClear();
                 }}
@@ -364,105 +333,24 @@ function Especialidad() {
                   {(onClose) => (
                     <>
                       <ModalHeader className="text-blue-900 dark:text-white">
-                        Abrir nueva especialidad
+                        Abrir nuevo paralelo
                       </ModalHeader>
                       <ModalBody>
-                        <Input
-                          type="text"
-                          label={
-                            <label className="text-blue-900 dark:text-white">
-                              Especialidad
-                            </label>
-                          }
-                          startContent={
-                            <PuzzlePieceIcon className="h-6 w-6 text-blue-900 dark:text-white" />
-                          }
-                          placeholder="Informática"
-                          variant="bordered"
-                          value={especialidad}
-                          onValueChange={setEspecialidad}
-                          classNames={{
-                            base: "",
-                            input: "text-gray-900 dark:text-white",
-                            inputWrapper:
-                              "bg-gray-100 dark:bg-gray-800 border border-blue-900 dark:border-black focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
-                            clearButton: "text-red-400", // Es el icono de limpiar el input
-                          }}
-                        />
-
-                        <Select
-                          items={campus}
+                        <Autocomplete
                           label={
                             <label className="text-blue-900 dark:text-white">
                               Campus
                             </label>
                           }
-                          variant="bordered"
-                          isMultiline={true}
-                          selectionMode="multiple"
-                          placeholder="Selecciona los campus"
+                          isRequired={true}
                           labelPlacement="inside"
-                          defaultSelectedKeys={selectedCampus}
+                          placeholder="Buscar campus"
+                          onSelectionChange={onSelectionCampus}
                           startContent={
                             <BuildingOffice2Icon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
-                          selectedKeys={selectedCampus}
-                          onSelectionChange={setSelectedCampus}
-                          classNames={{
-                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
-                            selectorIcon: "text-blue-900 dark:text-black",
-                            popoverContent:
-                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
-                            trigger: "min-h-12 py-2",
-                          }}
-                          renderValue={(items) => {
-                            return (
-                              <div className="flex flex-wrap gap-2">
-                                {items.map((item) => (
-                                  <Chip
-                                    key={item.key}
-                                    color="primary"
-                                    variant="bordered"
-                                    classNames={{
-                                      base: "dark:text-white dark:border-gray-900 capitalize",
-                                    }}
-                                  >
-                                    {item.data.nombre}
-                                  </Chip>
-                                ))}
-                              </div>
-                            );
-                          }}
-                        >
-                          {(c) => (
-                            <SelectItem key={c.id} textValue={c.nombre}>
-                              <div className="flex gap-2 items-center">
-                                <div className="flex flex-col">
-                                  <span className="text-small capitalize">
-                                    {c.nombre}
-                                  </span>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          )}
-                        </Select>
-
-                        <Autocomplete
-                          label={
-                            <label className="text-blue-900 dark:text-white">
-                              Primer nivel
-                            </label>
-                          }
-                          isDisabled={id=="" ? false : true} // Desactivar si se está editando
-                          isRequired={true}
-                          labelPlacement="inside"
-                          placeholder="Buscar primer nivel"
-                          onSelectionChange={onSelectionNivel}
-                          startContent={
-                            <LightBulbIcon className="text-blue-900 dark:text-white h-6 w-6 " />
-                          }
-                          defaultItems={niveles}
-                          defaultSelectedKey={String(idNivel)}
+                          defaultItems={campus}
+                          defaultSelectedKey={String(idCampus)}
                           variant="bordered"
                           inputProps={{
                             className: "dark:text-white capitalize",
@@ -480,12 +368,12 @@ function Especialidad() {
                               "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
                           }}
                         >
-                          {(n) => (
+                          {(c) => (
                             <AutocompleteItem
-                              key={String(n.id)}
+                              key={String(c.id)}
                               className="capitalize"
                             >
-                              {n.nivel}
+                              {c.nombre}
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
@@ -493,25 +381,60 @@ function Especialidad() {
                         <Autocomplete
                           label={
                             <label className="text-blue-900 dark:text-white">
-                              Último nivel
+                              Especialidad
                             </label>
                           }
-                          isDisabled={id=="" ? false : true} // Desactivar si se está editando
                           isRequired={true}
                           labelPlacement="inside"
-                          placeholder="Buscar último nivel"
-                          onSelectionChange={onSelectionUltimoNivel}
+                          placeholder="Buscar especialidad"
+                          onSelectionChange={onSelectionEspecialidad}
                           startContent={
-                            <TrophyIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                            <ScaleIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={especialidades}
+                          defaultSelectedKey={String(idEspecialidad)}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white capitalize",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(e) => (
+                            <AutocompleteItem
+                              key={String(e.id)}
+                              className="capitalize"
+                            >
+                              {e.especialidad}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Nivel
+                            </label>
+                          }
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar el nivel"
+                          onSelectionChange={onSelectionNivel}
+                          startContent={
+                            <LightBulbIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
                           defaultItems={niveles}
-                          defaultSelectedKey={String(idUltimoNivel)}
-                          // Desactivar niveles con id inferior a idNivel
-                          disabledKeys={niveles
-                            .filter(
-                              (n) => parseInt(n.id, 10) < parseInt(idNivel, 10)
-                            )
-                            .map((n) => String(n.id))}
+                          defaultSelectedKey={String(idNivel)}
                           variant="bordered"
                           inputProps={{
                             className: "dark:text-white capitalize",
@@ -552,21 +475,8 @@ function Especialidad() {
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                           onPress={() => {
-                            if (
-                              idNivel &&
-                              idUltimoNivel &&
-                              parseInt(idNivel, 10) <=
-                                parseInt(idUltimoNivel, 10)
-                            ) {
-                              handleAbrirEspecialidad();
-                              onClose();
-                            } else {
-                              setNotificacion({
-                                message:
-                                  "El último nivel debe ser mayor o igual al primer nivel",
-                                type: "error",
-                              });
-                            }
+                            handleAbrirEspecialidad();
+                            onClose();
                           }}
                         >
                           Añadir
@@ -581,7 +491,7 @@ function Especialidad() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 dark:text-gray-300 text-small">
-            Total: {filteredItems.length} especialidades.
+            Total: {filteredItems.length} paralelos.
           </span>
         </div>
       </div>
@@ -636,21 +546,17 @@ function Especialidad() {
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="text-center capitalize">
+                  {item.campus}
+                </TableCell>
+                <TableCell className="text-center capitalize">
                   {item.especialidad}
                 </TableCell>
                 <TableCell className="text-center capitalize">
-                  {renderCell(item, "campus")}
+                  {item.nivel}
                 </TableCell>
                 <TableCell className="text-center capitalize">
-                  {item.primerNivel}
+                  {renderCell(item, "paralelos")}
                 </TableCell>
-                <TableCell className="text-center capitalize">
-                  {item.ultimoNivel}
-                </TableCell>
-                <TableCell className="text-center capitalize">
-                  {item.cantidadNiveles}
-                </TableCell>
-                <TableCell>{renderCell(item, "acciones")}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -660,4 +566,4 @@ function Especialidad() {
   );
 }
 
-export default Especialidad;
+export default Paralelo;

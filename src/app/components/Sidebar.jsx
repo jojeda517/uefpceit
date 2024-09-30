@@ -28,6 +28,7 @@ import {
   LockClosedIcon,
   BuildingOffice2Icon,
   BarsArrowUpIcon,
+  SquaresPlusIcon,
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -228,7 +229,20 @@ function Sidebar({ roles }) {
                     Especialidades
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/paralelo")}
+                  >
+                    <ListItemPrefix>
+                      <SquaresPlusIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Paralelos
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/materia")}
+                  >
                     <ListItemPrefix>
                       <BookOpenIcon className="h-5 w-5" />
                     </ListItemPrefix>
