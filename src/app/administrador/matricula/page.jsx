@@ -39,6 +39,10 @@ function Matricula() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
 
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [idEstudiante, setIdEstudiante] = useState("");
+  const [selectedEstudiante, setSelectedEstudiante] = useState(null);
+
   const [campus, setCampus] = useState([]);
   const [idCampus, setIdCampus] = useState("");
   const [selectedCampus, setSelectedCampus] = useState(null);
@@ -83,18 +87,32 @@ function Matricula() {
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [matriculasRes, paralelosRes, campusRes, periodosRes] = await Promise.all([
+      const [
+        matriculasRes,
+        paralelosRes,
+        campusRes,
+        periodosRes,
+        estudiantesRes,
+      ] = await Promise.all([
         fetch("/api/matricula"),
         fetch("/api/paralelo"),
         fetch("/api/campus"),
         fetch("/api/periodo/activo"),
+        fetch("/api/persona/estudiante"),
       ]);
 
-      const [matriculasData, paralelosData, campusData, periodosData] = await Promise.all([
+      const [
+        matriculasData,
+        paralelosData,
+        campusData,
+        periodosData,
+        estudiantesData,
+      ] = await Promise.all([
         matriculasRes.json(),
         paralelosRes.json(),
         campusRes.json(),
         periodosRes.json(),
+        estudiantesRes.json(),
       ]);
 
       const transformedMatriculas = matriculasData.map((matricula) => ({
@@ -119,6 +137,7 @@ function Matricula() {
       setFilteredItems(transformedMatriculas);
       setCampus(campusData);
       setPeriodos(periodosData);
+      setEstudiantes(estudiantesData);
       setIsClient(true);
     } catch (error) {
       console.error("Error fetching initial data:", error);
@@ -191,10 +210,15 @@ function Matricula() {
     setSelectedCampus(id);
   };
 
+  const onSelectionEstudiante = (id) => {
+    setIdEstudiante(id);
+    setSelectedEstudiante(id);
+  };
+
   const onSelectionPeriodo = (id) => {
     setIdPeriodos(id);
     setSelectedPeriodo(id);
-  }
+  };
 
   const onSelectionEspecialidad = (id) => {
     setIdEspecialidad(id);
@@ -409,6 +433,48 @@ function Matricula() {
                               className="capitalize"
                             >
                               {c.nombre}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Estudiante
+                            </label>
+                          }
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar estudiante"
+                          onSelectionChange={onSelectionEstudiante}
+                          startContent={
+                            <BuildingOffice2Icon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={estudiantes}
+                          defaultSelectedKey={String(idEstudiante)}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white capitalize",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(e) => (
+                            <AutocompleteItem
+                              key={String(e.id)}
+                              className="capitalize"
+                            >
+                              {e.PERSONA.nombre + " " + e.PERSONA.apellido}
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
