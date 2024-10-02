@@ -249,7 +249,10 @@ function Sidebar({ roles }) {
                     Materias
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/matricula")}
+                  >
                     <ListItemPrefix>
                       <ClipboardDocumentListIcon className="h-5 w-5" />
                     </ListItemPrefix>
