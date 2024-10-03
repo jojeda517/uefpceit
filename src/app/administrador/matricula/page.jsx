@@ -28,6 +28,8 @@ import {
   BuildingOffice2Icon,
   ScaleIcon,
   InboxIcon,
+  ClipboardDocumentListIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/solid";
 
 import Notification from "@/app/components/Notification";
@@ -59,17 +61,21 @@ function Matricula() {
   const [idNivel, setIdNivel] = useState("");
   const [selectedNivel, setSelectedNivel] = useState(null);
 
+  const [paralelos, setParalelos] = useState([]);
+  const [idParalelo, setIdParalelo] = useState("");
+  const [selectedParalelo, setSelectedParalelo] = useState(null);
+
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
   const {
-    isOpen: isOpenParalelo,
-    onOpen: onOpenParalelo,
-    onOpenChange: onOpenChangeParalelo,
+    isOpen: isOpenMatricula,
+    onOpen: onOpenMatricula,
+    onOpenChange: onOpenChangeMatricula,
   } = useDisclosure();
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "paralelo",
+    column: "estudiante",
     direction: "ascending",
   });
   const [searchValue, setSearchValue] = useState("");
@@ -87,33 +93,21 @@ function Matricula() {
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [
-        matriculasRes,
-        paralelosRes,
-        campusRes,
-        periodosRes,
-        estudiantesRes,
-      ] = await Promise.all([
-        fetch("/api/matricula"),
-        fetch("/api/paralelo"),
-        fetch("/api/campus"),
-        fetch("/api/periodo/activo"),
-        fetch("/api/persona/estudiante"),
-      ]);
+      const [matriculasRes, campusRes, periodosRes, estudiantesRes] =
+        await Promise.all([
+          fetch("/api/matricula"),
+          fetch("/api/campus"),
+          fetch("/api/periodo/activo"),
+          fetch("/api/persona/estudiante"),
+        ]);
 
-      const [
-        matriculasData,
-        paralelosData,
-        campusData,
-        periodosData,
-        estudiantesData,
-      ] = await Promise.all([
-        matriculasRes.json(),
-        paralelosRes.json(),
-        campusRes.json(),
-        periodosRes.json(),
-        estudiantesRes.json(),
-      ]);
+      const [matriculasData, campusData, periodosData, estudiantesData] =
+        await Promise.all([
+          matriculasRes.json(),
+          campusRes.json(),
+          periodosRes.json(),
+          estudiantesRes.json(),
+        ]);
 
       const transformedMatriculas = matriculasData.map((matricula) => ({
         id: matricula.PERSONA.usuario.correo,
@@ -190,6 +184,27 @@ function Matricula() {
     fetchNiveles();
   }, [selectedEspecialidad]);
 
+  useEffect(() => {
+    if (!selectedNivel) return; // No hacer nada si no hay nivel seleccionado
+
+    const fetchParalelos = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/paralelo/${selectedNivel}/${selectedEspecialidad}/${selectedCampus}`
+        );
+        const data = await res.json();
+        setParalelos(data);
+      } catch (error) {
+        console.error("Error fetching paralelos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchParalelos();
+  }, [selectedNivel, selectedEspecialidad, selectedCampus]);
+
   const paginatedItems = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -230,6 +245,11 @@ function Matricula() {
     setSelectedNivel(id);
   };
 
+  const onSelectionParalelo = (id) => {
+    setIdParalelo(id);
+    setSelectedParalelo(id);
+  };
+
   const handleClear = () => {
     try {
       setIsLoading(true);
@@ -242,6 +262,13 @@ function Matricula() {
       setIdNivel("");
       setSelectedNivel(null);
       setNiveles([]);
+      setIdParalelo("");
+      setSelectedParalelo(null);
+      setParalelos([]);
+      setIdEstudiante("");
+      setSelectedEstudiante(null);
+      setIdPeriodos("");
+      setSelectedPeriodo(null);
     } catch (error) {
       setNotificacion({
         message: "Error al limpiar los campos",
@@ -310,22 +337,6 @@ function Matricula() {
             {item.correo}
           </User>
         );
-      case "paralelos":
-        return (
-          <div className="flex flex-col gap-1 place-self-center">
-            {item[columnKey].map((paralelo, index) => (
-              <Chip
-                key={index}
-                size="sm"
-                variant="faded"
-                className="w-max mx-auto"
-              >
-                {/* poner los paralelos entre "" */}
-                {paralelo}
-              </Chip>
-            ))}
-          </div>
-        );
       default:
         return item[columnKey];
     }
@@ -371,13 +382,13 @@ function Matricula() {
               <Button
                 className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-md"
                 endContent={<PlusIcon className="h-5 w-5" />}
-                onClick={onOpenParalelo}
+                onClick={onOpenMatricula}
               >
                 Añadir Nuevo
               </Button>
               <Modal
-                isOpen={isOpenParalelo}
-                onOpenChange={onOpenChangeParalelo}
+                isOpen={isOpenMatricula}
+                onOpenChange={onOpenChangeMatricula}
                 onClose={() => {
                   handleClear();
                 }}
@@ -448,7 +459,7 @@ function Matricula() {
                           placeholder="Buscar estudiante"
                           onSelectionChange={onSelectionEstudiante}
                           startContent={
-                            <BuildingOffice2Icon className="text-blue-900 dark:text-white h-6 w-6 " />
+                            <UserCircleIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
                           defaultItems={estudiantes}
                           defaultSelectedKey={String(idEstudiante)}
@@ -601,6 +612,49 @@ function Matricula() {
                               className="capitalize"
                             >
                               {n.nivel}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Paralelo
+                            </label>
+                          }
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar el paralelo"
+                          onSelectionChange={onSelectionParalelo}
+                          startContent={
+                            <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={paralelos}
+                          defaultSelectedKey={String(idParalelo)}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white capitalize",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(p) => (
+                            <AutocompleteItem
+                              key={String(p.PARALELO.id)}
+                              className="capitalize"
+                              textValue={p.PARALELO.paralelo}
+                            >
+                              {p.PARALELO.paralelo} - {p.TOTAL} estudiantes.
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
