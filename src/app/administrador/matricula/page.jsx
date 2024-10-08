@@ -9,7 +9,7 @@ import {
   TableCell,
   Input,
   Button,
-  Chip,
+  Checkbox,
   useDisclosure,
   Modal,
   ModalContent,
@@ -64,6 +64,9 @@ function Matricula() {
   const [paralelos, setParalelos] = useState([]);
   const [idParalelo, setIdParalelo] = useState("");
   const [selectedParalelo, setSelectedParalelo] = useState(null);
+
+  const [isSelectedMatricula, setIsSelectedMatricula] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [pages, setPages] = useState(1);
@@ -205,6 +208,30 @@ function Matricula() {
     fetchParalelos();
   }, [selectedNivel, selectedEspecialidad, selectedCampus]);
 
+  useEffect(() => {
+    if (!selectedPeriodo && !selectedEstudiante) return; // No hacer nada si no hay campus o estudiante seleccionado
+
+    const fetchMatricula = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/matricula/${idPeriodos}/${idEstudiante}`);
+        const data = await res.json();
+
+        if (data.length) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      } catch (error) {
+        console.error("Error fetching matricula:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMatricula();
+  }, [idEstudiante, idPeriodos, selectedEstudiante, selectedPeriodo]);
+
   const paginatedItems = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -269,6 +296,8 @@ function Matricula() {
       setSelectedEstudiante(null);
       setIdPeriodos("");
       setSelectedPeriodo(null);
+      setIsSelectedMatricula(false);
+      setIsVisible(false);
     } catch (error) {
       setNotificacion({
         message: "Error al limpiar los campos",
@@ -279,17 +308,29 @@ function Matricula() {
     }
   };
 
-  const handleAbrirEspecialidad = async () => {
+  const handleMatricular = async () => {
     try {
       setIsLoading(true);
 
+      // si es visible y no esta seleccionado la matricula se elimina
+      if (isVisible && !isSelectedMatricula) {
+        setNotificacion({
+          message: "El estudiante ya está matriculado",
+          type: "warning",
+        });
+        return;
+      }
+
       const body = {
+        idEstudiantePertenece: idEstudiante,
+        idPeriodoPertenece: idPeriodos,
         idCampusPertenece: idCampus,
         idEspecialidadPertenece: idEspecialidad,
         idNivelPertenece: idNivel,
+        idParaleloPertenece: idParalelo,
       };
 
-      const response = await fetch("/api/paralelo", {
+      const response = await fetch("/api/matricula", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -297,19 +338,42 @@ function Matricula() {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      // Verificar si la respuesta es un PDF
+      const contentType = response.headers.get("Content-Type");
 
       if (response.ok) {
-        // Actualizar la lista de especialidades con la nueva especialidad creada
+        if (contentType === "application/pdf") {
+          // Descargar el archivo PDF
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `matricula_estudiante_${idEstudiante}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          // Mostrar notificación de éxito
+          setNotificacion({
+            message: "Matrícula realizada con éxito y PDF descargado.",
+            type: "success",
+          });
+        } else {
+          // Si la respuesta es JSON, manejar normalmente
+          const data = await response.json();
+          setNotificacion({
+            message: data.message || "Matrícula realizada con éxito",
+            type: "success",
+          });
+        }
+
+        // Actualizar la lista de matriculas
         fetchInitialData();
-        setNotificacion({
-          message: data.message || "Paralelo abierto exitosamente",
-          type: "success",
-        });
       } else {
+        const data = await response.json();
         setNotificacion({
           message:
-            data.message || "Ocurrió un error al guardar la especialidad",
+            data.message || "Ocurrió un error al matricular al estudiante",
           type: "error",
         });
       }
@@ -658,6 +722,18 @@ function Matricula() {
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
+
+                        {/* mostrar checkbox si isVisible=true */}
+                        {isVisible && (
+                          <Checkbox
+                            isSelected={isSelectedMatricula}
+                            onValueChange={setIsSelectedMatricula}
+                            color="danger"
+                          >
+                            El estudiante ya está matriculado, si lo añades se
+                            borrarán los registros de la matrícula existente
+                          </Checkbox>
+                        )}
                       </ModalBody>
                       <ModalFooter>
                         <Button
@@ -672,7 +748,7 @@ function Matricula() {
                         <Button
                           className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                           onPress={() => {
-                            handleAbrirEspecialidad();
+                            handleMatricular();
                             onClose();
                           }}
                         >

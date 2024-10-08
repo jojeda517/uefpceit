@@ -188,9 +188,9 @@ export async function POST(request) {
 
         return await prisma.mATRICULA.create({
           data: {
-            idDetalleMateriaPertenece: materia.id,
-            idPeriodoPertenece: body.idPeriodoPertenece,
-            idEstudiantePertenece: body.idEstudiantePertenece,
+            idDetalleMateriaPertenece: parseInt(materia.id),
+            idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+            idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
             idDocentePertenece: idDocenteAsignado, // Asignar el docente obtenido
             estado: null, // Estado de la matrícula, puedes ajustarlo según sea necesario
           },
