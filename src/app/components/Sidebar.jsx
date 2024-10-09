@@ -259,6 +259,16 @@ function Sidebar({ roles }) {
                     Matriculas
                   </ListItem>
 
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador/matriculaDocente")}
+                  >
+                    <ListItemPrefix>
+                      <TagIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Asignar docentes a materias
+                  </ListItem>
+
                   <ListItem>
                     <ListItemPrefix>
                       <DocumentTextIcon className="h-5 w-5" />
@@ -278,13 +288,6 @@ function Sidebar({ roles }) {
                       <FolderArrowDownIcon className="h-5 w-5" />
                     </ListItemPrefix>
                     Retiro de carpeta
-                  </ListItem>
-
-                  <ListItem>
-                    <ListItemPrefix>
-                      <TagIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Asignar docentes a materias
                   </ListItem>
 
                   <ListItem>
