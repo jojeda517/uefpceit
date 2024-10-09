@@ -78,18 +78,19 @@ function MatriculaDocente() {
     onOpenChange: onOpenChangeMatricula,
   } = useDisclosure();
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "estudiante",
+    column: "docente",
     direction: "ascending",
   });
   const [searchValue, setSearchValue] = useState("");
   const [isClient, setIsClient] = useState(false);
 
   const headerColumns = [
-    { name: "Estudiante", uid: "estudiante", sortable: false },
+    { name: "docente", uid: "docente", sortable: false },
     { name: "Campus", uid: "campus", sortable: false },
     { name: "Periodo", uid: "periodo", sortable: false },
     { name: "especialidad", uid: "especialidad", sortable: false },
     { name: "nivel", uid: "nivel", sortable: false },
+    { name: "materia", uid: "materia", sortable: false },
     { name: "paralelo", uid: "paralelo", sortable: false },
   ];
 
@@ -98,7 +99,7 @@ function MatriculaDocente() {
     try {
       const [matriculasRes, campusRes, periodosRes, estudiantesRes] =
         await Promise.all([
-          fetch("/api/matricula"),
+          fetch("/api/matriculaDocente"),
           fetch("/api/campus"),
           fetch("/api/periodo/activo"),
           fetch("/api/persona/estudiante"),
@@ -113,15 +114,16 @@ function MatriculaDocente() {
         ]);
 
       const transformedMatriculas = matriculasData.map((matricula) => ({
-        id: matricula.PERSONA.usuario.correo,
+        id: matricula.id,
         estudiante: matricula.PERSONA.nombre + " " + matricula.PERSONA.apellido,
         foto: matricula.PERSONA.foto,
         correo: matricula.PERSONA.usuario.correo,
-        campus: matricula.MATRICULA.CAMPUS,
-        periodo: matricula.MATRICULA.PERIODO,
-        especialidad: matricula.MATRICULA.ESPECIALIDAD,
-        nivel: matricula.MATRICULA.NIVEL,
-        paralelo: matricula.MATRICULA.PARALELO,
+        campus: matricula.CAMPUS,
+        periodo: matricula.PERIODO,
+        especialidad: matricula.ESPECIALIDAD,
+        materia: matricula.MATERIA,
+        nivel: matricula.NIVEL,
+        paralelo: matricula.PARALELO,
       }));
 
       // Ordenar por el ID en orden descendente
@@ -390,13 +392,13 @@ function MatriculaDocente() {
 
   const renderCell = (item, columnKey) => {
     switch (columnKey) {
-      case "estudiante":
-        // mostrar foto y nombres del estudienate y debajo del nombre el correo
+      case "docente":
+        // mostrar foto y nombres del docente y debajo del nombre el correo
         return (
           <User
             avatarProps={{ radius: "lg", src: item.foto }}
             description={item.correo.toLowerCase()}
-            name={item.estudiante}
+            name={item.docente}
           >
             {item.correo}
           </User>
@@ -764,7 +766,7 @@ function MatriculaDocente() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 dark:text-gray-300 text-small">
-            Total: {filteredItems.length} estudiantes matriculados.
+            Total: {filteredItems.length} docentes matriculados.
           </span>
         </div>
       </div>
@@ -819,7 +821,7 @@ function MatriculaDocente() {
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="text-center">
-                  {renderCell(item, "estudiante")}
+                  {renderCell(item, "docente")}
                 </TableCell>
                 <TableCell className="text-center capitalize">
                   {item.campus}
@@ -832,6 +834,9 @@ function MatriculaDocente() {
                 </TableCell>
                 <TableCell className="text-center capitalize">
                   {item.nivel}
+                </TableCell>
+                <TableCell className="text-center capitalize">
+                  {item.materia}
                 </TableCell>
                 <TableCell className="text-center capitalize">
                   {item.paralelo}
