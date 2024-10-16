@@ -1369,7 +1369,7 @@ function PerfilEstudiante() {
               </label>
               <Checkbox
                 isSelected={trabaja}
-                disableAnimation
+                disableAnimation={true}
                 icon={<HandThumbUpIcon />}
                 size="lg"
                 onValueChange={setTrabaja}

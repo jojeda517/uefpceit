@@ -32,6 +32,8 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/solid";
 
+import HandThumbUpIcon from "@/app/components/HandThumbUpIcon.jsx";
+
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
 
@@ -41,9 +43,9 @@ function MatriculaDocente() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
 
-  const [estudiantes, setEstudiantes] = useState([]);
-  const [idEstudiante, setIdEstudiante] = useState("");
-  const [selectedEstudiante, setSelectedEstudiante] = useState(null);
+  const [docentes, setDocentes] = useState([]);
+  const [idDocente, setIdDocente] = useState("");
+  const [selectedDocente, setSelectedDocente] = useState(null);
 
   const [campus, setCampus] = useState([]);
   const [idCampus, setIdCampus] = useState("");
@@ -64,6 +66,10 @@ function MatriculaDocente() {
   const [paralelos, setParalelos] = useState([]);
   const [idParalelo, setIdParalelo] = useState("");
   const [selectedParalelo, setSelectedParalelo] = useState(null);
+
+  const [materias, setMaterias] = useState([]);
+  const [idMateria, setIdMateria] = useState("");
+  const [selectedMateria, setSelectedMateria] = useState(null);
 
   const [isSelectedMatricula, setIsSelectedMatricula] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -97,20 +103,20 @@ function MatriculaDocente() {
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [matriculasRes, campusRes, periodosRes, estudiantesRes] =
+      const [matriculasRes, campusRes, periodosRes, docentesRes] =
         await Promise.all([
           fetch("/api/matriculaDocente"),
           fetch("/api/campus"),
           fetch("/api/periodo/activo"),
-          fetch("/api/persona/estudiante"),
+          fetch("/api/persona/docente"),
         ]);
 
-      const [matriculasData, campusData, periodosData, estudiantesData] =
+      const [matriculasData, campusData, periodosData, docentesData] =
         await Promise.all([
           matriculasRes.json(),
           campusRes.json(),
           periodosRes.json(),
-          estudiantesRes.json(),
+          docentesRes.json(),
         ]);
 
       const transformedMatriculas = matriculasData.map((matricula) => ({
@@ -136,7 +142,7 @@ function MatriculaDocente() {
       setFilteredItems(transformedMatriculas);
       setCampus(campusData);
       setPeriodos(periodosData);
-      setEstudiantes(estudiantesData);
+      setDocentes(docentesData);
       setIsClient(true);
     } catch (error) {
       console.error("Error fetching initial data:", error);
@@ -211,12 +217,41 @@ function MatriculaDocente() {
   }, [selectedNivel, selectedEspecialidad, selectedCampus]);
 
   useEffect(() => {
-    if (!selectedPeriodo && !selectedEstudiante) return; // No hacer nada si no hay campus o estudiante seleccionado
+    if (!selectedParalelo) return; // No hacer nada si no hay paralelo seleccionado
+
+    const fetchMaterias = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/materia/${selectedCampus}/${selectedEspecialidad}/${selectedNivel}/${selectedParalelo}`
+        );
+        const data = await res.json();
+        setMaterias(data);
+      } catch (error) {
+        console.error("Error fetching materias:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMaterias();
+  }, [selectedParalelo, selectedCampus, selectedEspecialidad, selectedNivel]);
+
+  useEffect(() => {
+    if (
+      !selectedPeriodo ||
+      !selectedDocente ||
+      !selectedParalelo ||
+      !selectedNivel ||
+      !selectedEspecialidad ||
+      !selectedCampus
+    )
+      return; // No hacer nada si no hay campus o docente seleccionado
 
     const fetchMatricula = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/matricula/${idPeriodos}/${idEstudiante}`);
+        const res = await fetch(`/api/matricula/${idPeriodos}/${idDocente}`);
         const data = await res.json();
 
         if (data.length) {
@@ -232,7 +267,16 @@ function MatriculaDocente() {
     };
 
     fetchMatricula();
-  }, [idEstudiante, idPeriodos, selectedEstudiante, selectedPeriodo]);
+  }, [
+    idPeriodos,
+    idDocente,
+    selectedPeriodo,
+    selectedDocente,
+    selectedParalelo,
+    selectedNivel,
+    selectedEspecialidad,
+    selectedCampus,
+  ]);
 
   const paginatedItems = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -254,9 +298,9 @@ function MatriculaDocente() {
     setSelectedCampus(id);
   };
 
-  const onSelectionEstudiante = (id) => {
-    setIdEstudiante(id);
-    setSelectedEstudiante(id);
+  const onSelectionDocente = (id) => {
+    setIdDocente(id);
+    setSelectedDocente(id);
   };
 
   const onSelectionPeriodo = (id) => {
@@ -277,6 +321,11 @@ function MatriculaDocente() {
   const onSelectionParalelo = (id) => {
     setIdParalelo(id);
     setSelectedParalelo(id);
+  };
+
+  const onSelectionMateria = (id) => {
+    setIdMateria(id);
+    setSelectedMateria(id);
   };
 
   const handleClear = () => {
@@ -517,18 +566,18 @@ function MatriculaDocente() {
                         <Autocomplete
                           label={
                             <label className="text-blue-900 dark:text-white">
-                              Estudiante
+                              Docente
                             </label>
                           }
                           isRequired={true}
                           labelPlacement="inside"
-                          placeholder="Buscar estudiante"
-                          onSelectionChange={onSelectionEstudiante}
+                          placeholder="Buscar docente"
+                          onSelectionChange={onSelectionDocente}
                           startContent={
                             <UserCircleIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
-                          defaultItems={estudiantes}
-                          defaultSelectedKey={String(idEstudiante)}
+                          defaultItems={docentes}
+                          defaultSelectedKey={String(idDocente)}
                           variant="bordered"
                           inputProps={{
                             className: "dark:text-white capitalize",
@@ -725,15 +774,62 @@ function MatriculaDocente() {
                           )}
                         </Autocomplete>
 
+                        <Autocomplete
+                          label={
+                            <label className="text-blue-900 dark:text-white">
+                              Asignatura
+                            </label>
+                          }
+                          isRequired={true}
+                          labelPlacement="inside"
+                          placeholder="Buscar la asignatura"
+                          onSelectionChange={onSelectionMateria}
+                          startContent={
+                            <ClipboardDocumentListIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                          }
+                          defaultItems={materias}
+                          defaultSelectedKey={String(idMateria)}
+                          variant="bordered"
+                          inputProps={{
+                            className: "dark:text-white capitalize",
+                          }}
+                          classNames={{
+                            base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+
+                            listboxWrapper: "", // Es el contenedor del listbox
+                            listbox:
+                              "bg-white border border-blue-900 dark:border-black text-red-500 ",
+                            option: "text-gray-900 hover:bg-blue-100", // Opciones del listbox
+                            clearButton: "text-red-400",
+                            selectorButton: "text-blue-900 dark:text-black",
+                            popoverContent:
+                              "bg-gray-100 dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                          }}
+                        >
+                          {(m) => (
+                            <AutocompleteItem
+                              key={String(m.id)}
+                              className="capitalize"
+                            >
+                              {m.nombre}
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+
                         {/* mostrar checkbox si isVisible=true */}
                         {isVisible && (
                           <Checkbox
+                            disableAnimation
+                            icon={<HandThumbUpIcon />}
+                            size="lg"
                             isSelected={isSelectedMatricula}
                             onValueChange={setIsSelectedMatricula}
                             color="danger"
                           >
-                            El estudiante ya está matriculado, si lo añades se
-                            borrarán los registros de la matrícula existente
+                            <p className="dark:text-white">
+                              El estudiante ya está matriculado, si lo añades se
+                              borrarán los registros de la matrícula existente
+                            </p>
                           </Checkbox>
                         )}
                       </ModalBody>

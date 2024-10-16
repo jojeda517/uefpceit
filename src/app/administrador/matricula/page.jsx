@@ -209,7 +209,7 @@ function Matricula() {
   }, [selectedNivel, selectedEspecialidad, selectedCampus]);
 
   useEffect(() => {
-    if (!selectedPeriodo && !selectedEstudiante) return; // No hacer nada si no hay campus o estudiante seleccionado
+    if (!selectedPeriodo || !selectedEstudiante) return; // No hacer nada si no hay campus o estudiante seleccionado
 
     const fetchMatricula = async () => {
       setIsLoading(true);

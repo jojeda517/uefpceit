@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
-import prisma from '@/libs/prisma';
+import prisma from "@/libs/prisma";
 import bcrypt from "bcrypt";
 import path from "path";
 import { writeFile } from "fs/promises";
+
+export async function GET() {
+  const estudiantes = await prisma.dOCENTE.findMany({
+    where: {
+      PERSONA: {
+        estado: true,
+      },
+    },
+    include: {
+      PERSONA: true,
+    },
+  });
+
+  return NextResponse.json(estudiantes);
+}
 
 export async function POST(request) {
   const data = await request.formData();
@@ -181,7 +196,7 @@ export async function POST(request) {
       // Buscar el id del rol del body ya que en el body viene el nombre del rol
       const rolID = await prisma.rOL.findUnique({
         where: { rol: rol.rol },
-      }); 
+      });
       await prisma.dETALLEROL.create({
         data: {
           USUARIO: {
