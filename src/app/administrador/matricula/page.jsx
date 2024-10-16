@@ -818,7 +818,7 @@ function Matricula() {
           <TableBody>
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="text-center">
+                <TableCell className="">
                   {renderCell(item, "estudiante")}
                 </TableCell>
                 <TableCell className="text-center capitalize">

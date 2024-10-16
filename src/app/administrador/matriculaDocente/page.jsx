@@ -121,7 +121,7 @@ function MatriculaDocente() {
 
       const transformedMatriculas = matriculasData.map((matricula) => ({
         id: matricula.id,
-        estudiante: matricula.PERSONA.nombre + " " + matricula.PERSONA.apellido,
+        docente: matricula.PERSONA.nombre + " " + matricula.PERSONA.apellido,
         foto: matricula.PERSONA.foto,
         correo: matricula.PERSONA.usuario.correo,
         campus: matricula.CAMPUS,
@@ -244,22 +244,37 @@ function MatriculaDocente() {
       !selectedParalelo ||
       !selectedNivel ||
       !selectedEspecialidad ||
-      !selectedCampus
+      !selectedCampus ||
+      !selectedMateria
     )
       return; // No hacer nada si no hay campus o docente seleccionado
 
     const fetchMatricula = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/matricula/${idPeriodos}/${idDocente}`);
-        const data = await res.json();
+        const body = {
+          idCampusPertenece: idCampus,
+          idDocentePertenece: idDocente,
+          idPeriodoPertenece: idPeriodos,
+          idEspecialidadPertenece: idEspecialidad,
+          idNivelPertenece: idNivel,
+          idParaleloPertenece: idParalelo,
+          idMateriaPertenece: idMateria,
+        };
 
-        if (data.length) {
-          setIsVisible(true);
-        } else {
-          setIsVisible(false);
-        }
+        const response = await fetch("/api/matriculaDocente/matriculado", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        // Si la respuesta es exitosa
+        const data = await response.json();
+        setIsVisible(true);
       } catch (error) {
+        setIsVisible(false);
         console.error("Error fetching matricula:", error);
       } finally {
         setIsLoading(false);
@@ -268,14 +283,20 @@ function MatriculaDocente() {
 
     fetchMatricula();
   }, [
-    idPeriodos,
-    idDocente,
     selectedPeriodo,
     selectedDocente,
     selectedParalelo,
     selectedNivel,
     selectedEspecialidad,
     selectedCampus,
+    selectedMateria,
+    idCampus,
+    idDocente,
+    idPeriodos,
+    idEspecialidad,
+    idNivel,
+    idParalelo,
+    idMateria,
   ]);
 
   const paginatedItems = useMemo(() => {
@@ -288,7 +309,7 @@ function MatriculaDocente() {
   const onSearchChange = (value) => {
     setSearchValue(value);
     const filtered = items.filter((item) =>
-      item.estudiante.toLowerCase().includes(value.toLowerCase())
+      item.docente.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredItems(filtered);
   };
@@ -336,6 +357,10 @@ function MatriculaDocente() {
       setSelectedCampus(null);
       setIdEspecialidad("");
       setSelectedEspecialidad(null);
+      setIdDocente("");
+      setSelectedDocente(null);
+      setIdPeriodos("");
+      setSelectedPeriodo(null);
       setEspecialidades([]);
       setIdNivel("");
       setSelectedNivel(null);
@@ -343,10 +368,10 @@ function MatriculaDocente() {
       setIdParalelo("");
       setSelectedParalelo(null);
       setParalelos([]);
-      setIdEstudiante("");
-      setSelectedEstudiante(null);
-      setIdPeriodos("");
-      setSelectedPeriodo(null);
+      setIdMateria("");
+      setSelectedMateria(null);
+      setMaterias([]);
+
       setIsSelectedMatricula(false);
       setIsVisible(false);
     } catch (error) {
@@ -366,22 +391,23 @@ function MatriculaDocente() {
       // si es visible y no esta seleccionado la matricula se elimina
       if (isVisible && !isSelectedMatricula) {
         setNotificacion({
-          message: "El estudiante ya está matriculado",
+          message: "La materia ya tiene un docente asignado",
           type: "warning",
         });
         return;
       }
 
       const body = {
-        idEstudiantePertenece: idEstudiante,
-        idPeriodoPertenece: idPeriodos,
         idCampusPertenece: idCampus,
+        idDocentePertenece: idDocente,
+        idPeriodoPertenece: idPeriodos,
         idEspecialidadPertenece: idEspecialidad,
         idNivelPertenece: idNivel,
         idParaleloPertenece: idParalelo,
+        idMateriaPertenece: idMateria,
       };
 
-      const response = await fetch("/api/matricula", {
+      const response = await fetch("/api/matriculaDocente", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,45 +415,15 @@ function MatriculaDocente() {
         body: JSON.stringify(body),
       });
 
-      // Verificar si la respuesta es un PDF
-      const contentType = response.headers.get("Content-Type");
+      // Si la respuesta es exitosa
+      const data = await response.json();
+      setNotificacion({
+        message: data.message || "Matrícula realizada con éxito",
+        type: "success",
+      });
 
-      if (response.ok) {
-        if (contentType === "application/pdf") {
-          // Descargar el archivo PDF
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `matricula_estudiante_${idEstudiante}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-
-          // Mostrar notificación de éxito
-          setNotificacion({
-            message: "Matrícula realizada con éxito y PDF descargado.",
-            type: "success",
-          });
-        } else {
-          // Si la respuesta es JSON, manejar normalmente
-          const data = await response.json();
-          setNotificacion({
-            message: data.message || "Matrícula realizada con éxito",
-            type: "success",
-          });
-        }
-
-        // Actualizar la lista de matriculas
-        fetchInitialData();
-      } else {
-        const data = await response.json();
-        setNotificacion({
-          message:
-            data.message || "Ocurrió un error al matricular al estudiante",
-          type: "error",
-        });
-      }
+      // Actualizar la lista de matriculas
+      fetchInitialData();
     } catch (error) {
       setNotificacion({
         message: "Error de red o de servidor",
@@ -826,10 +822,7 @@ function MatriculaDocente() {
                             onValueChange={setIsSelectedMatricula}
                             color="danger"
                           >
-                            <p className="dark:text-white">
-                              El estudiante ya está matriculado, si lo añades se
-                              borrarán los registros de la matrícula existente
-                            </p>
+                            <p className="dark:text-white">La materia ya tiene un docente asignado, ¿Seguro que desea actualizar?</p>
                           </Checkbox>
                         )}
                       </ModalBody>
@@ -916,7 +909,7 @@ function MatriculaDocente() {
           <TableBody>
             {paginatedItems.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="text-center">
+                <TableCell className="">
                   {renderCell(item, "docente")}
                 </TableCell>
                 <TableCell className="text-center capitalize">
