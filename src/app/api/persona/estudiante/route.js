@@ -4,6 +4,21 @@ import bcrypt from "bcrypt";
 import path from "path";
 import { writeFile } from "fs/promises";
 
+export async function GET() {
+  const estudiantes = await prisma.eSTUDIANTE.findMany({
+    where: {
+      PERSONA: {
+        estado: true,
+      },
+    },
+    include: {
+      PERSONA: true,
+    }
+  });
+
+  return NextResponse.json(estudiantes);
+}
+
 export async function POST(request) {
   const data = await request.formData();
 

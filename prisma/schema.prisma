@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -126,7 +126,7 @@ model ESTUDIANTE {
   tieneHijo                Boolean
   rangoEdadHijo            String?               @db.VarChar(50)
   bonoMies                 Boolean
-  numeroCarnetDiscapacidad String?               @unique @db.VarChar(50)
+  numeroCarnetDiscapacidad String?               @db.VarChar(50)
   lugarNacimiento          String?               @db.VarChar(100)
   codigoElectricoUnico     String?               @db.VarChar(50)
   observacion              String?               @db.VarChar(255)
@@ -209,8 +209,8 @@ model PERIODO {
   id                    Int                       @id @default(autoincrement())
   idEvaluacionPertenece Int
   nombre                String                    @unique @db.VarChar(255)
-  fechaInicio           DateTime?                 @db.DateTime
-  fechaFin              DateTime?                 @db.DateTime
+  fechaInicio           DateTime?
+  fechaFin              DateTime?
   descripcion           String?                   @db.VarChar(255)
   estado                Boolean?
   periodosModalidad     DETALLEPERIODOMODALIDAD[]
@@ -303,12 +303,12 @@ model MATRICULA {
   idDetalleMateriaPertenece Int
   idPeriodoPertenece        Int
   idEstudiantePertenece     Int
-  idDocentePertenece        Int 
-  estado                    Boolean
+  idDocentePertenece        Int?
+  estado                    Boolean?
   DETALLEMATERIA            DETALLEMATERIA @relation(fields: [idDetalleMateriaPertenece], references: [id])
   PERIODO                   PERIODO        @relation(fields: [idPeriodoPertenece], references: [id])
   ESTUDIANTE                ESTUDIANTE     @relation(fields: [idEstudiantePertenece], references: [id])
-  DOCENTE                   DOCENTE        @relation(fields: [idDocentePertenece], references: [id])
+  DOCENTE                   DOCENTE?       @relation(fields: [idDocentePertenece], references: [id])
   CALIFICACION              CALIFICACION[]
   EXAMEN                    EXAMEN[]
 }
@@ -323,7 +323,7 @@ model CALIFICACION {
   id          Int        @id @default(autoincrement())
   idMatricula Int
   idParcial   Int
-  promedio    Float      @db.Float
+  promedio    Float
   PARCIAL     PARCIAL    @relation(fields: [idParcial], references: [id])
   APORTE      APORTE[]
   MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
@@ -333,14 +333,14 @@ model CALIFICACION {
 model APORTE {
   id             Int          @id @default(autoincrement())
   idCalificacion Int
-  aporte         Float        @db.Float
+  aporte         Float
   CALIFICACION   CALIFICACION @relation(fields: [idCalificacion], references: [id])
 }
 
 model EXAMEN {
   id          Int        @id @default(autoincrement())
   idMatricula Int
-  nota        Float      @db.Float
+  nota        Float
   MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
   mATRICULAId Int?
 }

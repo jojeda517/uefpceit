@@ -1,0 +1,532 @@
+-- CreateTable
+CREATE TABLE "ROL" (
+    "id" SERIAL NOT NULL,
+    "rol" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "ROL_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEROL" (
+    "idRolPertenece" INTEGER NOT NULL,
+    "idUsuarioPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLEROL_pkey" PRIMARY KEY ("idRolPertenece","idUsuarioPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "USUARIO" (
+    "id" SERIAL NOT NULL,
+    "idPersonaPertenece" INTEGER,
+    "correo" VARCHAR(255) NOT NULL,
+    "contrasena" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "USUARIO_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PERSONA" (
+    "id" SERIAL NOT NULL,
+    "idCampusPertenece" INTEGER NOT NULL,
+    "idParroquiaPertenece" INTEGER,
+    "nombre" VARCHAR(50) NOT NULL,
+    "apellido" VARCHAR(50) NOT NULL,
+    "cedula" VARCHAR(10) NOT NULL,
+    "estado" BOOLEAN,
+    "direccion" VARCHAR(100),
+    "fechaNacimiento" TIMESTAMP(3),
+    "nacionalidad" VARCHAR(100),
+    "telefono" VARCHAR(10),
+    "sexo" VARCHAR(50),
+    "foto" VARCHAR(255),
+
+    CONSTRAINT "PERSONA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PROVINCIA" (
+    "id" SERIAL NOT NULL,
+    "provincia" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "PROVINCIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CANTON" (
+    "id" SERIAL NOT NULL,
+    "canton" VARCHAR(255) NOT NULL,
+    "idProvinciaPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "CANTON_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PARROQUIA" (
+    "id" SERIAL NOT NULL,
+    "parroquia" VARCHAR(255) NOT NULL,
+    "idCantonPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "PARROQUIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CAMPUS" (
+    "id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+    "direccion" VARCHAR(255),
+
+    CONSTRAINT "CAMPUS_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ESTADOCIVIL" (
+    "id" SERIAL NOT NULL,
+    "estadoCivil" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "ESTADOCIVIL_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ETNIA" (
+    "id" SERIAL NOT NULL,
+    "etnia" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "ETNIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DISCAPACIDAD" (
+    "id" SERIAL NOT NULL,
+    "tipo" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "DISCAPACIDAD_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEDISCAPACIDAD" (
+    "id" SERIAL NOT NULL,
+    "idDiscapacidadPertenece" INTEGER NOT NULL,
+    "idEstudiantePertenece" INTEGER NOT NULL,
+    "porcentaje" INTEGER,
+
+    CONSTRAINT "DETALLEDISCAPACIDAD_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ESTUDIANTE" (
+    "id" SERIAL NOT NULL,
+    "idPersonaPertenece" INTEGER NOT NULL,
+    "idEstadoCivilPertenece" INTEGER NOT NULL,
+    "idEtniaPertenece" INTEGER NOT NULL,
+    "idRepresentantePertenece" INTEGER NOT NULL,
+    "trabaja" BOOLEAN NOT NULL,
+    "nombreTrabajo" VARCHAR(255),
+    "tieneHijo" BOOLEAN NOT NULL,
+    "rangoEdadHijo" VARCHAR(50),
+    "bonoMies" BOOLEAN NOT NULL,
+    "numeroCarnetDiscapacidad" VARCHAR(50),
+    "lugarNacimiento" VARCHAR(100),
+    "codigoElectricoUnico" VARCHAR(50),
+    "observacion" VARCHAR(255),
+
+    CONSTRAINT "ESTUDIANTE_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "REPRESENTANTE" (
+    "id" SERIAL NOT NULL,
+    "cedula" VARCHAR(10) NOT NULL,
+    "nombre" VARCHAR(50) NOT NULL,
+    "apellido" VARCHAR(50) NOT NULL,
+    "direccion" VARCHAR(100),
+    "telefono" VARCHAR(10),
+    "ocupacion" VARCHAR(255),
+
+    CONSTRAINT "REPRESENTANTE_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DOCENTE" (
+    "id" SERIAL NOT NULL,
+    "idPersonaPertenece" INTEGER NOT NULL,
+    "tiempoExperiencia" INTEGER,
+
+    CONSTRAINT "DOCENTE_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEDOCENTETITULO" (
+    "idDocentePertenece" INTEGER NOT NULL,
+    "idTituloPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLEDOCENTETITULO_pkey" PRIMARY KEY ("idDocentePertenece","idTituloPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "TITULO" (
+    "id" SERIAL NOT NULL,
+    "titulo" VARCHAR(100) NOT NULL,
+
+    CONSTRAINT "TITULO_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEDOCENTEEXPERIENCIA" (
+    "idDocentePertenece" INTEGER NOT NULL,
+    "idExperienciaPertenece" INTEGER NOT NULL,
+    "cargo" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "DETALLEDOCENTEEXPERIENCIA_pkey" PRIMARY KEY ("idDocentePertenece","idExperienciaPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "EXPERIENCIA" (
+    "id" SERIAL NOT NULL,
+    "institucion" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "EXPERIENCIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MODALIDAD" (
+    "id" SERIAL NOT NULL,
+    "modalidad" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "MODALIDAD_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEPERIODOMODALIDAD" (
+    "idPeriodoPertenece" INTEGER NOT NULL,
+    "idModalidadPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLEPERIODOMODALIDAD_pkey" PRIMARY KEY ("idPeriodoPertenece","idModalidadPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "PERIODO" (
+    "id" SERIAL NOT NULL,
+    "idEvaluacionPertenece" INTEGER NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+    "fechaInicio" TIMESTAMP(3),
+    "fechaFin" TIMESTAMP(3),
+    "descripcion" VARCHAR(255),
+    "estado" BOOLEAN,
+
+    CONSTRAINT "PERIODO_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "METODOEVALUACION" (
+    "id" SERIAL NOT NULL,
+    "metodo" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "METODOEVALUACION_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EVALUACION" (
+    "id" SERIAL NOT NULL,
+    "evaluacion" VARCHAR(100) NOT NULL,
+    "idMetodoEvaluacionPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "EVALUACION_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ESPECIALIDAD" (
+    "id" SERIAL NOT NULL,
+    "especialidad" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "ESPECIALIDAD_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLECAMPUSESPECIALIDAD" (
+    "idCampusPertenece" INTEGER NOT NULL,
+    "idEspecialidadPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLECAMPUSESPECIALIDAD_pkey" PRIMARY KEY ("idCampusPertenece","idEspecialidadPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "NIVEL" (
+    "id" SERIAL NOT NULL,
+    "nivel" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "NIVEL_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEESPECIALIDADNIVEL" (
+    "idEspecialidadPertenece" INTEGER NOT NULL,
+    "idNivelPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLEESPECIALIDADNIVEL_pkey" PRIMARY KEY ("idEspecialidadPertenece","idNivelPertenece")
+);
+
+-- CreateTable
+CREATE TABLE "PARALELO" (
+    "id" SERIAL NOT NULL,
+    "paralelo" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "PARALELO_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLENIVELPARALELO" (
+    "id" SERIAL NOT NULL,
+    "idNivelPertenece" INTEGER NOT NULL,
+    "idParaleloPertenece" INTEGER NOT NULL,
+    "idCampusPertenece" INTEGER NOT NULL,
+    "idEspecialidadPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLENIVELPARALELO_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MATERIA" (
+    "id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "MATERIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DETALLEMATERIA" (
+    "id" SERIAL NOT NULL,
+    "idMateriaPertenece" INTEGER NOT NULL,
+    "idDetalleNivelParaleloPertenece" INTEGER NOT NULL,
+
+    CONSTRAINT "DETALLEMATERIA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MATRICULA" (
+    "id" SERIAL NOT NULL,
+    "idDetalleMateriaPertenece" INTEGER NOT NULL,
+    "idPeriodoPertenece" INTEGER NOT NULL,
+    "idEstudiantePertenece" INTEGER NOT NULL,
+    "idDocentePertenece" INTEGER,
+    "estado" BOOLEAN,
+
+    CONSTRAINT "MATRICULA_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PARCIAL" (
+    "id" SERIAL NOT NULL,
+    "parcial" VARCHAR(255) NOT NULL,
+
+    CONSTRAINT "PARCIAL_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CALIFICACION" (
+    "id" SERIAL NOT NULL,
+    "idMatricula" INTEGER NOT NULL,
+    "idParcial" INTEGER NOT NULL,
+    "promedio" DOUBLE PRECISION NOT NULL,
+    "mATRICULAId" INTEGER,
+
+    CONSTRAINT "CALIFICACION_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "APORTE" (
+    "id" SERIAL NOT NULL,
+    "idCalificacion" INTEGER NOT NULL,
+    "aporte" DOUBLE PRECISION NOT NULL,
+
+    CONSTRAINT "APORTE_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EXAMEN" (
+    "id" SERIAL NOT NULL,
+    "idMatricula" INTEGER NOT NULL,
+    "nota" DOUBLE PRECISION NOT NULL,
+    "mATRICULAId" INTEGER,
+
+    CONSTRAINT "EXAMEN_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ROL_rol_key" ON "ROL"("rol");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "USUARIO_idPersonaPertenece_key" ON "USUARIO"("idPersonaPertenece");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "USUARIO_correo_key" ON "USUARIO"("correo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PERSONA_cedula_key" ON "PERSONA"("cedula");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PROVINCIA_provincia_key" ON "PROVINCIA"("provincia");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DISCAPACIDAD_tipo_key" ON "DISCAPACIDAD"("tipo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ESTUDIANTE_idPersonaPertenece_key" ON "ESTUDIANTE"("idPersonaPertenece");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ESTUDIANTE_numeroCarnetDiscapacidad_key" ON "ESTUDIANTE"("numeroCarnetDiscapacidad");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "REPRESENTANTE_cedula_key" ON "REPRESENTANTE"("cedula");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DOCENTE_idPersonaPertenece_key" ON "DOCENTE"("idPersonaPertenece");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TITULO_titulo_key" ON "TITULO"("titulo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EXPERIENCIA_institucion_key" ON "EXPERIENCIA"("institucion");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MODALIDAD_modalidad_key" ON "MODALIDAD"("modalidad");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PERIODO_nombre_key" ON "PERIODO"("nombre");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "METODOEVALUACION_metodo_key" ON "METODOEVALUACION"("metodo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "EVALUACION_evaluacion_key" ON "EVALUACION"("evaluacion");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ESPECIALIDAD_especialidad_key" ON "ESPECIALIDAD"("especialidad");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NIVEL_nivel_key" ON "NIVEL"("nivel");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PARALELO_paralelo_key" ON "PARALELO"("paralelo");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MATERIA_nombre_key" ON "MATERIA"("nombre");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PARCIAL_parcial_key" ON "PARCIAL"("parcial");
+
+-- AddForeignKey
+ALTER TABLE "DETALLEROL" ADD CONSTRAINT "DETALLEROL_idRolPertenece_fkey" FOREIGN KEY ("idRolPertenece") REFERENCES "ROL"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEROL" ADD CONSTRAINT "DETALLEROL_idUsuarioPertenece_fkey" FOREIGN KEY ("idUsuarioPertenece") REFERENCES "USUARIO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "USUARIO" ADD CONSTRAINT "USUARIO_idPersonaPertenece_fkey" FOREIGN KEY ("idPersonaPertenece") REFERENCES "PERSONA"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PERSONA" ADD CONSTRAINT "PERSONA_idCampusPertenece_fkey" FOREIGN KEY ("idCampusPertenece") REFERENCES "CAMPUS"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PERSONA" ADD CONSTRAINT "PERSONA_idParroquiaPertenece_fkey" FOREIGN KEY ("idParroquiaPertenece") REFERENCES "PARROQUIA"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CANTON" ADD CONSTRAINT "CANTON_idProvinciaPertenece_fkey" FOREIGN KEY ("idProvinciaPertenece") REFERENCES "PROVINCIA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PARROQUIA" ADD CONSTRAINT "PARROQUIA_idCantonPertenece_fkey" FOREIGN KEY ("idCantonPertenece") REFERENCES "CANTON"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDISCAPACIDAD" ADD CONSTRAINT "DETALLEDISCAPACIDAD_idDiscapacidadPertenece_fkey" FOREIGN KEY ("idDiscapacidadPertenece") REFERENCES "DISCAPACIDAD"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDISCAPACIDAD" ADD CONSTRAINT "DETALLEDISCAPACIDAD_idEstudiantePertenece_fkey" FOREIGN KEY ("idEstudiantePertenece") REFERENCES "ESTUDIANTE"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ESTUDIANTE" ADD CONSTRAINT "ESTUDIANTE_idEstadoCivilPertenece_fkey" FOREIGN KEY ("idEstadoCivilPertenece") REFERENCES "ESTADOCIVIL"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ESTUDIANTE" ADD CONSTRAINT "ESTUDIANTE_idEtniaPertenece_fkey" FOREIGN KEY ("idEtniaPertenece") REFERENCES "ETNIA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ESTUDIANTE" ADD CONSTRAINT "ESTUDIANTE_idRepresentantePertenece_fkey" FOREIGN KEY ("idRepresentantePertenece") REFERENCES "REPRESENTANTE"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ESTUDIANTE" ADD CONSTRAINT "ESTUDIANTE_idPersonaPertenece_fkey" FOREIGN KEY ("idPersonaPertenece") REFERENCES "PERSONA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DOCENTE" ADD CONSTRAINT "DOCENTE_idPersonaPertenece_fkey" FOREIGN KEY ("idPersonaPertenece") REFERENCES "PERSONA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDOCENTETITULO" ADD CONSTRAINT "DETALLEDOCENTETITULO_idDocentePertenece_fkey" FOREIGN KEY ("idDocentePertenece") REFERENCES "DOCENTE"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDOCENTETITULO" ADD CONSTRAINT "DETALLEDOCENTETITULO_idTituloPertenece_fkey" FOREIGN KEY ("idTituloPertenece") REFERENCES "TITULO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDOCENTEEXPERIENCIA" ADD CONSTRAINT "DETALLEDOCENTEEXPERIENCIA_idDocentePertenece_fkey" FOREIGN KEY ("idDocentePertenece") REFERENCES "DOCENTE"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEDOCENTEEXPERIENCIA" ADD CONSTRAINT "DETALLEDOCENTEEXPERIENCIA_idExperienciaPertenece_fkey" FOREIGN KEY ("idExperienciaPertenece") REFERENCES "EXPERIENCIA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEPERIODOMODALIDAD" ADD CONSTRAINT "DETALLEPERIODOMODALIDAD_idPeriodoPertenece_fkey" FOREIGN KEY ("idPeriodoPertenece") REFERENCES "PERIODO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEPERIODOMODALIDAD" ADD CONSTRAINT "DETALLEPERIODOMODALIDAD_idModalidadPertenece_fkey" FOREIGN KEY ("idModalidadPertenece") REFERENCES "MODALIDAD"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PERIODO" ADD CONSTRAINT "PERIODO_idEvaluacionPertenece_fkey" FOREIGN KEY ("idEvaluacionPertenece") REFERENCES "EVALUACION"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EVALUACION" ADD CONSTRAINT "EVALUACION_idMetodoEvaluacionPertenece_fkey" FOREIGN KEY ("idMetodoEvaluacionPertenece") REFERENCES "METODOEVALUACION"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLECAMPUSESPECIALIDAD" ADD CONSTRAINT "DETALLECAMPUSESPECIALIDAD_idCampusPertenece_fkey" FOREIGN KEY ("idCampusPertenece") REFERENCES "CAMPUS"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLECAMPUSESPECIALIDAD" ADD CONSTRAINT "DETALLECAMPUSESPECIALIDAD_idEspecialidadPertenece_fkey" FOREIGN KEY ("idEspecialidadPertenece") REFERENCES "ESPECIALIDAD"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEESPECIALIDADNIVEL" ADD CONSTRAINT "DETALLEESPECIALIDADNIVEL_idEspecialidadPertenece_fkey" FOREIGN KEY ("idEspecialidadPertenece") REFERENCES "ESPECIALIDAD"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEESPECIALIDADNIVEL" ADD CONSTRAINT "DETALLEESPECIALIDADNIVEL_idNivelPertenece_fkey" FOREIGN KEY ("idNivelPertenece") REFERENCES "NIVEL"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLENIVELPARALELO" ADD CONSTRAINT "DETALLENIVELPARALELO_idNivelPertenece_fkey" FOREIGN KEY ("idNivelPertenece") REFERENCES "NIVEL"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLENIVELPARALELO" ADD CONSTRAINT "DETALLENIVELPARALELO_idParaleloPertenece_fkey" FOREIGN KEY ("idParaleloPertenece") REFERENCES "PARALELO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLENIVELPARALELO" ADD CONSTRAINT "DETALLENIVELPARALELO_idCampusPertenece_idEspecialidadPerte_fkey" FOREIGN KEY ("idCampusPertenece", "idEspecialidadPertenece") REFERENCES "DETALLECAMPUSESPECIALIDAD"("idCampusPertenece", "idEspecialidadPertenece") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEMATERIA" ADD CONSTRAINT "DETALLEMATERIA_idMateriaPertenece_fkey" FOREIGN KEY ("idMateriaPertenece") REFERENCES "MATERIA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DETALLEMATERIA" ADD CONSTRAINT "DETALLEMATERIA_idDetalleNivelParaleloPertenece_fkey" FOREIGN KEY ("idDetalleNivelParaleloPertenece") REFERENCES "DETALLENIVELPARALELO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MATRICULA" ADD CONSTRAINT "MATRICULA_idDetalleMateriaPertenece_fkey" FOREIGN KEY ("idDetalleMateriaPertenece") REFERENCES "DETALLEMATERIA"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MATRICULA" ADD CONSTRAINT "MATRICULA_idPeriodoPertenece_fkey" FOREIGN KEY ("idPeriodoPertenece") REFERENCES "PERIODO"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MATRICULA" ADD CONSTRAINT "MATRICULA_idEstudiantePertenece_fkey" FOREIGN KEY ("idEstudiantePertenece") REFERENCES "ESTUDIANTE"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MATRICULA" ADD CONSTRAINT "MATRICULA_idDocentePertenece_fkey" FOREIGN KEY ("idDocentePertenece") REFERENCES "DOCENTE"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CALIFICACION" ADD CONSTRAINT "CALIFICACION_idParcial_fkey" FOREIGN KEY ("idParcial") REFERENCES "PARCIAL"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CALIFICACION" ADD CONSTRAINT "CALIFICACION_mATRICULAId_fkey" FOREIGN KEY ("mATRICULAId") REFERENCES "MATRICULA"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "APORTE" ADD CONSTRAINT "APORTE_idCalificacion_fkey" FOREIGN KEY ("idCalificacion") REFERENCES "CALIFICACION"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EXAMEN" ADD CONSTRAINT "EXAMEN_mATRICULAId_fkey" FOREIGN KEY ("mATRICULAId") REFERENCES "MATRICULA"("id") ON DELETE SET NULL ON UPDATE CASCADE;
