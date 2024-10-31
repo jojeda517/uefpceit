@@ -71,7 +71,7 @@ function Matricula() {
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 25;
   const {
     isOpen: isOpenMatricula,
     onOpen: onOpenMatricula,
