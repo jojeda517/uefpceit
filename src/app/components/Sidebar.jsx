@@ -29,6 +29,7 @@ import {
   BuildingOffice2Icon,
   BarsArrowUpIcon,
   SquaresPlusIcon,
+  SparklesIcon
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -261,7 +262,9 @@ function Sidebar({ roles }) {
 
                   <ListItem
                     className="text-white cursor-pointer"
-                    onClick={() => handleNavigation("/administrador/matriculaDocente")}
+                    onClick={() =>
+                      handleNavigation("/administrador/matriculaDocente")
+                    }
                   >
                     <ListItemPrefix>
                       <TagIcon className="h-5 w-5" />
@@ -301,9 +304,12 @@ function Sidebar({ roles }) {
 
               {/* OPCIONES DEL ROL DOCENTE */}
               {hasRole("Docente") && (
-                <ListItem>
+                <ListItem
+                  className="text-white cursor-pointer"
+                  onClick={() => handleNavigation("/docente/paralelosDocente")}
+                >
                   <ListItemPrefix>
-                    <LockClosedIcon className="h-5 w-5" />
+                    <SparklesIcon className="h-5 w-5" />
                   </ListItemPrefix>
                   Calificar
                 </ListItem>
