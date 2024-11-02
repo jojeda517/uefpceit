@@ -230,6 +230,7 @@ model EVALUACION {
   idMetodoEvaluacionPertenece Int
   metodoEvaluacion            METODOEVALUACION @relation(fields: [idMetodoEvaluacionPertenece], references: [id])
   periodos                    PERIODO[]
+  PARCIAL                     PARCIAL[]
 }
 
 model ESPECIALIDAD {
@@ -310,24 +311,27 @@ model MATRICULA {
   ESTUDIANTE                ESTUDIANTE     @relation(fields: [idEstudiantePertenece], references: [id])
   DOCENTE                   DOCENTE?       @relation(fields: [idDocentePertenece], references: [id])
   CALIFICACION              CALIFICACION[]
-  EXAMEN                    EXAMEN[]
+  SUPLETORIO                SUPLETORIO?
 }
 
 model PARCIAL {
-  id           Int            @id @default(autoincrement())
-  parcial      String         @unique @db.VarChar(255)
-  CALIFICACION CALIFICACION[]
+  id                    Int            @id @default(autoincrement())
+  idEvaluacionPertenece Int?
+  parcial               String         @unique @db.VarChar(255)
+  CALIFICACION          CALIFICACION[]
+  EVALUACION            EVALUACION?    @relation(fields: [idEvaluacionPertenece], references: [id])
 }
 
 model CALIFICACION {
-  id          Int        @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   idMatricula Int
   idParcial   Int
   promedio    Float
-  PARCIAL     PARCIAL    @relation(fields: [idParcial], references: [id])
+  estado      String // "APROBADO", "SUPLETORIO", "REPROBADO"
+  PARCIAL     PARCIAL   @relation(fields: [idParcial], references: [id])
   APORTE      APORTE[]
-  MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
-  mATRICULAId Int?
+  EXAMEN      EXAMEN[]
+  MATRICULA   MATRICULA @relation(fields: [idMatricula], references: [id])
 }
 
 model APORTE {
@@ -338,9 +342,16 @@ model APORTE {
 }
 
 model EXAMEN {
-  id          Int        @id @default(autoincrement())
-  idMatricula Int
+  id             Int          @id @default(autoincrement())
+  idCalificacion Int
+  nota           Float // Nota del examen
+  CALIFICACION   CALIFICACION @relation(fields: [idCalificacion], references: [id])
+}
+
+model SUPLETORIO {
+  id          Int       @id @default(autoincrement())
+  idMatricula Int       @unique // Un supletorio por materia en el período
+  fecha       DateTime
   nota        Float
-  MATRICULA   MATRICULA? @relation(fields: [mATRICULAId], references: [id])
-  mATRICULAId Int?
+  MATRICULA   MATRICULA @relation(fields: [idMatricula], references: [id])
 }

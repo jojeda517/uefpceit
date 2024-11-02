@@ -12,57 +12,6 @@ import {
 
 import CircularProgress from "@/app/components/CircularProgress";
 
-const paralelosDocente1 = [
-  {
-    id: 1,
-    paralelo: "A",
-    materia: "Matemáticas",
-    campus: "Central",
-    nivel: "Bachillerato",
-    especialidad: "Ciencias",
-  },
-  {
-    id: 2,
-    paralelo: "B",
-    materia: "Física",
-    campus: "Norte",
-    nivel: "Bachillerato",
-    especialidad: "Ciencias",
-  },
-  {
-    id: 3,
-    paralelo: "C",
-    materia: "Química",
-    campus: "Sur",
-    nivel: "Bachillerato",
-    especialidad: "Ciencias",
-  },
-  {
-    id: 4,
-    paralelo: "A",
-    materia: "Biología",
-    campus: "Central",
-    nivel: "Bachillerato",
-    especialidad: "Ciencias",
-  },
-  {
-    id: 5,
-    paralelo: "D",
-    materia: "Historia",
-    campus: "Este",
-    nivel: "Bachillerato",
-    especialidad: "Sociales",
-  },
-  {
-    id: 6,
-    paralelo: "B",
-    materia: "Literatura",
-    campus: "Oeste",
-    nivel: "Bachillerato",
-    especialidad: "Sociales",
-  },
-];
-
 function ParalelosDocente() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const { data: session } = useSession();
