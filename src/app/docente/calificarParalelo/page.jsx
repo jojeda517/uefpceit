@@ -41,6 +41,8 @@ const modalidades = [
 
 function CalificarParalelo() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [paraleloData, setParaleloData] = useState(null); // Datos del paralelo
+  const [idPersona, setIdPersona] = useState(null); // Modalidad de evaluación
   const [modalidad, setModalidad] = useState(modalidades[0]);
   const [periodoActual, setPeriodoActual] = useState(1);
   const [aportes, setAportes] = useState(3);
@@ -55,50 +57,62 @@ function CalificarParalelo() {
   const [maxAportes, setMaxAportes] = useState();
   const [maxExamenes, setMaxExamenes] = useState();
 
-  const fetchInitialData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const estudiantesRes = await fetch(
-        `/api/estudiantesParalelo/1/1/2/1/11/1/4`
-      );
-      const estudiantesData = await estudiantesRes.json();
+  useEffect(() => {
+    // Recuperar los datos del almacenamiento local
+    const storedParalelo = localStorage.getItem("selectedParalelo");
+    setIdPersona(localStorage.getItem("idPersona"));
+    if (storedParalelo) {
+      const paraleloData = JSON.parse(storedParalelo);
+      setParaleloData(paraleloData);
 
-      // Inicializamos con el valor mínimo de columnas
-      let maxAportes = 0;
-      let maxExamenes = 0;
+      // Una vez que tenemos paraleloData, podemos realizar la solicitud con los parámetros adecuados
+      const fetchInitialData = async () => {
+        setIsLoading(true);
+        try {
+          const estudiantesRes = await fetch(
+            `/api/estudiantesParalelo/${localStorage.getItem("idPersona")}/${paraleloData.PERIODO.id}/${paraleloData.DETALLEMATERIA.MATERIA.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.CAMPUS.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.ESPECIALIDAD.id}`
+          );
+          const estudiantesData = await estudiantesRes.json();
 
-      // Recorrer cada estudiante y sus calificaciones para determinar el número máximo de columnas
-      estudiantesData.forEach((estudiante) => {
-        estudiante.MATRICULA.forEach((matricula) => {
-          matricula.CALIFICACION.forEach((calificacion) => {
-            // Verificar que APORTE y EXAMEN existen y tienen elementos
-            if (calificacion.APORTE && calificacion.APORTE.length > 0) {
-              maxAportes = Math.max(maxAportes, calificacion.APORTE.length);
-            }
-            if (calificacion.EXAMEN && calificacion.EXAMEN.length > 0) {
-              maxExamenes = Math.max(maxExamenes, calificacion.EXAMEN.length);
-            }
+          // Inicializamos con el valor mínimo de columnas
+          let maxAportes = 0;
+          let maxExamenes = 0;
+
+          // Determinar el número máximo de aportes y exámenes
+          estudiantesData.forEach((estudiante) => {
+            estudiante.MATRICULA.forEach((matricula) => {
+              matricula.CALIFICACION.forEach((calificacion) => {
+                if (calificacion.APORTE && calificacion.APORTE.length > 0) {
+                  maxAportes = Math.max(maxAportes, calificacion.APORTE.length);
+                }
+                if (calificacion.EXAMEN && calificacion.EXAMEN.length > 0) {
+                  maxExamenes = Math.max(
+                    maxExamenes,
+                    calificacion.EXAMEN.length
+                  );
+                }
+              });
+            });
           });
-        });
-      });
 
-      if (maxAportes === 0) maxAportes = 3; // Establece un mínimo de 3 aportes
-      if (maxExamenes === 0) maxExamenes = 1; // Establece un mínimo de 1 examen
+          // Valores mínimos por defecto si no se encuentra ninguno
+          if (maxAportes === 0) maxAportes = 3;
+          if (maxExamenes === 0) maxExamenes = 1;
 
-      // Establecemos los valores en el estado para actualizar la tabla
-      setMaxAportes(maxAportes);
-      setMaxExamenes(maxExamenes);
-      setEstudiantes(estudiantesData);
-    } catch (error) {
-      console.error("Error fetching initial data:", error);
-    } finally {
-      setIsLoading(false);
+          // Establecemos los valores en el estado
+          setMaxAportes(maxAportes);
+          setMaxExamenes(maxExamenes);
+          setEstudiantes(estudiantesData);
+        } catch (error) {
+          console.error("Error fetching initial data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchInitialData();
     }
   }, []);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
 
   useEffect(() => {
     inicializarCalificaciones();
@@ -163,21 +177,6 @@ function CalificarParalelo() {
     }));
   };
 
-  const calcularPromedio = (estudiante) => {
-    const notasEstudiante = calificaciones[estudiante.id]?.[periodoActual];
-    if (!notasEstudiante) return "-";
-
-    const notas = [
-      ...notasEstudiante.aportes,
-      ...notasEstudiante.examenes,
-    ].filter((nota) => nota !== "");
-
-    if (notas.length === 0) return "-";
-
-    const suma = notas.reduce((acc, nota) => acc + parseFloat(nota), 0);
-    return (suma / notas.length).toFixed(2);
-  };
-
   const verificarCalificacionesCompletas = () => {
     return Object.values(calificaciones).every(
       (estudiante) =>
@@ -195,10 +194,6 @@ function CalificarParalelo() {
           "Asegúrese de que todos los aportes y exámenes tengan una calificación.",
         type: "error",
       });
-
-      /* alert(
-        "No se pueden publicar las calificaciones. Asegúrese de que todos los aportes y exámenes tengan una calificación."
-      ); */
     }
   };
 
@@ -233,24 +228,56 @@ function CalificarParalelo() {
   //const { maxAportes, maxExamenes } = obtenerMaxAportesYExamenes(estudiantes);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    // <div className="container mx-auto px-4 py-8"> *
+    <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
       {isLoading && <CircularProgress />}
       <Notification
         message={notificacion.message}
         type={notificacion.type}
         onClose={() => setNotificacion({ message: "", type: "" })}
       />
-      <h1 className="text-3xl font-bold text-blue-900 mb-8">
-        Asignación de Calificaciones
-      </h1>
+      <div className="">
+        <div className="grid grid-cols-1 gap-2 pb-5">
+          <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
+            Calificaciones
+          </h2>
+          {paraleloData ? (
+            <p className="font-light text-lg text-black dark:text-white">
+              Registro de calificaciones en{" "}
+              <strong>
+                {paraleloData.DETALLEMATERIA.MATERIA.nombre.toUpperCase()}
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.nivel.toUpperCase()}
+              </strong>
+              , Paralelo{" "}
+              <strong>
+                {paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo.toUpperCase()}
+              </strong>
+              , Campus{" "}
+              <strong>
+                {paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.CAMPUS.nombre.toUpperCase()}
+              </strong>
+              .
+            </p>
+          ) : (
+            <p className="font-light text-lg text-black dark:text-white animate-pulse">
+              Cargando...
+            </p>
+          )}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-4">
         <Card className="">
           <CardHeader>
-            <CardHeader>Configuración</CardHeader>
+            <CardHeader className="font-semibold text-lg text-blue-900 dark:text-white">
+              Configuración
+            </CardHeader>
           </CardHeader>
-          <CardBody className="space-y-6">
-            <div className="space-y-2">
+          <CardBody className="flex flex-row gap-5 bg-yellow-300">
+            <div className="space-y-2 bg-pink-500 w-1/4">
               <label htmlFor="modalidad">Modalidad de Evaluación</label>
               <Select
                 id="modalidad"
@@ -271,7 +298,7 @@ function CalificarParalelo() {
                 ))}
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2  w-1/4">
               <label htmlFor="periodo">Periodo Actual</label>
               <Select
                 id="periodo"
@@ -295,7 +322,7 @@ function CalificarParalelo() {
                 ))}
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2  w-1/4">
               <label>Estructura de Evaluación</label>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -342,7 +369,7 @@ function CalificarParalelo() {
                 </div>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2  w-1/4">
               <label htmlFor="csv-upload">Importar Calificaciones (CSV)</label>
               <div className="flex items-center space-x-2">
                 <Input

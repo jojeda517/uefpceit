@@ -5,7 +5,7 @@ import { select } from "@nextui-org/react";
 export async function GET(request, { params }) {
   // Extraer y convertir parámetros a enteros
   const {
-    idDocente,
+    idPersona,
     idPeriodo,
     idMateria,
     idParalelo,
@@ -13,6 +13,11 @@ export async function GET(request, { params }) {
     idCampus,
     idEspecialidad,
   } = params;
+  const docente = await prisma.dOCENTE.findUnique({
+    where: { idPersonaPertenece: parseInt(idPersona) },
+  });
+
+  const idDocente = docente.id;
 
   const ids = {
     idDocente: Number(idDocente),

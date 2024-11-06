@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card, CardHeader, Chip, CardBody } from "@nextui-org/react";
 
@@ -17,12 +18,13 @@ function ParalelosDocente() {
   const { data: session } = useSession();
   const idPersonaPertenece = session?.user?.idPersonaPertenece || null;
   const [paralelosDocente, setParalelosDocente] = useState([]);
+  const router = useRouter();
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [paralelosDocenteRes] = await Promise.all([
-        fetch(`/api/paralelosDocente/${idPersonaPertenece}`),
+        fetch(`/api/paralelosDocente/${localStorage.getItem("idPersona")}`),
       ]);
 
       const [paralelosDocenteData] = await Promise.all([
@@ -40,6 +42,20 @@ function ParalelosDocente() {
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
+
+  const handleCardClick = (item) => {
+    try{
+      setIsLoading(true);
+      // Guardar el item en localStorage
+      localStorage.setItem("selectedParalelo", JSON.stringify(item));
+      // Redirigir a la página `calificarParalelo`
+      router.push("/docente/calificarParalelo");
+    } catch (error) {
+      console.error("Error al guardar el item en localStorage:", error);
+    } finally{
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -59,18 +75,21 @@ function ParalelosDocente() {
         {paralelosDocente.map((item) => (
           <Card
             key={item.id}
+            isPressable
+            onPress={() => handleCardClick(item)}
             className="hover:shadow-xl transition-shadow duration-300 cursor-pointer bg-white border-blue-200 overflow-hidden dark:bg-gray-300"
           >
-            <CardHeader className="bg-blue-900 text-white p-4 dark:bg-gray-900">
-              <CardHeader className="text-2xl flex items-center justify-between capitalize">
-                <span>
-                  Paralelo{" "}
-                  {item.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo}
-                </span>
-                <Chip variant="secondary" className="text-blue-900 bg-white capitalize">
-                  {item.DETALLEMATERIA.MATERIA.nombre.toLowerCase()}
-                </Chip>
-              </CardHeader>
+            <CardHeader className="bg-blue-900 text-white p-4 dark:bg-gray-900 text-2xl flex items-center justify-between capitalize">
+              <span>
+                Paralelo{" "}
+                {item.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo}
+              </span>
+              <Chip
+                variant="secondary"
+                className="text-blue-900 bg-white capitalize"
+              >
+                {item.DETALLEMATERIA.MATERIA.nombre.toLowerCase()}
+              </Chip>
             </CardHeader>
             <CardBody className="p-6">
               <div className="space-y-4">

@@ -1,0 +1,27 @@
+{
+  "id": "ba7e0aba-e565-4799-a66a-ff16326f7891",
+  "DETALLEMATERIA": {
+    "MATERIA": { "id": 2, "nombre": "MATEMATICA" },
+    "DETALLENIVELPARALELO": {
+      "PARALELO": { "id": 1, "paralelo": "A" },
+      "NIVEL": { "id": 11, "nivel": "primero de bachillerato" },
+      "CAMPUSESPECIALIDAD": {
+        "CAMPUS": {
+          "id": 1,
+          "nombre": "semi-presencial",
+          "direccion": "ambato"
+        },
+        "ESPECIALIDAD": { "id": 4, "especialidad": "bachillerato en ciencias" }
+      }
+    }
+  },
+  "PERIODO": {
+    "id": 1,
+    "idEvaluacionPertenece": 3,
+    "nombre": "septiembre 2024 - enero 2025",
+    "fechaInicio": "2024-09-01T00:00:00.000Z",
+    "fechaFin": "2025-01-31T00:00:00.000Z",
+    "descripcion": "sep2024-ene2025",
+    "estado": true
+  }
+}

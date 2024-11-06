@@ -55,6 +55,7 @@ export default function Login() {
         const session = await fetch("/api/auth/session").then((res) =>
           res.json()
         );
+        localStorage.setItem("idPersona", session.user.idPersonaPertenece);
         const roles = session.user?.roles || [];
         const roleRoutes = {
           administrador: "/administrador",
