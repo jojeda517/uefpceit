@@ -55,8 +55,8 @@ function CalificarParalelo() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [estudiantes, setEstudiantes] = useState([]);
-  const [maxAportes, setMaxAportes] = useState();
-  const [maxExamenes, setMaxExamenes] = useState();
+  const [maxAportes, setMaxAportes] = useState(3);
+  const [maxExamenes, setMaxExamenes] = useState(1);
 
   // Cargar datos iniciales de estudiantes y parciales una vez
   useEffect(() => {
@@ -96,31 +96,8 @@ function CalificarParalelo() {
             parcialesRes.json(),
           ]);
 
-          let maxAportes = 0;
-          let maxExamenes = 0;
-
-          estudiantesData.forEach((estudiante) => {
-            estudiante.MATRICULA.forEach((matricula) => {
-              matricula.CALIFICACION.forEach((calificacion) => {
-                maxAportes = Math.max(
-                  maxAportes,
-                  calificacion.APORTE?.length || 0
-                );
-                maxExamenes = Math.max(
-                  maxExamenes,
-                  calificacion.EXAMEN?.length || 0
-                );
-              });
-            });
-          });
-
-          if (maxAportes === 0) maxAportes = 3;
-          if (maxExamenes === 0) maxExamenes = 1;
-
           setEstudiantes(estudiantesData);
           setParciales(parcialesData);
-          setMaxAportes(maxAportes);
-          setMaxExamenes(maxExamenes);
           setParcialSeleccionado(String(parcialesData[0].id)); // Solo se setea al cargar inicialmente
         } catch (error) {
           console.error("Error fetching initial data:", error);
@@ -137,35 +114,36 @@ function CalificarParalelo() {
     // Filtra las calificaciones para el parcial seleccionado
     const nuevasCalificaciones = estudiantes.map((estudiante) => {
       const matricula = estudiante.MATRICULA[0];
+      const calificacion =
+        matricula.CALIFICACION.find(
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        ) || {};
+
+      const aportes = calificacion.APORTE || [];
+      const examenes = calificacion.EXAMEN || [];
+
+      // Calcular el número máximo de aportes y exámenes para este parcial
+      const maxAportes = aportes.length || 0; // Si no hay aportes, usamos 3 por defecto
+      const maxExamenes = examenes.length || 0; // Si no hay exámenes, usamos 1 por defecto
+
       return {
         ...estudiante,
-        calificacion:
-          matricula.CALIFICACION.find(
-            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-          ) || {}, // Retorna un objeto vacío si no encuentra la calificación
+        calificacion,
+        maxAportes,
+        maxExamenes,
       };
     });
+
     setCalificacionesFiltradas(nuevasCalificaciones);
+
+    // Definir el máximo de aportes y exámenes para toda la tabla
+    const maxAportesTotal = Math.max(
+      ...nuevasCalificaciones.map((estudiante) => estudiante.maxAportes)
+    );
+
+    if (maxAportesTotal > 3) setMaxAportes(maxAportesTotal);
   }, [parcialSeleccionado, estudiantes]);
 
-  useEffect(() => {
-    verificarEtapaAnterior();
-  }, [calificaciones, periodoActual]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const verificarEtapaAnterior = () => {
-    if (periodoActual > 1) {
-      const periodoAnteriorCompleto = Object.values(calificaciones).every(
-        (estudiante) =>
-          estudiante[periodoActual - 1] &&
-          estudiante[periodoActual - 1].aportes.every((nota) => nota !== "") &&
-          estudiante[periodoActual - 1].examenes.every((nota) => nota !== "")
-      );
-      setEtapaAnteriorCompleta(periodoAnteriorCompleto);
-    } else {
-      setEtapaAnteriorCompleta(true);
-    }
-  };
 
   const handleFileUpload = (event) => {
     console.log("Archivo subido:", event.target.files[0]);
@@ -289,14 +267,20 @@ function CalificarParalelo() {
                 <div className="flex items-center justify-between">
                   <span>Aportes: {maxAportes}</span>
                   <div>
-                    <Button onClick={agregarAporte} variant="outline" size="sm">
+                    <Button
+                      // Deshabilitado cuando el número de aportes es 5 o más
+                      isDisabled = {maxAportes >= 5}
+                      onClick={agregarAporte}
+                      variant="outline"
+                      size="sm"
+                    >
                       <PlusCircleIcon className="h-7 w-7 text-green-600" />
                     </Button>
                     <Button
                       onClick={eliminarAporte}
                       variant="outline"
                       size="sm"
-                      disabled={maxAportes <= 1}
+                      isDisabled={maxAportes <= 3}
                     >
                       <MinusCircleIcon className="h-7 w-7 text-red-600" />
                     </Button>
@@ -342,9 +326,7 @@ function CalificarParalelo() {
               </div>
             )}
             <div className="overflow-x-auto">
-              <Table
-                aria-label="Tabla de calificaciones" /* Tus estilos aquí */
-              >
+              <Table aria-label="Tabla de calificaciones">
                 <TableHeader>
                   <TableColumn>Estudiante</TableColumn>
                   {Array.from({ length: maxAportes }, (_, i) => (
