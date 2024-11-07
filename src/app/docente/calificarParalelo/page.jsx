@@ -24,11 +24,11 @@ import {
 } from "@nextui-org/react";
 
 import {
-  MinusIcon,
-  PlusIcon,
   ArrowUpTrayIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
+
+import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/24/solid";
 
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
@@ -42,11 +42,11 @@ const modalidades = [
 function CalificarParalelo() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [paraleloData, setParaleloData] = useState(null); // Datos del paralelo
-  const [idPersona, setIdPersona] = useState(null); // Modalidad de evaluación
+  const [idPersona, setIdPersona] = useState(null);
+  const [parciales, setParciales] = useState([]); // Parciales del paralelo
+  const [parcialSeleccionado, setParcialSeleccionado] = useState(null);
   const [modalidad, setModalidad] = useState(modalidades[0]);
   const [periodoActual, setPeriodoActual] = useState(1);
-  const [aportes, setAportes] = useState(3);
-  const [examenes, setExamenes] = useState(1);
   const [calificaciones, setCalificaciones] = useState({});
   const [etapaAnteriorCompleta, setEtapaAnteriorCompleta] = useState(true);
   const [calificacionesPublicadas, setCalificacionesPublicadas] =
@@ -60,32 +60,55 @@ function CalificarParalelo() {
   useEffect(() => {
     // Recuperar los datos del almacenamiento local
     const storedParalelo = localStorage.getItem("selectedParalelo");
-    setIdPersona(localStorage.getItem("idPersona"));
     if (storedParalelo) {
-      const paraleloData = JSON.parse(storedParalelo);
-      setParaleloData(paraleloData);
+      const parsedParaleloData = JSON.parse(storedParalelo);
+      setParaleloData(parsedParaleloData);
 
-      // Una vez que tenemos paraleloData, podemos realizar la solicitud con los parámetros adecuados
+      // Cargar datos iniciales una vez que tenemos el paraleloData
       const fetchInitialData = async () => {
         setIsLoading(true);
         try {
-          const estudiantesRes = await fetch(
-            `/api/estudiantesParalelo/${localStorage.getItem("idPersona")}/${paraleloData.PERIODO.id}/${paraleloData.DETALLEMATERIA.MATERIA.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.CAMPUS.id}/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.ESPECIALIDAD.id}`
-          );
-          const estudiantesData = await estudiantesRes.json();
+          // Configurar URL de estudiantes con los datos del almacenamiento local
+          const estudianteUrl = `/api/estudiantesParalelo/${localStorage.getItem(
+            "idPersona"
+          )}/${parsedParaleloData.PERIODO.id}/${
+            parsedParaleloData.DETALLEMATERIA.MATERIA.id
+          }/${
+            parsedParaleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.id
+          }/${
+            parsedParaleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.id
+          }/${
+            parsedParaleloData.DETALLEMATERIA.DETALLENIVELPARALELO
+              .CAMPUSESPECIALIDAD.CAMPUS.id
+          }/${
+            parsedParaleloData.DETALLEMATERIA.DETALLENIVELPARALELO
+              .CAMPUSESPECIALIDAD.ESPECIALIDAD.id
+          }`;
 
-          // Inicializamos con el valor mínimo de columnas
+          // Ejecutar ambas solicitudes en paralelo
+          const [estudiantesRes, parcialesRes] = await Promise.all([
+            fetch(estudianteUrl),
+            fetch(
+              `/api/parcial/${parsedParaleloData.PERIODO.idEvaluacionPertenece}`
+            ),
+          ]);
+
+          const [estudiantesData, parcialesData] = await Promise.all([
+            estudiantesRes.json(),
+            parcialesRes.json(),
+          ]);
+
+          // Procesar datos de estudiantes
           let maxAportes = 0;
           let maxExamenes = 0;
 
-          // Determinar el número máximo de aportes y exámenes
           estudiantesData.forEach((estudiante) => {
             estudiante.MATRICULA.forEach((matricula) => {
               matricula.CALIFICACION.forEach((calificacion) => {
-                if (calificacion.APORTE && calificacion.APORTE.length > 0) {
+                if (calificacion.APORTE?.length > 0) {
                   maxAportes = Math.max(maxAportes, calificacion.APORTE.length);
                 }
-                if (calificacion.EXAMEN && calificacion.EXAMEN.length > 0) {
+                if (calificacion.EXAMEN?.length > 0) {
                   maxExamenes = Math.max(
                     maxExamenes,
                     calificacion.EXAMEN.length
@@ -95,14 +118,16 @@ function CalificarParalelo() {
             });
           });
 
-          // Valores mínimos por defecto si no se encuentra ninguno
+          // Asignar valores mínimos si es necesario
           if (maxAportes === 0) maxAportes = 3;
           if (maxExamenes === 0) maxExamenes = 1;
 
-          // Establecemos los valores en el estado
+          // Actualizar el estado con los datos recibidos
+          setEstudiantes(estudiantesData);
+          setParciales(parcialesData);
           setMaxAportes(maxAportes);
           setMaxExamenes(maxExamenes);
-          setEstudiantes(estudiantesData);
+          setParcialSeleccionado(String(parcialesData[0].id));
         } catch (error) {
           console.error("Error fetching initial data:", error);
         } finally {
@@ -112,31 +137,11 @@ function CalificarParalelo() {
 
       fetchInitialData();
     }
-  }, []);
-
-  useEffect(() => {
-    inicializarCalificaciones();
-  }, [modalidad, aportes, examenes]);
+  }, [idPersona]);
 
   useEffect(() => {
     verificarEtapaAnterior();
   }, [calificaciones, periodoActual]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const inicializarCalificaciones = () => {
-    const nuevasCalificaciones = {};
-    estudiantes.forEach((estudiante) => {
-      nuevasCalificaciones[estudiante.id] = {};
-      for (let periodo = 1; periodo <= modalidad.periodos; periodo++) {
-        nuevasCalificaciones[estudiante.id][periodo] = {
-          aportes: Array(aportes).fill(""),
-          examenes: Array(examenes).fill(""),
-        };
-      }
-    });
-    setCalificaciones(nuevasCalificaciones);
-    setCalificacionesPublicadas(false);
-  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const verificarEtapaAnterior = () => {
@@ -157,10 +162,8 @@ function CalificarParalelo() {
     console.log("Archivo subido:", event.target.files[0]);
   };
 
-  const agregarAporte = () => setAportes((prev) => prev + 1);
-  const eliminarAporte = () => setAportes((prev) => Math.max(1, prev - 1));
-  const agregarExamen = () => setExamenes((prev) => prev + 1);
-  const eliminarExamen = () => setExamenes((prev) => Math.max(1, prev - 1));
+  const agregarAporte = () => setMaxAportes((prev) => prev + 1);
+  const eliminarAporte = () => setMaxAportes((prev) => Math.max(1, prev - 1));
 
   const handleCalificacionChange = (estudianteId, tipo, index, valor) => {
     setCalificaciones((prev) => ({
@@ -203,29 +206,6 @@ function CalificarParalelo() {
     // Aquí iría la lógica para enviar las calificaciones al backend
     console.log("Calificaciones publicadas:", calificaciones);
   };
-
-  // Función para calcular el número máximo de aportes y exámenes
-  const obtenerMaxAportesYExamenes = (estudiantes) => {
-    let maxAportes = 3; // Establece un mínimo de 3 aportes
-    let maxExamenes = 1; // Establece un mínimo de 1 examen
-
-    estudiantes.forEach((estudiante) => {
-      estudiante.MATRICULA.forEach((matricula) => {
-        matricula.CALIFICACION.forEach((calificacion) => {
-          maxAportes = Math.max(maxAportes, calificacion.APORTE.size);
-          maxExamenes = Math.max(maxExamenes, calificacion.EXAMEN.size);
-        });
-      });
-    });
-
-    console.log("maximo", maxAportes);
-    console.log("maximo examenes", maxExamenes);
-
-    return { maxAportes, maxExamenes };
-  };
-
-  // Llamada a la función para obtener los máximos
-  //const { maxAportes, maxExamenes } = obtenerMaxAportesYExamenes(estudiantes);
 
   return (
     // <div className="container mx-auto px-4 py-8"> *
@@ -277,47 +257,18 @@ function CalificarParalelo() {
             </CardHeader>
           </CardHeader>
           <CardBody className="flex flex-row gap-5 bg-yellow-300">
-            <div className="space-y-2 bg-pink-500 w-1/4">
-              <label htmlFor="modalidad">Modalidad de Evaluación</label>
-              <Select
-                id="modalidad"
-                aria-labelledby="modalidad"
-                placeholder="Seleccione el parcial"
-                onChange={(e) => {
-                  const newModalidad = modalidades.find(
-                    (m) => m.id === parseInt(e.target.value)
-                  );
-                  setModalidad(newModalidad);
-                  setPeriodoActual(1);
-                }}
-              >
-                {modalidades.map((m) => (
-                  <SelectItem key={m.id} value={m.id.toString()}>
-                    {m.nombre}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
             <div className="space-y-2  w-1/4">
-              <label htmlFor="periodo">Periodo Actual</label>
               <Select
-                id="periodo"
-                aria-labelledby="periodo"
-                placeholder="Seleccione periodo"
-                selectedKeys={[periodoActual.toString()]}
-                onChange={(e) => setPeriodoActual(parseInt(e.target.value))}
-                isDisabled={!etapaAnteriorCompleta}
+                id="parcial"
+                labelPlacement="outside"
+                label="Parcial"
+                placeholder="Seleccione el parcial"
+                onSelectionChange={setParcialSeleccionado}
+                selectedKeys={parcialSeleccionado}
               >
-                {Array.from({ length: modalidad.periodos }, (_, i) => (
-                  <SelectItem
-                    key={(i + 1).toString()}
-                    value={(i + 1).toString()}
-                  >
-                    {modalidad.nombre === "Trimestres"
-                      ? `Trimestre ${i + 1}`
-                      : modalidad.nombre === "Quimestres"
-                      ? `Quimestre ${i + 1}`
-                      : `Etapa ${i + 1}`}
+                {parciales.map((parcial) => (
+                  <SelectItem key={parcial.id} className="capitalize">
+                    {parcial.parcial}
                   </SelectItem>
                 ))}
               </Select>
@@ -326,44 +277,22 @@ function CalificarParalelo() {
               <label>Estructura de Evaluación</label>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span>Aportes: {aportes}</span>
+                  <span>Aportes: {maxAportes}</span>
                   <div>
                     <Button
                       onClick={agregarAporte}
                       variant="outline"
                       size="sm"
-                      className="mr-2"
                     >
-                      <PlusIcon className="h-4 w-4" />
+                      <PlusCircleIcon className="h-7 w-7 text-green-600" />
                     </Button>
                     <Button
                       onClick={eliminarAporte}
                       variant="outline"
                       size="sm"
-                      disabled={aportes <= 1}
+                      disabled={maxAportes <= 1}
                     >
-                      <MinusIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Exámenes: {examenes}</span>
-                  <div>
-                    <Button
-                      onClick={agregarExamen}
-                      variant="outline"
-                      size="sm"
-                      className="mr-2"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={eliminarExamen}
-                      variant="outline"
-                      size="sm"
-                      disabled={examenes <= 1}
-                    >
-                      <MinusIcon className="h-4 w-4" />
+                      <MinusCircleIcon className="h-7 w-7 text-red-600" />
                     </Button>
                   </div>
                 </div>

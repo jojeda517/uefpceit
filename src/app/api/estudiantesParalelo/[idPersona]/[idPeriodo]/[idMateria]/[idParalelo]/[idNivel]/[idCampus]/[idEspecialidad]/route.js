@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
-import { select } from "@nextui-org/react";
 
 export async function GET(request, { params }) {
   // Extraer y convertir parámetros a enteros
