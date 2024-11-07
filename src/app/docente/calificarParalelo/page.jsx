@@ -44,7 +44,8 @@ function CalificarParalelo() {
   const [paraleloData, setParaleloData] = useState(null); // Datos del paralelo
   const [idPersona, setIdPersona] = useState(null);
   const [parciales, setParciales] = useState([]); // Parciales del paralelo
-  const [parcialSeleccionado, setParcialSeleccionado] = useState(null);
+  const [parcialSeleccionado, setParcialSeleccionado] = useState(new Set([]));
+  const [calificacionesFiltradas, setCalificacionesFiltradas] = useState([]);
   const [modalidad, setModalidad] = useState(modalidades[0]);
   const [periodoActual, setPeriodoActual] = useState(1);
   const [calificaciones, setCalificaciones] = useState({});
@@ -57,18 +58,16 @@ function CalificarParalelo() {
   const [maxAportes, setMaxAportes] = useState();
   const [maxExamenes, setMaxExamenes] = useState();
 
+  // Cargar datos iniciales de estudiantes y parciales una vez
   useEffect(() => {
-    // Recuperar los datos del almacenamiento local
     const storedParalelo = localStorage.getItem("selectedParalelo");
     if (storedParalelo) {
       const parsedParaleloData = JSON.parse(storedParalelo);
       setParaleloData(parsedParaleloData);
 
-      // Cargar datos iniciales una vez que tenemos el paraleloData
       const fetchInitialData = async () => {
         setIsLoading(true);
         try {
-          // Configurar URL de estudiantes con los datos del almacenamiento local
           const estudianteUrl = `/api/estudiantesParalelo/${localStorage.getItem(
             "idPersona"
           )}/${parsedParaleloData.PERIODO.id}/${
@@ -85,7 +84,6 @@ function CalificarParalelo() {
               .CAMPUSESPECIALIDAD.ESPECIALIDAD.id
           }`;
 
-          // Ejecutar ambas solicitudes en paralelo
           const [estudiantesRes, parcialesRes] = await Promise.all([
             fetch(estudianteUrl),
             fetch(
@@ -98,36 +96,32 @@ function CalificarParalelo() {
             parcialesRes.json(),
           ]);
 
-          // Procesar datos de estudiantes
           let maxAportes = 0;
           let maxExamenes = 0;
 
           estudiantesData.forEach((estudiante) => {
             estudiante.MATRICULA.forEach((matricula) => {
               matricula.CALIFICACION.forEach((calificacion) => {
-                if (calificacion.APORTE?.length > 0) {
-                  maxAportes = Math.max(maxAportes, calificacion.APORTE.length);
-                }
-                if (calificacion.EXAMEN?.length > 0) {
-                  maxExamenes = Math.max(
-                    maxExamenes,
-                    calificacion.EXAMEN.length
-                  );
-                }
+                maxAportes = Math.max(
+                  maxAportes,
+                  calificacion.APORTE?.length || 0
+                );
+                maxExamenes = Math.max(
+                  maxExamenes,
+                  calificacion.EXAMEN?.length || 0
+                );
               });
             });
           });
 
-          // Asignar valores mínimos si es necesario
           if (maxAportes === 0) maxAportes = 3;
           if (maxExamenes === 0) maxExamenes = 1;
 
-          // Actualizar el estado con los datos recibidos
           setEstudiantes(estudiantesData);
           setParciales(parcialesData);
           setMaxAportes(maxAportes);
           setMaxExamenes(maxExamenes);
-          setParcialSeleccionado(String(parcialesData[0].id));
+          setParcialSeleccionado(String(parcialesData[0].id)); // Solo se setea al cargar inicialmente
         } catch (error) {
           console.error("Error fetching initial data:", error);
         } finally {
@@ -138,6 +132,21 @@ function CalificarParalelo() {
       fetchInitialData();
     }
   }, [idPersona]);
+
+  useEffect(() => {
+    // Filtra las calificaciones para el parcial seleccionado
+    const nuevasCalificaciones = estudiantes.map((estudiante) => {
+      const matricula = estudiante.MATRICULA[0];
+      return {
+        ...estudiante,
+        calificacion:
+          matricula.CALIFICACION.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          ) || {}, // Retorna un objeto vacío si no encuentra la calificación
+      };
+    });
+    setCalificacionesFiltradas(nuevasCalificaciones);
+  }, [parcialSeleccionado, estudiantes]);
 
   useEffect(() => {
     verificarEtapaAnterior();
@@ -265,6 +274,7 @@ function CalificarParalelo() {
                 placeholder="Seleccione el parcial"
                 onSelectionChange={setParcialSeleccionado}
                 selectedKeys={parcialSeleccionado}
+                onChange={(e) => setParcialSeleccionado(e.target.value)}
               >
                 {parciales.map((parcial) => (
                   <SelectItem key={parcial.id} className="capitalize">
@@ -279,11 +289,7 @@ function CalificarParalelo() {
                 <div className="flex items-center justify-between">
                   <span>Aportes: {maxAportes}</span>
                   <div>
-                    <Button
-                      onClick={agregarAporte}
-                      variant="outline"
-                      size="sm"
-                    >
+                    <Button onClick={agregarAporte} variant="outline" size="sm">
                       <PlusCircleIcon className="h-7 w-7 text-green-600" />
                     </Button>
                     <Button
@@ -337,12 +343,7 @@ function CalificarParalelo() {
             )}
             <div className="overflow-x-auto">
               <Table
-                aria-label="Tabla de calificaciones"
-                classNames={{
-                  wrapper: "dark:bg-gray-700",
-                  th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
-                  tr: "dark:text-white dark:hover:text-gray-900 text-justify",
-                }}
+                aria-label="Tabla de calificaciones" /* Tus estilos aquí */
               >
                 <TableHeader>
                   <TableColumn>Estudiante</TableColumn>
@@ -358,14 +359,12 @@ function CalificarParalelo() {
                   ))}
                   <TableColumn>Promedio</TableColumn>
                 </TableHeader>
+
                 <TableBody>
-                  {estudiantes.map((estudiante) => {
-                    // Obtenemos la primera matrícula y calificación para cada estudiante
-                    const matricula = estudiante.MATRICULA[0]; // Asumiendo una matrícula por estudiante en esta lista
-                    const calificacion = matricula.CALIFICACION[0] || {}; // Tomamos la primera calificación o un objeto vacío
-                    const aportes = calificacion.APORTE || []; // Array de aportes
-                    const examenes = calificacion.EXAMEN || []; // Array de exámenes
-                    const promedio = calificacion.promedio || ""; // Promedio de la calificación, si existe
+                  {calificacionesFiltradas.map((estudiante) => {
+                    const aportes = estudiante.calificacion.APORTE || [];
+                    const examenes = estudiante.calificacion.EXAMEN || [];
+                    const promedio = estudiante.calificacion.promedio || "";
 
                     return (
                       <TableRow key={estudiante.id}>
@@ -374,7 +373,6 @@ function CalificarParalelo() {
                           {estudiante.PERSONA.nombre.toLowerCase()}
                         </TableCell>
 
-                        {/* Renderizamos los aportes en sus columnas */}
                         {Array.from({ length: maxAportes }, (_, i) => (
                           <TableCell key={`aporte-${i}`}>
                             <Input
@@ -400,7 +398,6 @@ function CalificarParalelo() {
                           </TableCell>
                         ))}
 
-                        {/* Renderizamos los exámenes en sus columnas */}
                         {Array.from({ length: maxExamenes }, (_, i) => (
                           <TableCell key={`examen-${i}`}>
                             <Input
@@ -426,7 +423,6 @@ function CalificarParalelo() {
                           </TableCell>
                         ))}
 
-                        {/* Columna de Promedio */}
                         <TableCell>{promedio}</TableCell>
                       </TableRow>
                     );
