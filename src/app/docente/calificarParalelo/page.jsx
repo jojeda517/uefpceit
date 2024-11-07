@@ -111,7 +111,6 @@ function CalificarParalelo() {
   }, [idPersona]);
 
   useEffect(() => {
-    // Filtra las calificaciones para el parcial seleccionado
     const nuevasCalificaciones = estudiantes.map((estudiante) => {
       const matricula = estudiante.MATRICULA[0];
       const calificacion =
@@ -122,28 +121,29 @@ function CalificarParalelo() {
       const aportes = calificacion.APORTE || [];
       const examenes = calificacion.EXAMEN || [];
 
-      // Calcular el número máximo de aportes y exámenes para este parcial
-      const maxAportes = aportes.length || 0; // Si no hay aportes, usamos 3 por defecto
-      const maxExamenes = examenes.length || 0; // Si no hay exámenes, usamos 1 por defecto
-
       return {
         ...estudiante,
         calificacion,
-        maxAportes,
-        maxExamenes,
+        maxAportes: Math.max(aportes.length, 3), // Asegura mínimo de 3 aportes
+        maxExamenes: Math.max(examenes.length, 1), // Asegura mínimo de 1 examen
       };
     });
 
     setCalificacionesFiltradas(nuevasCalificaciones);
 
-    // Definir el máximo de aportes y exámenes para toda la tabla
+    // Establece maxAportes y maxExamenes para este parcial específico
     const maxAportesTotal = Math.max(
+      3,
       ...nuevasCalificaciones.map((estudiante) => estudiante.maxAportes)
     );
+    const maxExamenesTotal = Math.max(
+      1,
+      ...nuevasCalificaciones.map((estudiante) => estudiante.maxExamenes)
+    );
 
-    if (maxAportesTotal > 3) setMaxAportes(maxAportesTotal);
+    setMaxAportes(maxAportesTotal);
+    setMaxExamenes(maxExamenesTotal);
   }, [parcialSeleccionado, estudiantes]);
-
 
   const handleFileUpload = (event) => {
     console.log("Archivo subido:", event.target.files[0]);
@@ -269,7 +269,7 @@ function CalificarParalelo() {
                   <div>
                     <Button
                       // Deshabilitado cuando el número de aportes es 5 o más
-                      isDisabled = {maxAportes >= 5}
+                      isDisabled={maxAportes >= 5}
                       onClick={agregarAporte}
                       variant="outline"
                       size="sm"
