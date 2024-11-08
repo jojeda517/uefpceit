@@ -44,7 +44,7 @@ function CalificarParalelo() {
   const [paraleloData, setParaleloData] = useState(null); // Datos del paralelo
   const [idPersona, setIdPersona] = useState(null);
   const [parciales, setParciales] = useState([]); // Parciales del paralelo
-  const [parcialSeleccionado, setParcialSeleccionado] = useState(new Set([]));
+  const [parcialSeleccionado, setParcialSeleccionado] = useState("");
   const [calificacionesFiltradas, setCalificacionesFiltradas] = useState([]);
   const [modalidad, setModalidad] = useState(modalidades[0]);
   const [periodoActual, setPeriodoActual] = useState(1);
@@ -96,6 +96,14 @@ function CalificarParalelo() {
             parcialesRes.json(),
           ]);
 
+          // Agregar el "Supletorio" a la lista de parciales
+          parcialesData.push({
+            id: "supletorio", // Puedes usar un ID especial para el supletorio
+            parcial: "Supletorio", // Nombre para mostrar en el select
+            idEvaluacionPertenece:
+              parsedParaleloData.PERIODO.idEvaluacionPertenece,
+          });
+
           setEstudiantes(estudiantesData);
           setParciales(parcialesData);
           setParcialSeleccionado(String(parcialesData[0].id)); // Solo se setea al cargar inicialmente
@@ -111,38 +119,78 @@ function CalificarParalelo() {
   }, [idPersona]);
 
   useEffect(() => {
-    const nuevasCalificaciones = estudiantes.map((estudiante) => {
-      const matricula = estudiante.MATRICULA[0];
-      const calificacion =
-        matricula.CALIFICACION.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        ) || {};
+    if (parcialSeleccionado === "supletorio") {
+      // Calcular el promedio de los parciales anteriores
+      const nuevasCalificaciones = estudiantes.map((estudiante) => {
+        const parcialesPrevios = estudiante.MATRICULA[0].CALIFICACION.filter(
+          (calif) => calif.idParcial !== parcialSeleccionado
+        );
 
-      const aportes = calificacion.APORTE || [];
-      const examenes = calificacion.EXAMEN || [];
+        // Calcular el promedio de los aportes (70%) + examen (30%)
+        const promedioParciales =
+          parcialesPrevios.reduce((acc, calif) => {
+            const sumaAportes = calif.APORTE.reduce(
+              (total, aporte) => total + aporte.aporte,
+              0
+            );
+            const promedioAportes = sumaAportes / calif.APORTE.length || 0;
+            const examenNota = calif.EXAMEN[0]?.nota || 0; // Se asume que siempre hay un examen
 
-      return {
-        ...estudiante,
-        calificacion,
-        maxAportes: Math.max(aportes.length, 3), // Asegura mínimo de 3 aportes
-        maxExamenes: Math.max(examenes.length, 1), // Asegura mínimo de 1 examen
-      };
-    });
+            // Fórmula de promedio ponderado
+            return acc + (promedioAportes * 0.7 + examenNota * 0.3);
+          }, 0) / parcialesPrevios.length;
 
-    setCalificacionesFiltradas(nuevasCalificaciones);
+        // Determinar el estado del estudiante
+        const estado =
+          promedioParciales >= 7
+            ? "Aprobado"
+            : promedioParciales >= 5
+            ? "Supletorio"
+            : "Reprobado";
 
-    // Establece maxAportes y maxExamenes para este parcial específico
-    const maxAportesTotal = Math.max(
-      3,
-      ...nuevasCalificaciones.map((estudiante) => estudiante.maxAportes)
-    );
-    const maxExamenesTotal = Math.max(
-      1,
-      ...nuevasCalificaciones.map((estudiante) => estudiante.maxExamenes)
-    );
+        return {
+          ...estudiante,
+          promedioParciales,
+          estado,
+          supletorioCalificacion: "", // Campo para la calificación del supletorio
+        };
+      });
 
-    setMaxAportes(maxAportesTotal);
-    setMaxExamenes(maxExamenesTotal);
+      setCalificacionesFiltradas(nuevasCalificaciones);
+    } else {
+      const nuevasCalificaciones = estudiantes.map((estudiante) => {
+        const matricula = estudiante.MATRICULA[0];
+        const calificacion =
+          matricula.CALIFICACION.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          ) || {};
+
+        const aportes = calificacion.APORTE || [];
+        const examenes = calificacion.EXAMEN || [];
+
+        return {
+          ...estudiante,
+          calificacion,
+          maxAportes: Math.max(aportes.length, 3), // Asegura mínimo de 3 aportes
+          maxExamenes: Math.max(examenes.length, 1), // Asegura mínimo de 1 examen
+        };
+      });
+
+      setCalificacionesFiltradas(nuevasCalificaciones);
+
+      // Establece maxAportes y maxExamenes para este parcial específico
+      const maxAportesTotal = Math.max(
+        3,
+        ...nuevasCalificaciones.map((estudiante) => estudiante.maxAportes)
+      );
+      const maxExamenesTotal = Math.max(
+        1,
+        ...nuevasCalificaciones.map((estudiante) => estudiante.maxExamenes)
+      );
+
+      setMaxAportes(maxAportesTotal);
+      setMaxExamenes(maxExamenesTotal);
+    }
   }, [parcialSeleccionado, estudiantes]);
 
   const handleFileUpload = (event) => {
@@ -250,8 +298,7 @@ function CalificarParalelo() {
                 labelPlacement="outside"
                 label="Parcial"
                 placeholder="Seleccione el parcial"
-                onSelectionChange={setParcialSeleccionado}
-                selectedKeys={parcialSeleccionado}
+                selectedKeys={[parcialSeleccionado]}
                 onChange={(e) => setParcialSeleccionado(e.target.value)}
               >
                 {parciales.map((parcial) => (
@@ -260,6 +307,7 @@ function CalificarParalelo() {
                   </SelectItem>
                 ))}
               </Select>
+              <p>parcial: {parcialSeleccionado}</p>
             </div>
             <div className="space-y-2  w-1/4">
               <label>Estructura de Evaluación</label>
@@ -344,9 +392,31 @@ function CalificarParalelo() {
 
                 <TableBody>
                   {calificacionesFiltradas.map((estudiante) => {
-                    const aportes = estudiante.calificacion.APORTE || [];
-                    const examenes = estudiante.calificacion.EXAMEN || [];
-                    const promedio = estudiante.calificacion.promedio || "";
+                    // Verificar si existen las calificaciones, aportes y exámenes
+                    const aportes = estudiante.calificacion?.APORTE || [];
+                    const examenes = estudiante.calificacion?.EXAMEN || [];
+                    const promedio = estudiante.calificacion?.promedio || null;
+
+                    // Calcular el promedio solo si hay aportes y examen
+                    const calcularPromedio = () => {
+                      if (aportes.length > 0 && examenes.length > 0) {
+                        const totalAportes = aportes.reduce(
+                          (acc, aporte) => acc + aporte.aporte,
+                          0
+                        );
+                        const totalExamen = examenes.reduce(
+                          (acc, examen) => acc + examen.nota,
+                          0
+                        );
+
+                        const promedioAportes =
+                          (totalAportes * 0.7) / aportes.length; // 70% de los aportes
+                        const promedioExamen =
+                          (totalExamen * 0.3) / examenes.length; // 30% del examen
+                        return (promedioAportes + promedioExamen).toFixed(2);
+                      }
+                      return "Pendiente"; // Si no hay aportes o examen
+                    };
 
                     return (
                       <TableRow key={estudiante.id}>
@@ -405,7 +475,9 @@ function CalificarParalelo() {
                           </TableCell>
                         ))}
 
-                        <TableCell>{promedio}</TableCell>
+                        <TableCell>
+                          {promedio !== null ? calcularPromedio() : "Pendiente"}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
