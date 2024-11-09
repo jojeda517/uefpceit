@@ -402,9 +402,8 @@ function CalificarParalelo() {
                   </SelectItem>
                 ))}
               </Select>
-              <p>parcial: {parcialSeleccionado}</p>
             </div>
-            <div className="space-y-2  w-1/4">
+            {/* <div className="space-y-2  w-1/4">
               <label>Estructura de Evaluación</label>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -430,7 +429,7 @@ function CalificarParalelo() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className="space-y-2  w-1/4">
               <label htmlFor="csv-upload">Importar Calificaciones (CSV)</label>
               <div className="flex items-center space-x-2">
@@ -520,6 +519,7 @@ function CalificarParalelo() {
 
                   <TableBody>
                     {calificacionesFiltradas.map((estudiante) => {
+                      console.log("Estudiante:", estudiante);
                       // Verificar si existen las calificaciones, aportes y exámenes
                       const aportes = estudiante.calificacion?.APORTE || [];
                       const examenes = estudiante.calificacion?.EXAMEN || [];
@@ -547,7 +547,8 @@ function CalificarParalelo() {
                                     e.target.value
                                   )
                                 }
-                                isDisabled={!etapaAnteriorCompleta}
+                                //isDisabled={!etapaAnteriorCompleta}
+                                disabled={!estudiante.calificacion.PARCIAL.CIERREFASE[0].estado}
                                 size="sm"
                               />
                             </TableCell>
@@ -569,7 +570,7 @@ function CalificarParalelo() {
                                     e.target.value
                                   )
                                 }
-                                isDisabled={!etapaAnteriorCompleta}
+                                disabled={!estudiante.calificacion.PARCIAL.CIERREFASE[0].estado}
                                 size="sm"
                               />
                             </TableCell>
