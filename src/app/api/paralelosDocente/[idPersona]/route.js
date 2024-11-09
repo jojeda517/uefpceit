@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
       where: { idDocentePertenece: docente.id },
       select: {
         DETALLEMATERIA: {
-          select: {
+          include: {
             MATERIA: true,
             DETALLENIVELPARALELO: {
               select: {
@@ -38,6 +38,7 @@ export async function GET(request, { params }) {
           },
         },
         PERIODO: true,
+        idDocentePertenece: true,
       },
     });
 
