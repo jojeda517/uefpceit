@@ -269,55 +269,52 @@ function CalificarParalelo() {
   };
 
   const handleSubmitCalificaciones = async () => {
-    const calificacionesData = {
-      idDetalleMateriaPertenece: paraleloData.DETALLEMATERIA.id,
-      idPeriodoPertenece: paraleloData.PERIODO.id,
-      idDocentePertenece: paraleloData.idDocentePertenece,
-      idParcial: parcialSeleccionado,
-      calificaciones: calificacionesFiltradas.map((estudiante) => {
-        const aportes = estudiante.calificacion.APORTE || [];
-        const examenes = estudiante.calificacion.EXAMEN || [];
-
-        // Determina la cantidad de aportes necesaria
-        const cantidadDeAportes = Math.max(aportes.length, maxAportes);
-
-        // Maneja la nota del examen correctamente o establece 0 si no está definida
-        const cantidadDeExamenes =
-          examenes.length > 0 && examenes[0]?.nota !== undefined
-            ? examenes[0].nota
-            : 0;
-
-        // Ajusta los aportes al número máximo de columnas, reemplazando valores faltantes con 0
-        const aportesAjustados = Array(cantidadDeAportes)
-          .fill(0)
-          .map((_, index) => aportes[index]?.aporte || 0);
-
-        // Calcula el promedio de los aportes (ajusta la división para el promedio)
-        const promedioAportes =
-          aportesAjustados.reduce((sum, val) => sum + val, 0) / maxAportes; // evita dividir por 0
-
-        console.log("Promedio Aportes:", promedioAportes);
-
-        // Calcula el promedio del examen directamente o usa 0 si no existe
-        const promedioExamenes = cantidadDeExamenes || 0;
-
-        console.log("Promedio Examenes:", promedioExamenes);
-
-        // Cálculo final del promedio, ponderando aportes y exámenes
-        const promedio = parseFloat(
-          (promedioAportes * 0.7 + promedioExamenes * 0.3).toFixed(2)
-        );
-
-        return {
-          idEstudiante: estudiante.id,
-          aportes: aportesAjustados,
-          examenes: cantidadDeExamenes,
-          promedio, // Añadimos el promedio aquí
-        };
-      }),
-    };
-
     try {
+      setIsLoading(true);
+      const calificacionesData = {
+        idDetalleMateriaPertenece: paraleloData.DETALLEMATERIA.id,
+        idPeriodoPertenece: paraleloData.PERIODO.id,
+        idDocentePertenece: paraleloData.idDocentePertenece,
+        idParcial: parcialSeleccionado,
+        calificaciones: calificacionesFiltradas.map((estudiante) => {
+          const aportes = estudiante.calificacion.APORTE || [];
+          const examenes = estudiante.calificacion.EXAMEN || [];
+
+          // Determina la cantidad de aportes necesaria
+          const cantidadDeAportes = Math.max(aportes.length, maxAportes);
+
+          // Maneja la nota del examen correctamente o establece 0 si no está definida
+          const cantidadDeExamenes =
+            examenes.length > 0 && examenes[0]?.nota !== undefined
+              ? examenes[0].nota
+              : 0;
+
+          // Ajusta los aportes al número máximo de columnas, reemplazando valores faltantes con 0
+          const aportesAjustados = Array(cantidadDeAportes)
+            .fill(0)
+            .map((_, index) => aportes[index]?.aporte || 0);
+
+          // Calcula el promedio de los aportes (ajusta la división para el promedio)
+          const promedioAportes =
+            aportesAjustados.reduce((sum, val) => sum + val, 0) / maxAportes; // evita dividir por 0
+
+          // Calcula el promedio del examen directamente o usa 0 si no existe
+          const promedioExamenes = cantidadDeExamenes || 0;
+
+          // Cálculo final del promedio, ponderando aportes y exámenes
+          const promedio = parseFloat(
+            (promedioAportes * 0.7 + promedioExamenes * 0.3).toFixed(2)
+          );
+
+          return {
+            idEstudiante: estudiante.id,
+            aportes: aportesAjustados,
+            examenes: cantidadDeExamenes,
+            promedio, // Añadimos el promedio aquí
+          };
+        }),
+      };
+
       const response = await fetch("/api/calificarCurso", {
         method: "POST",
         headers: {
@@ -328,12 +325,20 @@ function CalificarParalelo() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Calificación registrada:", data);
+        setNotificacion({
+          message: response.message || "Calificaciones guardadas correctamente",
+          type: "success",
+        });
       } else {
-        console.log("Error:", data.message);
+        setNotificacion({
+          message: response.message || "Error al guardar las calificaciones",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -519,7 +524,6 @@ function CalificarParalelo() {
 
                   <TableBody>
                     {calificacionesFiltradas.map((estudiante) => {
-                      console.log("Estudiante:", estudiante);
                       // Verificar si existen las calificaciones, aportes y exámenes
                       const aportes = estudiante.calificacion?.APORTE || [];
                       const examenes = estudiante.calificacion?.EXAMEN || [];
@@ -548,7 +552,10 @@ function CalificarParalelo() {
                                   )
                                 }
                                 //isDisabled={!etapaAnteriorCompleta}
-                                disabled={!estudiante.calificacion.PARCIAL.CIERREFASE[0].estado}
+                                disabled={
+                                  !estudiante.calificacion.PARCIAL.CIERREFASE[0]
+                                    .estado
+                                }
                                 size="sm"
                               />
                             </TableCell>
@@ -570,7 +577,10 @@ function CalificarParalelo() {
                                     e.target.value
                                   )
                                 }
-                                disabled={!estudiante.calificacion.PARCIAL.CIERREFASE[0].estado}
+                                disabled={
+                                  !estudiante.calificacion.PARCIAL.CIERREFASE[0]
+                                    .estado
+                                }
                                 size="sm"
                               />
                             </TableCell>
@@ -589,7 +599,7 @@ function CalificarParalelo() {
             <div className="mt-4 flex justify-end">
               <Button
                 onClick={handleSubmitCalificaciones}
-                isDisabled={calificacionesPublicadas || !etapaAnteriorCompleta}
+                //isDisabled={calificacionesPublicadas || !etapaAnteriorCompleta}
               >
                 {calificacionesPublicadas
                   ? "Calificaciones Publicadas"
