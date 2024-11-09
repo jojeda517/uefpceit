@@ -41,8 +41,6 @@ export async function POST(request) {
       })
     );
 
-    console.log(calificacionesData);
-
     // Eliminar los registros de calificaciones y aportes y examenes de ese parcial si ya existen
     for (const calificacion of calificacionesData) {
       await prisma.eXAMEN.deleteMany({
@@ -107,11 +105,14 @@ export async function POST(request) {
       });
     }
 
-    return NextResponse.json(calificacionesData);
+    return NextResponse.json({
+      message: "Curso calificado exitosamente",
+      status: 200,
+    });
   } catch (error) {
     console.error("Error al calificar el curso:", error);
     return NextResponse.json(
-      { message: "Error al calificar el curso", error: error.message },
+      { message: "Ocurrió un error al calificar el curso" },
       { status: 500 }
     );
   }
