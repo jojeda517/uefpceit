@@ -76,7 +76,11 @@ export async function GET(request, { params }) {
               include: {
                 APORTE: true,
                 EXAMEN: true,
-                PARCIAL: true,
+                PARCIAL: {
+                  include: {
+                    CIERREFASE: true,
+                  }
+                },
               },
             },
             SUPLETORIO: true,

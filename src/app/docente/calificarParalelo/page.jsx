@@ -374,115 +374,154 @@ function CalificarParalelo() {
               </div>
             )}
             <div className="overflow-x-auto">
-              <Table aria-label="Tabla de calificaciones">
-                <TableHeader>
-                  <TableColumn>Estudiante</TableColumn>
-                  {Array.from({ length: maxAportes }, (_, i) => (
-                    <TableColumn key={`aporte-${i}`}>
-                      Aporte {i + 1}
-                    </TableColumn>
-                  ))}
-                  {Array.from({ length: maxExamenes }, (_, i) => (
-                    <TableColumn key={`examen-${i}`}>
-                      Examen {i + 1}
-                    </TableColumn>
-                  ))}
-                  <TableColumn>Promedio</TableColumn>
-                </TableHeader>
+              {parcialSeleccionado === "supletorio" ? (
+                // Tabla de calificaciones para el supletorio; Estudiante, promedio, estado, calificación
+                <Table aria-label="Tabla de calificaciones">
+                  <TableHeader>
+                    <TableColumn>Estudiante</TableColumn>
+                    <TableColumn>Promedio</TableColumn>
+                    <TableColumn>Estado</TableColumn>
+                    <TableColumn>Calificación</TableColumn>
+                  </TableHeader>
 
-                <TableBody>
-                  {calificacionesFiltradas.map((estudiante) => {
-                    // Verificar si existen las calificaciones, aportes y exámenes
-                    const aportes = estudiante.calificacion?.APORTE || [];
-                    const examenes = estudiante.calificacion?.EXAMEN || [];
-                    const promedio = estudiante.calificacion?.promedio || null;
-
-                    // Calcular el promedio solo si hay aportes y examen
-                    const calcularPromedio = () => {
-                      if (aportes.length > 0 && examenes.length > 0) {
-                        const totalAportes = aportes.reduce(
-                          (acc, aporte) => acc + aporte.aporte,
-                          0
-                        );
-                        const totalExamen = examenes.reduce(
-                          (acc, examen) => acc + examen.nota,
-                          0
-                        );
-
-                        const promedioAportes =
-                          (totalAportes * 0.7) / aportes.length; // 70% de los aportes
-                        const promedioExamen =
-                          (totalExamen * 0.3) / examenes.length; // 30% del examen
-                        return (promedioAportes + promedioExamen).toFixed(2);
-                      }
-                      return "Pendiente"; // Si no hay aportes o examen
-                    };
-
-                    return (
+                  <TableBody>
+                    {calificacionesFiltradas.map((estudiante) => (
                       <TableRow key={estudiante.id}>
                         <TableCell className="capitalize">
                           {estudiante.PERSONA.apellido.toLowerCase()}{" "}
                           {estudiante.PERSONA.nombre.toLowerCase()}
                         </TableCell>
-
-                        {Array.from({ length: maxAportes }, (_, i) => (
-                          <TableCell key={`aporte-${i}`}>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="10"
-                              step="0.01"
-                              value={aportes[i]?.aporte || ""}
-                              onChange={(e) =>
-                                handleCalificacionChange(
-                                  estudiante.id,
-                                  "aportes",
-                                  i,
-                                  e.target.value
-                                )
-                              }
-                              isDisabled={
-                                !etapaAnteriorCompleta ||
-                                calificacionesPublicadas
-                              }
-                              size="sm"
-                            />
-                          </TableCell>
-                        ))}
-
-                        {Array.from({ length: maxExamenes }, (_, i) => (
-                          <TableCell key={`examen-${i}`}>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="10"
-                              step="0.01"
-                              value={examenes[i]?.nota || ""}
-                              onChange={(e) =>
-                                handleCalificacionChange(
-                                  estudiante.id,
-                                  "examenes",
-                                  i,
-                                  e.target.value
-                                )
-                              }
-                              isDisabled={
-                                !etapaAnteriorCompleta ||
-                                calificacionesPublicadas
-                              }
-                              size="sm"
-                            />
-                          </TableCell>
-                        ))}
-
                         <TableCell>
-                          {promedio !== null ? calcularPromedio() : "Pendiente"}
+                          promedio...
+                        </TableCell>
+                        <TableCell>estado...</TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.01"
+                            size="sm"
+                          />
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <Table aria-label="Tabla de calificaciones">
+                  <TableHeader>
+                    <TableColumn>Estudiante</TableColumn>
+                    {Array.from({ length: maxAportes }, (_, i) => (
+                      <TableColumn key={`aporte-${i}`}>
+                        Aporte {i + 1}
+                      </TableColumn>
+                    ))}
+                    {Array.from({ length: maxExamenes }, (_, i) => (
+                      <TableColumn key={`examen-${i}`}>
+                        Examen {i + 1}
+                      </TableColumn>
+                    ))}
+                    <TableColumn>Promedio</TableColumn>
+                  </TableHeader>
+
+                  <TableBody>
+                    {calificacionesFiltradas.map((estudiante) => {
+                      // Verificar si existen las calificaciones, aportes y exámenes
+                      const aportes = estudiante.calificacion?.APORTE || [];
+                      const examenes = estudiante.calificacion?.EXAMEN || [];
+                      const promedio =
+                        estudiante.calificacion?.promedio || null;
+
+                      // Calcular el promedio solo si hay aportes y examen
+                      const calcularPromedio = () => {
+                        if (aportes.length > 0 && examenes.length > 0) {
+                          const totalAportes = aportes.reduce(
+                            (acc, aporte) => acc + aporte.aporte,
+                            0
+                          );
+                          const totalExamen = examenes.reduce(
+                            (acc, examen) => acc + examen.nota,
+                            0
+                          );
+
+                          const promedioAportes =
+                            (totalAportes * 0.7) / aportes.length; // 70% de los aportes
+                          const promedioExamen =
+                            (totalExamen * 0.3) / examenes.length; // 30% del examen
+                          return (promedioAportes + promedioExamen).toFixed(2);
+                        }
+                        return "Pendiente"; // Si no hay aportes o examen
+                      };
+
+                      return (
+                        <TableRow key={estudiante.id}>
+                          <TableCell className="capitalize">
+                            {estudiante.PERSONA.apellido.toLowerCase()}{" "}
+                            {estudiante.PERSONA.nombre.toLowerCase()}
+                          </TableCell>
+
+                          {Array.from({ length: maxAportes }, (_, i) => (
+                            <TableCell key={`aporte-${i}`}>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="10"
+                                step="0.01"
+                                value={aportes[i]?.aporte || ""}
+                                onChange={(e) =>
+                                  handleCalificacionChange(
+                                    estudiante.id,
+                                    "aportes",
+                                    i,
+                                    e.target.value
+                                  )
+                                }
+                                isDisabled={
+                                  !etapaAnteriorCompleta ||
+                                  calificacionesPublicadas
+                                }
+                                size="sm"
+                              />
+                            </TableCell>
+                          ))}
+
+                          {Array.from({ length: maxExamenes }, (_, i) => (
+                            <TableCell key={`examen-${i}`}>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="10"
+                                step="0.01"
+                                value={examenes[i]?.nota || ""}
+                                onChange={(e) =>
+                                  handleCalificacionChange(
+                                    estudiante.id,
+                                    "examenes",
+                                    i,
+                                    e.target.value
+                                  )
+                                }
+                                isDisabled={
+                                  !etapaAnteriorCompleta ||
+                                  calificacionesPublicadas
+                                }
+                                size="sm"
+                              />
+                            </TableCell>
+                          ))}
+
+                          <TableCell>
+                            {promedio !== null
+                              ? calcularPromedio()
+                              : "Pendiente"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
             </div>
             <div className="mt-4 flex justify-end">
               <Button

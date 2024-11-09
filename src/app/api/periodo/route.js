@@ -126,6 +126,47 @@ export async function POST(request) {
       );
     }
 
+    // Crear cierre de parciales
+    try {
+      // Buscar los parciales de la evaluación
+      const parciales = await prisma.pARCIAL.findMany({
+        where: {
+          idEvaluacionPertenece: parseInt(evaluacion.id),
+        },
+        orderBy: {
+          id: "asc",
+        },
+      });
+
+      console.log(parciales);
+
+      // crear cierre de parciales para cada parcial Ej.: idParcialPertenece: 1, idPeriodoPertenece: 1, estado: true
+      for (const parcial of parciales) {
+        await prisma.cIERREPARCIAL.upsert({
+          where: {
+            idParcialPertenece_idPeriodoPertenece: {
+              idParcialPertenece: parcial.id,
+              idPeriodoPertenece: periodo.id,
+            },
+          },
+          update: {
+            
+          },
+          create: {
+            idParcialPertenece: parcial.id,
+            idPeriodoPertenece: periodo.id,
+            estado: true,
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json(
+        { message: "Error al crear el cierre de parciales" },
+        { status: 500 }
+      );
+    }
+
     // Crear o actualizar periodos modalidad
     try {
       await prisma.dETALLEPERIODOMODALIDAD.deleteMany({
@@ -160,6 +201,7 @@ export async function POST(request) {
       data: periodo,
     });
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       { message: "Error inesperado al procesar la solicitud" },
       { status: 500 }

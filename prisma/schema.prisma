@@ -216,6 +216,7 @@ model PERIODO {
   periodosModalidad     DETALLEPERIODOMODALIDAD[]
   evaluacion            EVALUACION                @relation(fields: [idEvaluacionPertenece], references: [id])
   MATRICULA             MATRICULA[]
+  CIERREFASE            CIERREPARCIAL[]
 }
 
 model METODOEVALUACION {
@@ -315,11 +316,12 @@ model MATRICULA {
 }
 
 model PARCIAL {
-  id                    Int            @id @default(autoincrement())
+  id                    Int             @id @default(autoincrement())
   idEvaluacionPertenece Int?
-  parcial               String         @unique @db.VarChar(255)
+  parcial               String          @unique @db.VarChar(255)
   CALIFICACION          CALIFICACION[]
-  EVALUACION            EVALUACION?    @relation(fields: [idEvaluacionPertenece], references: [id])
+  EVALUACION            EVALUACION?     @relation(fields: [idEvaluacionPertenece], references: [id])
+  CIERREFASE            CIERREPARCIAL[]
 }
 
 model CALIFICACION {
@@ -354,4 +356,15 @@ model SUPLETORIO {
   fecha       DateTime
   nota        Float
   MATRICULA   MATRICULA @relation(fields: [idMatricula], references: [id])
+}
+
+model CIERREPARCIAL {
+  id                 Int     @id @default(autoincrement())
+  idParcialPertenece Int // Identificador del parcial o quimestre al que pertenece esta fase
+  idPeriodoPertenece Int // Identificador del período para segmentar el cierre por año
+  estado             Boolean // Indica si la fase está cerrada o abierta (true: abierta, false: cerrada)
+  PARCIAL            PARCIAL @relation(fields: [idParcialPertenece], references: [id])
+  PERIODO            PERIODO @relation(fields: [idPeriodoPertenece], references: [id])
+
+  @@unique([idParcialPertenece, idPeriodoPertenece]) // Asegura que solo haya un registro por parcial y periodo
 }
