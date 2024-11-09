@@ -74,12 +74,16 @@ export async function GET(request, { params }) {
           include: {
             CALIFICACION: {
               include: {
-                APORTE: true,
+                APORTE: {
+                  orderBy: {
+                    id: "asc", // Ordenar los aportes por 'id' en orden ascendente
+                  },
+                },
                 EXAMEN: true,
                 PARCIAL: {
                   include: {
                     CIERREFASE: true,
-                  }
+                  },
                 },
               },
             },

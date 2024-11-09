@@ -15,8 +15,8 @@ export async function POST(request) {
     // Esperamos a que todas las promesas se resuelvan con Promise.all
     const calificacionesData = await Promise.all(
       calificaciones.map(async (calificacion) => {
-        // Obtiene el id de matrícula
-        const matricula = await prisma.mATRICULA.findFirst({
+        // Obtiene todas las matrículas correspondientes
+        const matriculas = await prisma.mATRICULA.findMany({
           where: {
             idDocentePertenece: idDocentePertenece,
             DETALLEMATERIA: {
@@ -28,8 +28,24 @@ export async function POST(request) {
           },
           select: {
             id: true,
+            ESTUDIANTE: {
+              select: {
+                id: true, // Selecciona solo el ID del estudiante
+              },
+            },
           },
         });
+
+        // Encontrar la matrícula correspondiente al estudiante
+        const matricula = matriculas.find(
+          (m) => m.ESTUDIANTE.id === calificacion.idEstudiante
+        );
+
+        if (!matricula) {
+          throw new Error(
+          `Matrícula no encontrada para el estudiante ${calificacion.idEstudiante}`
+          );
+        }
 
         return {
           idMatriculaPertenece: matricula.id,
@@ -41,7 +57,9 @@ export async function POST(request) {
       })
     );
 
-    // Eliminar los registros de calificaciones y aportes y examenes de ese parcial si ya existen
+    console.log(calificacionesData);
+
+    // Eliminar los registros de calificaciones, aportes y exámenes de ese parcial si ya existen
     for (const calificacion of calificacionesData) {
       await prisma.eXAMEN.deleteMany({
         where: {
@@ -69,14 +87,12 @@ export async function POST(request) {
       });
     }
 
-    // Crear las calificaciones y los aportes y examenes de esa calificación
+    // Crear las calificaciones, los aportes y exámenes para cada matrícula
     for (const calificacion of calificacionesData) {
       const cal = await prisma.cALIFICACION.create({
         data: {
           idMatricula: parseInt(calificacion.idMatriculaPertenece),
           idParcial: parseInt(idParcial),
-          //promedio: calificacion.proedio,
-          // promedio como float
           promedio:
             calificacion.promedio === 0 ? 0 : parseFloat(calificacion.promedio),
           estado:
@@ -88,15 +104,19 @@ export async function POST(request) {
         },
       });
 
-      for (const aporte of calificacion.aportes) {
-        await prisma.aPORTE.create({
-          data: {
-            idCalificacion: cal.id,
-            aporte: aporte,
-          },
-        });
-      }
+      // Crear los aportes para la calificación
+      await Promise.all(
+        calificacion.aportes.map((aporte) =>
+          prisma.aPORTE.create({
+            data: {
+              idCalificacion: cal.id,
+              aporte: aporte,
+            },
+          })
+        )
+      );
 
+      // Crear el examen para la calificación
       await prisma.eXAMEN.create({
         data: {
           idCalificacion: cal.id,
@@ -105,14 +125,11 @@ export async function POST(request) {
       });
     }
 
-    return NextResponse.json({
-      message: "Curso calificado exitosamente",
-      status: 200,
-    });
+    return NextResponse.json(calificacionesData);
   } catch (error) {
     console.error("Error al calificar el curso:", error);
     return NextResponse.json(
-      { message: "Ocurrió un error al calificar el curso" },
+      { message: "Error al calificar el curso", error: error.message },
       { status: 500 }
     );
   }
