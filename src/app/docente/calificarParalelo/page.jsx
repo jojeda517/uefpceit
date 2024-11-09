@@ -200,46 +200,72 @@ function CalificarParalelo() {
   const agregarAporte = () => setMaxAportes((prev) => prev + 1);
   const eliminarAporte = () => setMaxAportes((prev) => Math.max(1, prev - 1));
 
-  const handleCalificacionChange = (estudianteId, tipo, index, valor) => {
-    setCalificaciones((prev) => ({
-      ...prev,
-      [estudianteId]: {
-        ...prev[estudianteId],
-        [periodoActual]: {
-          ...prev[estudianteId][periodoActual],
-          [tipo]: prev[estudianteId][periodoActual][tipo].map((cal, i) =>
-            i === index ? valor : cal
-          ),
-        },
-      },
-    }));
-  };
+  const handleCalificacionChange = (idEstudiante, tipo, index, valor) => {
+    setCalificacionesFiltradas((prevCalificaciones) =>
+      prevCalificaciones.map((estudiante) => {
+        if (estudiante.id === idEstudiante) {
+          // Verificar que 'calificacion' esté definido
+          if (!estudiante.calificacion) {
+            estudiante.calificacion = { APORTE: [], EXAMEN: [] }; // Inicializar si no existe
+          }
 
-  const verificarCalificacionesCompletas = () => {
-    return Object.values(calificaciones).every(
-      (estudiante) =>
-        estudiante[periodoActual].aportes.every((nota) => nota !== "") &&
-        estudiante[periodoActual].examenes.every((nota) => nota !== "")
+          // Verificar que 'APORTE' esté definido
+          if (!estudiante.calificacion.APORTE) {
+            estudiante.calificacion.APORTE = []; // Inicializar si no existe
+          }
+
+          // Asegurarse de que el índice exista en 'APORTE'
+          if (!estudiante.calificacion.APORTE[index]) {
+            estudiante.calificacion.APORTE[index] = { aporte: 0 }; // Inicializa el objeto si no existe
+          }
+
+          // Actualizar el valor de aporte
+          if (tipo === "aportes") {
+            estudiante.calificacion.APORTE[index] = {
+              ...estudiante.calificacion.APORTE[index],
+              aporte: parseFloat(valor) || 0,
+            };
+          }
+
+          // Verificar que 'EXAMEN' esté definido
+          if (!estudiante.calificacion.EXAMEN) {
+            estudiante.calificacion.EXAMEN = []; // Inicializar si no existe
+          }
+
+          // Asegurarse de que el índice exista en 'EXAMEN'
+          if (!estudiante.calificacion.EXAMEN[index]) {
+            estudiante.calificacion.EXAMEN[index] = { nota: 0 }; // Inicializa el objeto si no existe
+          }
+
+          // Actualizar el valor de examen
+          if (tipo === "examenes") {
+            estudiante.calificacion.EXAMEN[index] = {
+              ...estudiante.calificacion.EXAMEN[index],
+              nota: parseFloat(valor) || 0,
+            };
+          }
+        }
+        return estudiante;
+      })
     );
   };
 
-  const publicarCalificaciones = () => {
-    if (verificarCalificacionesCompletas()) {
-      setDialogoPublicarAbierto(true);
-    } else {
-      setNotificacion({
-        message:
-          "Asegúrese de que todos los aportes y exámenes tengan una calificación.",
-        type: "error",
-      });
-    }
-  };
+  const calcularPromedio = (aportes, examenes) => {
+    if (aportes.length > 0 && examenes.length > 0) {
+      const totalAportes = aportes.reduce(
+        (acc, aporte) => acc + (aporte.aporte || 0),
+        0
+      );
+      const totalExamen = examenes.reduce(
+        (acc, examen) => acc + (examen.nota || 0),
+        0
+      );
 
-  const confirmarPublicacion = () => {
-    setCalificacionesPublicadas(true);
-    setDialogoPublicarAbierto(false);
-    // Aquí iría la lógica para enviar las calificaciones al backend
-    console.log("Calificaciones publicadas:", calificaciones);
+      const promedioAportes = (totalAportes * 0.7) / maxAportes;
+      const promedioExamen = (totalExamen * 0.3);
+      return (promedioAportes + promedioExamen).toFixed(2);
+    }
+    return "-";
   };
 
   return (
@@ -391,9 +417,7 @@ function CalificarParalelo() {
                           {estudiante.PERSONA.apellido.toLowerCase()}{" "}
                           {estudiante.PERSONA.nombre.toLowerCase()}
                         </TableCell>
-                        <TableCell>
-                          promedio...
-                        </TableCell>
+                        <TableCell>promedio...</TableCell>
                         <TableCell>estado...</TableCell>
                         <TableCell>
                           <Input
@@ -430,29 +454,6 @@ function CalificarParalelo() {
                       // Verificar si existen las calificaciones, aportes y exámenes
                       const aportes = estudiante.calificacion?.APORTE || [];
                       const examenes = estudiante.calificacion?.EXAMEN || [];
-                      const promedio =
-                        estudiante.calificacion?.promedio || null;
-
-                      // Calcular el promedio solo si hay aportes y examen
-                      const calcularPromedio = () => {
-                        if (aportes.length > 0 && examenes.length > 0) {
-                          const totalAportes = aportes.reduce(
-                            (acc, aporte) => acc + aporte.aporte,
-                            0
-                          );
-                          const totalExamen = examenes.reduce(
-                            (acc, examen) => acc + examen.nota,
-                            0
-                          );
-
-                          const promedioAportes =
-                            (totalAportes * 0.7) / aportes.length; // 70% de los aportes
-                          const promedioExamen =
-                            (totalExamen * 0.3) / examenes.length; // 30% del examen
-                          return (promedioAportes + promedioExamen).toFixed(2);
-                        }
-                        return "Pendiente"; // Si no hay aportes o examen
-                      };
 
                       return (
                         <TableRow key={estudiante.id}>
@@ -468,7 +469,7 @@ function CalificarParalelo() {
                                 min="0"
                                 max="10"
                                 step="0.01"
-                                value={aportes[i]?.aporte || ""}
+                                value={aportes[i]?.aporte || 0}
                                 onChange={(e) =>
                                   handleCalificacionChange(
                                     estudiante.id,
@@ -477,10 +478,7 @@ function CalificarParalelo() {
                                     e.target.value
                                   )
                                 }
-                                isDisabled={
-                                  !etapaAnteriorCompleta ||
-                                  calificacionesPublicadas
-                                }
+                                isDisabled={!etapaAnteriorCompleta}
                                 size="sm"
                               />
                             </TableCell>
@@ -493,7 +491,7 @@ function CalificarParalelo() {
                                 min="0"
                                 max="10"
                                 step="0.01"
-                                value={examenes[i]?.nota || ""}
+                                value={examenes[i]?.nota || 0}
                                 onChange={(e) =>
                                   handleCalificacionChange(
                                     estudiante.id,
@@ -502,19 +500,14 @@ function CalificarParalelo() {
                                     e.target.value
                                   )
                                 }
-                                isDisabled={
-                                  !etapaAnteriorCompleta ||
-                                  calificacionesPublicadas
-                                }
+                                isDisabled={!etapaAnteriorCompleta}
                                 size="sm"
                               />
                             </TableCell>
                           ))}
 
                           <TableCell>
-                            {promedio !== null
-                              ? calcularPromedio()
-                              : "Pendiente"}
+                            {calcularPromedio(aportes, examenes)}
                           </TableCell>
                         </TableRow>
                       );
