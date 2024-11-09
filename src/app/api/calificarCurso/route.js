@@ -41,9 +41,72 @@ export async function POST(request) {
       })
     );
 
-    // Crear las calificaciones
-
     console.log(calificacionesData);
+
+    // Eliminar los registros de calificaciones y aportes y examenes de ese parcial si ya existen
+    for (const calificacion of calificacionesData) {
+      await prisma.eXAMEN.deleteMany({
+        where: {
+          CALIFICACION: {
+            idMatricula: calificacion.idMatriculaPertenece,
+            idParcial: parseInt(idParcial),
+          },
+        },
+      });
+
+      await prisma.aPORTE.deleteMany({
+        where: {
+          CALIFICACION: {
+            idMatricula: calificacion.idMatriculaPertenece,
+            idParcial: parseInt(idParcial),
+          },
+        },
+      });
+
+      await prisma.cALIFICACION.deleteMany({
+        where: {
+          idMatricula: calificacion.idMatriculaPertenece,
+          idParcial: parseInt(idParcial),
+        },
+      });
+    }
+
+    // Crear las calificaciones y los aportes y examenes de esa calificación
+    for (const calificacion of calificacionesData) {
+      const cal = await prisma.cALIFICACION.create({
+        data: {
+          idMatricula: parseInt(calificacion.idMatriculaPertenece),
+          idParcial: parseInt(idParcial),
+          //promedio: calificacion.proedio,
+          // promedio como float
+          promedio:
+            calificacion.promedio === 0 ? 0 : parseFloat(calificacion.promedio),
+          estado:
+            parseFloat(calificacion.promedio) >= 7
+              ? "APROBADO"
+              : parseFloat(calificacion.promedio) <= 4
+              ? "REPROBADO"
+              : "SUSPENSO",
+        },
+      });
+
+      for (const aporte of calificacion.aportes) {
+        await prisma.aPORTE.create({
+          data: {
+            idCalificacion: cal.id,
+            aporte: aporte,
+          },
+        });
+      }
+
+      await prisma.eXAMEN.create({
+        data: {
+          idCalificacion: cal.id,
+          nota: calificacion.examen === 0 ? 0 : parseFloat(calificacion.examen),
+        },
+      });
+    }
+
     return NextResponse.json(calificacionesData);
   } catch (error) {
     console.error("Error al calificar el curso:", error);
