@@ -24,11 +24,17 @@ import {
 } from "@nextui-org/react";
 
 import {
-  ArrowUpTrayIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
-import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/24/solid";
+import {
+  PlusCircleIcon,
+  MinusCircleIcon,
+  DocumentTextIcon,
+  PaperClipIcon,
+  ArrowUpTrayIcon,
+  CloudArrowUpIcon
+} from "@heroicons/react/24/solid";
 
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
@@ -386,20 +392,33 @@ function CalificarParalelo() {
 
       <div className="grid grid-cols-1 gap-4">
         <Card className="">
-          <CardHeader>
-            <CardHeader className="font-semibold text-lg text-blue-900 dark:text-white">
-              Configuración
-            </CardHeader>
+          <CardHeader className="font-semibold text-lg text-blue-900 dark:text-white bg-gray-100 dark:bg-gray-900">
+            Configuración
           </CardHeader>
-          <CardBody className="flex flex-row gap-5 bg-yellow-300">
-            <div className="space-y-2  w-1/4">
+          <CardBody className="grid gap-10 lg:grid-cols-3 dark:text-white bg-gray-100 dark:bg-gray-600">
+            <div className="space-y-2">
               <Select
                 id="parcial"
                 labelPlacement="outside"
-                label="Parcial"
+                label={
+                  <label className="text-blue-900 dark:text-white">
+                    Parcial
+                  </label>
+                }
+                startContent={
+                  <DocumentTextIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                }
                 placeholder="Seleccione el parcial"
                 selectedKeys={[parcialSeleccionado]}
                 onChange={(e) => setParcialSeleccionado(e.target.value)}
+                variant="bordered"
+                classNames={{
+                  base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
+                  selectorIcon: "text-blue-900 dark:text-black", // Icono de la flecha del selector de opciones
+                  popoverContent:
+                    "bg-white dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                  value: "text-black dark:text-white",
+                }}
               >
                 {parciales.map((parcial) => (
                   <SelectItem key={parcial.id} className="capitalize">
@@ -435,19 +454,47 @@ function CalificarParalelo() {
                 </div>
               </div>
             </div> */}
-            <div className="space-y-2  w-1/4">
-              <label htmlFor="csv-upload">Importar Calificaciones (CSV)</label>
-              <div className="flex items-center space-x-2">
+            <div className="space-y-2">
+              <div className="flex items-end space-x-2">
                 <Input
                   id="csv-upload"
+                  labelPlacement="outside"
+                  label={
+                    <label className="text-blue-900 dark:text-white">
+                      Subir Calificaciones
+                    </label>
+                  }
                   type="file"
                   accept=".csv"
-                  onChange={handleFileUpload}
+                  variant="bordered"
+                  startContent={
+                    <PaperClipIcon className="text-blue-900 dark:text-white h-6 w-6" />
+                  }
+                  title="Subir archivo CSV"
+                  classNames={{
+                    base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-black dark:text-white",
+                    input: "text-black dark:text-white",
+                  }}
+                  //onChange={handleFileUpload}
                 />
-                <Button size="sm">
-                  <ArrowUpTrayIcon className="mr-2 h-4 w-4" /> Subir
+                <Button
+                  variant="shadow"
+                  className="text-lg"
+                  isIconOnly
+                >
+                  <ArrowUpTrayIcon className="text-blue-900 dark:text-white h-96 w-96" />
                 </Button>
               </div>
+            </div>
+            <div className="space-y-2">
+              <label>Plantilla</label>
+              <Button
+                //onClick={descargarPlantilla}
+                variant="outline"
+                className="w-full"
+              >
+                Descargar Plantilla
+              </Button>
             </div>
           </CardBody>
         </Card>
