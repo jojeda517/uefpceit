@@ -23,9 +23,7 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 
-import {
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 import {
   PlusCircleIcon,
@@ -33,11 +31,12 @@ import {
   DocumentTextIcon,
   PaperClipIcon,
   ArrowUpTrayIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/solid";
 
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
+import { encode } from "next-auth/jwt";
 
 const modalidades = [
   { id: 1, nombre: "Etapas", periodos: 2 },
@@ -348,6 +347,55 @@ function CalificarParalelo() {
     }
   };
 
+  const generarCSV = () => {
+    try {
+      setIsLoading(true);
+      // Columnas del archivo CSV
+      const encabezados = [
+        "Cedula",
+        "Nombre Completo",
+        "Aporte 1",
+        "Aporte 2",
+        "Aporte 3",
+        "Examen",
+      ];
+
+      // Datos de los estudiantes formateados
+      const filas = estudiantes.map((estudiante) => [
+        estudiante.PERSONA.cedula,
+        `${estudiante.PERSONA.apellido} ${estudiante.PERSONA.nombre}`,
+        "", // Aporte 1 vacío
+        "", // Aporte 2 vacío
+        "", // Aporte 3 vacío
+        "", // Examen vacío
+      ]);
+
+      // Combina encabezados y filas
+      const csvContent = [encabezados, ...filas]
+        .map((e) => e.join(";"))
+        .join("\n");
+
+      // Crear un blob y descargarlo
+      const blob = new Blob(["\uFEFF" + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+
+      // Crear un enlace para iniciar la descarga
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "plantilla_calificaciones.csv";
+      a.click();
+
+      // Liberar la URL creada
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al generar el archivo CSV:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     // <div className="container mx-auto px-4 py-8"> *
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -455,7 +503,7 @@ function CalificarParalelo() {
               </div>
             </div> */}
             <div className="space-y-2">
-              <div className="flex items-end space-x-2">
+              <div className="flex items-end space-x-1">
                 <Input
                   id="csv-upload"
                   labelPlacement="outside"
@@ -479,19 +527,27 @@ function CalificarParalelo() {
                 />
                 <Button
                   variant="shadow"
-                  className="text-lg"
-                  isIconOnly
+                  color="primary"
+                  size="md"
+                  /* startContent={
+                    <ArrowUpTrayIcon className="text-blue-900 dark:text-white h-96 w-96" /> 
+                  } */
+                  className="text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white"
                 >
-                  <ArrowUpTrayIcon className="text-blue-900 dark:text-white h-96 w-96" />
+                  Subir
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <label>Plantilla</label>
+              <label className="text-blue-900 dark:text-white">Plantilla</label>
               <Button
                 //onClick={descargarPlantilla}
-                variant="outline"
-                className="w-full"
+                onClick={generarCSV}
+                variant="shadow"
+                color="success"
+                size="md"
+                className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
+                disabled={parcialSeleccionado === "supletorio"}
               >
                 Descargar Plantilla
               </Button>
@@ -499,7 +555,7 @@ function CalificarParalelo() {
           </CardBody>
         </Card>
 
-        <Card className="">
+        <Card className="dark:bg-gray-700">
           <CardBody>
             {!etapaAnteriorCompleta && periodoActual > 1 && (
               <div
@@ -519,7 +575,7 @@ function CalificarParalelo() {
                 </div>
               </div>
             )}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto dark:bg-gray-700">
               {parcialSeleccionado === "supletorio" ? (
                 // Tabla de calificaciones para el supletorio; Estudiante, promedio, estado, calificación
                 <Table aria-label="Tabla de calificaciones">
@@ -553,7 +609,16 @@ function CalificarParalelo() {
                   </TableBody>
                 </Table>
               ) : (
-                <Table aria-label="Tabla de calificaciones">
+                <Table
+                  aria-label="Tabla de calificaciones"
+                  isHeaderSticky
+                  selectionMode="single"
+                  classNames={{
+                    wrapper: "dark:bg-gray-700", // Es necesario ajustar la altura máxima de la tabla
+                    th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase", // Es la cabecera
+                    tr: "dark:text-white dark:hover:text-gray-900 text-justify", // Es la fila
+                  }}
+                >
                   <TableHeader>
                     <TableColumn>Estudiante</TableColumn>
                     {Array.from({ length: maxAportes }, (_, i) => (
@@ -578,8 +643,10 @@ function CalificarParalelo() {
                       return (
                         <TableRow key={estudiante.id}>
                           <TableCell className="capitalize">
-                            {estudiante.PERSONA.apellido.toLowerCase()}{" "}
-                            {estudiante.PERSONA.nombre.toLowerCase()}
+                            <p>
+                              {estudiante.PERSONA.apellido.toLowerCase()}{" "}
+                              {estudiante.PERSONA.nombre.toLowerCase()}
+                            </p>
                           </TableCell>
 
                           {Array.from({ length: maxAportes }, (_, i) => (
@@ -600,8 +667,8 @@ function CalificarParalelo() {
                                 }
                                 //isDisabled={!etapaAnteriorCompleta}
                                 disabled={
-                                  !estudiante.calificacion.PARCIAL.CIERREFASE[0]
-                                    .estado
+                                  !estudiante?.calificacion?.PARCIAL
+                                    ?.CIERREFASE[0]?.estado
                                 }
                                 size="sm"
                               />
@@ -625,8 +692,8 @@ function CalificarParalelo() {
                                   )
                                 }
                                 disabled={
-                                  !estudiante.calificacion.PARCIAL.CIERREFASE[0]
-                                    .estado
+                                  !estudiante?.calificacion?.PARCIAL
+                                    ?.CIERREFASE[0]?.estado
                                 }
                                 size="sm"
                               />
@@ -645,6 +712,7 @@ function CalificarParalelo() {
             </div>
             <div className="mt-4 flex justify-end">
               <Button
+                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
                 onClick={handleSubmitCalificaciones}
                 //isDisabled={calificacionesPublicadas || !etapaAnteriorCompleta}
               >
