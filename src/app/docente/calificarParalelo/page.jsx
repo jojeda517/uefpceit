@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import Papa from "papaparse";
 
 import {
   Card,
@@ -51,13 +52,10 @@ function CalificarParalelo() {
   const [parciales, setParciales] = useState([]); // Parciales del paralelo
   const [parcialSeleccionado, setParcialSeleccionado] = useState("");
   const [calificacionesFiltradas, setCalificacionesFiltradas] = useState([]);
-  const [modalidad, setModalidad] = useState(modalidades[0]);
   const [periodoActual, setPeriodoActual] = useState(1);
-  const [calificaciones, setCalificaciones] = useState({});
   const [etapaAnteriorCompleta, setEtapaAnteriorCompleta] = useState(true);
   const [calificacionesPublicadas, setCalificacionesPublicadas] =
     useState(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [estudiantes, setEstudiantes] = useState([]);
   const [maxAportes, setMaxAportes] = useState(3);
@@ -198,10 +196,6 @@ function CalificarParalelo() {
     }
   }, [parcialSeleccionado, estudiantes]);
 
-  const handleFileUpload = (event) => {
-    console.log("Archivo subido:", event.target.files[0]);
-  };
-
   const agregarAporte = () => setMaxAportes((prev) => prev + 1);
   const eliminarAporte = () => setMaxAportes((prev) => Math.max(1, prev - 1));
 
@@ -328,6 +322,8 @@ function CalificarParalelo() {
         body: JSON.stringify(calificacionesData),
       });
 
+      await fetchInitialData();
+
       const data = await response.json();
       if (response.ok) {
         setNotificacion({
@@ -391,6 +387,63 @@ function CalificarParalelo() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error al generar el archivo CSV:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    try {
+      setIsLoading(true);
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const content = e.target.result;
+
+        // Parsear el contenido CSV
+        Papa.parse(content, {
+          header: true,
+          delimiter: ";", // Asegúrate de que coincida con tu delimitador
+          complete: (result) => {
+            const parsedData = result.data;
+
+            // Procesa el CSV y actualiza calificacionesFiltradas
+            const updatedCalificaciones = estudiantes.map((estudiante) => {
+              const estudianteData = parsedData.find(
+                (row) => row.Cedula === estudiante.PERSONA.cedula
+              );
+
+              if (estudianteData) {
+                return {
+                  ...estudiante,
+                  calificacion: {
+                    APORTE: [
+                      { aporte: parseFloat(estudianteData["Aporte 1"] || 0) },
+                      { aporte: parseFloat(estudianteData["Aporte 2"] || 0) },
+                      { aporte: parseFloat(estudianteData["Aporte 3"] || 0) },
+                    ],
+                    EXAMEN: [
+                      { nota: parseFloat(estudianteData["Examen"] || 0) },
+                    ],
+                  },
+                };
+              }
+              return estudiante;
+            });
+
+            // Actualizar el estado
+            setCalificacionesFiltradas(updatedCalificaciones);
+          },
+          error: (error) => console.error("Error al parsear el CSV:", error),
+        });
+      };
+
+      reader.readAsText(file);
+    } catch (error) {
+      console.error("Error al cargar el archivo CSV:", error);
     } finally {
       setIsLoading(false);
     }
@@ -515,6 +568,7 @@ function CalificarParalelo() {
                   type="file"
                   accept=".csv"
                   variant="bordered"
+                  onChange={handleFileUpload}
                   startContent={
                     <PaperClipIcon className="text-blue-900 dark:text-white h-6 w-6" />
                   }
@@ -523,12 +577,12 @@ function CalificarParalelo() {
                     base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-black dark:text-white",
                     input: "text-black dark:text-white",
                   }}
-                  //onChange={handleFileUpload}
                 />
                 <Button
                   variant="shadow"
                   color="primary"
                   size="md"
+                  disabled={parcialSeleccionado === "supletorio" || isLoading}
                   /* startContent={
                     <ArrowUpTrayIcon className="text-blue-900 dark:text-white h-96 w-96" /> 
                   } */
@@ -611,8 +665,7 @@ function CalificarParalelo() {
               ) : (
                 <Table
                   aria-label="Tabla de calificaciones"
-                  isHeaderSticky
-                  selectionMode="single"
+                  //selectionMode="single"
                   classNames={{
                     wrapper: "dark:bg-gray-700", // Es necesario ajustar la altura máxima de la tabla
                     th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase", // Es la cabecera
