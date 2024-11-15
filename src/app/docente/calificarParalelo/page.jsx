@@ -322,8 +322,6 @@ function CalificarParalelo() {
         body: JSON.stringify(calificacionesData),
       });
 
-      await fetchInitialData();
-
       const data = await response.json();
       if (response.ok) {
         setNotificacion({
@@ -410,6 +408,18 @@ function CalificarParalelo() {
           complete: (result) => {
             const parsedData = result.data;
 
+            // Función para validar y formatear la calificación
+            const validateCalificacion = (value) => {
+              // Reemplaza la coma por punto para manejar el decimal
+              const normalizedValue = value.replace(",", ".");
+              const num = parseFloat(normalizedValue);
+
+              if (isNaN(num)) return 0; // Si no es un número, se asigna 0
+              if (num < 0) return 0; // Si el número es menor que 0, se asigna 0
+              if (num > 10) return 10; // Si el número es mayor que 10, se asigna 10
+              return Math.round(num * 100) / 100; // Limita a 2 decimales
+            };
+
             // Procesa el CSV y actualiza calificacionesFiltradas
             const updatedCalificaciones = estudiantes.map((estudiante) => {
               const estudianteData = parsedData.find(
@@ -421,12 +431,24 @@ function CalificarParalelo() {
                   ...estudiante,
                   calificacion: {
                     APORTE: [
-                      { aporte: parseFloat(estudianteData["Aporte 1"] || 0) },
-                      { aporte: parseFloat(estudianteData["Aporte 2"] || 0) },
-                      { aporte: parseFloat(estudianteData["Aporte 3"] || 0) },
+                      {
+                        aporte: validateCalificacion(
+                          estudianteData["Aporte 1"]
+                        ),
+                      },
+                      {
+                        aporte: validateCalificacion(
+                          estudianteData["Aporte 2"]
+                        ),
+                      },
+                      {
+                        aporte: validateCalificacion(
+                          estudianteData["Aporte 3"]
+                        ),
+                      },
                     ],
                     EXAMEN: [
-                      { nota: parseFloat(estudianteData["Examen"] || 0) },
+                      { nota: validateCalificacion(estudianteData["Examen"]) },
                     ],
                   },
                 };
