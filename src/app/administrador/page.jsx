@@ -42,7 +42,7 @@ function Adinistrador() {
       try {
         const idPersona = localStorage.getItem("idPersona");
 
-        const dataRes = await fetch(`/api/docente/${idPersona}`);
+        const dataRes = await fetch(`/api/administrador/${idPersona}`);
         if (!dataRes.ok) {
           throw new Error("Error al obtener los datos del docente");
         }
@@ -106,7 +106,7 @@ function Adinistrador() {
 
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                {dataDocente?.estadisticas?.cursosUnicos}
+                {dataDocente?.estadisticas?.countEstudiantes}
               </p>
             </CardBody>
 
@@ -125,7 +125,7 @@ function Adinistrador() {
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                {dataDocente?.estadisticas?.totalEstudiantes}
+                {dataDocente?.estadisticas?.countDocentes}
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
@@ -142,7 +142,7 @@ function Adinistrador() {
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                {dataDocente?.estadisticas?.materiasUnicas}
+                contar
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
@@ -159,7 +159,7 @@ function Adinistrador() {
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                {dataDocente?.estadisticas?.materiasUnicas}
+                contar...
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
