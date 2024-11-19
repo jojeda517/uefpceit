@@ -1,70 +1,57 @@
 import { NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
-import { select } from "@nextui-org/react";
 
-// GET para obtener los datos de la persona
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   const { idPersona } = params;
 
   try {
-    const docente = await prisma.pERSONA.findUnique({
-      where: { id: parseInt(idPersona) },
+    // Obtener información de la persona y el docente
+    const docente = await prisma.dOCENTE.findUnique({
+      where: { idPersonaPertenece: parseInt(idPersona) },
       include: {
-        campus: {
-          select: {
-            nombre: true,
-          },
-        },
-        docente: {
+        PERSONA: {
           include: {
-            DETALLEDOCENTETITULO: {
-              include: {
-                TITULO: {
-                  select: {
-                    titulo: true,
-                  },
-                },
-              },
-              orderBy: {
-                TITULO: {
-                  id: "asc", // o 'desc' si quieres el orden descendente
-                },
+            usuario: {
+              select: {
+                correo: true,
               },
             },
-            MATRICULA: {
+            campus: {
+              select: {
+                nombre: true,
+              },
+            },
+            docente: {
               include: {
-                PERIODO: {
-                  select: {
-                    nombre: true,
+                DETALLEDOCENTETITULO: {
+                  include: {
+                    TITULO: {
+                      select: {
+                        titulo: true,
+                      },
+                    },
                   },
                 },
-                DETALLEMATERIA: {
-                  include: {
-                    MATERIA: true,
-                    DETALLENIVELPARALELO: {
-                      include: {
-                        NIVEL: true,
-                        PARALELO: true,
-                        CAMPUSESPECIALIDAD: {
-                          include: {
-                            ESPECIALIDAD: true,
-                          },
-                        },
+                MATRICULA: {
+                  select: {
+                    PERIODO: {
+                      select: {
+                        nombre: true,
                       },
                     },
                   },
                 },
               },
             },
-          },
-        },
-        parroquia: {
-          include: {
-            CANTON: {
+            parroquia: {
               include: {
-                PROVINCIA: {
-                  select: {
-                    provincia: true,
+                CANTON: {
+                  include: {
+                    PROVINCIA: {
+                      select: {
+                        provincia: true,
+                      },
+                    },
                   },
                 },
               },
@@ -75,14 +62,67 @@ export async function GET(req, { params }) {
     });
 
     if (!docente) {
-      return res.status(404).json({ error: "Docente no encontrado" });
+      return NextResponse.json(
+        { error: "Docente no encontrado" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(docente);
-  } catch (error) {
-    console.error("Error al obtener los datos del docente:", error);
-    return NextResponse.error({
-      error: "Error al obtener los datos del docente",
+    // Consultar las matrículas relacionadas con el docente
+    const data = await prisma.mATRICULA.findMany({
+      where: { idDocentePertenece: docente.id },
+      include: {
+        DETALLEMATERIA: {
+          include: {
+            MATERIA: true, // Asegurar que se obtenga el nombre de la materia
+            DETALLENIVELPARALELO: {
+              select: {
+                id: true, // Identificador único de la relación nivel-paralelo
+                NIVEL: { select: { nivel: true } },
+                PARALELO: { select: { paralelo: true } },
+              },
+            },
+          },
+        },
+      },
     });
+
+    if (!data.length) {
+      return NextResponse.json(
+        { message: "No se encontraron registros para el docente" },
+        { status: 404 }
+      );
+    }
+
+    // Extraer cursos únicos a partir de DETALLENIVELPARALELO
+    const cursosUnicos = new Set(
+      data.map((item) => item.DETALLEMATERIA.DETALLENIVELPARALELO?.id)
+    ).size;
+
+    // Calcular el número único de materias desde la tabla DETALLEMATERIA
+    const materiasUnicas = new Set(
+      data.map((item) => item.DETALLEMATERIA.MATERIA?.nombre).filter(Boolean)
+    ).size;
+
+    // Calcular el número total de estudiantes
+    const totalEstudiantes = data.length;
+
+    // Construir la respuesta
+    const response = {
+      persona: docente.PERSONA,
+      estadisticas: {
+        cursosUnicos,
+        totalEstudiantes,
+        materiasUnicas,
+      },
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener datos del docente:", error);
+    return NextResponse.json(
+      { error: "Ocurrió un error al obtener los datos del docente" },
+      { status: 500 }
+    );
   }
 }

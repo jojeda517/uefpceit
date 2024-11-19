@@ -39,12 +39,6 @@ import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
 import { encode } from "next-auth/jwt";
 
-const modalidades = [
-  { id: 1, nombre: "Etapas", periodos: 2 },
-  { id: 2, nombre: "Quimestres", periodos: 2 },
-  { id: 3, nombre: "Trimestres", periodos: 3 },
-];
-
 function CalificarParalelo() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
   const [paraleloData, setParaleloData] = useState(null); // Datos del paralelo

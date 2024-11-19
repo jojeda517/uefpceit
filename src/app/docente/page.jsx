@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { useSession } from "next-auth/react";
+import CircularProgress from "@/app/components/CircularProgress";
 import {
   Card,
   CardHeader,
@@ -33,51 +34,69 @@ import {
 function Docente() {
   const { data: session } = useSession();
   const roles = session?.user?.roles || [];
-  const [periodoActual, setPeriodoActual] = useState("Primer Quimestre 2024");
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [dataDocente, setDataDocente] = useState(null);
 
-  const clases = [
-    {
-      id: 1,
-      nombre: "Física I",
-      curso: "10mo A",
-      estudiantes: 30,
-      promedioClase: 8.2,
-    },
-    {
-      id: 2,
-      nombre: "Física II",
-      curso: "11mo B",
-      estudiantes: 28,
-      promedioClase: 7.8,
-    },
-    {
-      id: 3,
-      nombre: "Laboratorio de Física",
-      curso: "12mo A",
-      estudiantes: 25,
-      promedioClase: 8.5,
-    },
-  ];
+  // Obtener los datos del docente
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const idPersona = localStorage.getItem("idPersona");
 
-  const totalEstudiantes = 60; // clases.reduce((sum, clase) => sum + clase.estudiantes, 0);
-  const promedioGeneral = 5;
+        const dataRes = await fetch(`/api/docente/${idPersona}`);
+        if (!dataRes.ok) {
+          throw new Error("Error al obtener los datos del docente");
+        }
 
-  const docente = {
-    nombre: "Dr. Carlos Rodríguez",
-    id: "DOC-2024-001",
-    departamento: "Ciencias",
-    especialidad: "Física",
-    foto: "/placeholder-user.jpg",
-  };
-  //clases.reduce((sum, clase) => sum + clase.promedioClase, 0) / clases.length;
+        const docenteData = await dataRes.json();
+        setDataDocente(docenteData);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Contenido de la página de administrador
+    fetchInitialData(); // Llamada a la función aquí
+  }, []); // Solo ejecuta al montar el componente
+
+  function formatDateWithAge(fechaNacimiento) {
+    if (!fechaNacimiento) return "";
+
+    // Convertir la fecha de nacimiento a un objeto Date
+    const birthDate = new Date(fechaNacimiento);
+
+    // Formatear la fecha (usamos toLocaleDateString para obtener el formato 'YYYY-MM-DD')
+    const formattedDate = birthDate.toLocaleDateString("es-EC", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+    // Calcular la edad
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth();
+    if (
+      month < birthDate.getMonth() ||
+      (month === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    // Retornar la fecha formateada con la edad entre paréntesis
+    return `${formattedDate} (${age} años)`;
+  }
+
   return (
     <div>
+      {isLoading && <CircularProgress />}
       <Header />
       <div className="min-h-screen bg-gray-100 dark:bg-gray-800">
-        <h2 className="pt-24 px-10 font-extrabold text-3xl text-blue-900 dark:text-white">
-          Bienvenido, {docente.nombre}
+        <h2 className="pt-24 px-10 font-extrabold text-3xl text-blue-900 dark:text-white capitalize">
+          Bienvenido, {dataDocente?.persona?.nombre}{" "}
+          {dataDocente?.persona?.apellido}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8  mx-10 my-8">
@@ -88,12 +107,15 @@ function Docente() {
             </CardHeader>
 
             <CardBody className="p-4">
-              <p className="text-3xl font-extrabold">{clases.length}</p>
+              <p className="text-3xl font-extrabold">
+                {dataDocente?.estadisticas?.cursosUnicos}
+              </p>
             </CardBody>
 
             <CardFooter className="px-4 pb-4 pt-0">
-              <p className="text-sm text-muted-foreground">
-                <strong>Periodo:</strong> {periodoActual}
+              <p className="text-sm text-muted-foreground capitalize">
+                <strong>Periodo:</strong>{" "}
+                {dataDocente?.persona?.docente?.MATRICULA[0]?.PERIODO?.nombre}
               </p>
             </CardFooter>
           </Card>
@@ -104,7 +126,9 @@ function Docente() {
               <UserIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
             <CardBody className="p-4">
-              <p className="text-3xl font-extrabold">{totalEstudiantes}</p>
+              <p className="text-3xl font-extrabold">
+                {dataDocente?.estadisticas?.totalEstudiantes}
+              </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
               <p className="text-sm text-muted-foreground">
@@ -119,7 +143,9 @@ function Docente() {
               <StarIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
             <CardBody className="p-4">
-              <p className="text-3xl font-extrabold">10</p>
+              <p className="text-3xl font-extrabold">
+                {dataDocente?.estadisticas?.materiasUnicas}
+              </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
               <p className="text-sm text-muted-foreground">
@@ -135,21 +161,17 @@ function Docente() {
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-5 dark:bg-default-900 bg-gray-100">
               <User
-                name={docente.nombre}
+                name={dataDocente?.persona?.nombre}
                 classNames={{
                   name: "text-lg",
                 }}
                 description={
-                  <Link
-                    href="https://twitter.com/jrgarciadevJ"
-                    size="md"
-                    isExternal
-                  >
-                    @jrgarciadev
+                  <Link href="" size="md" isExternal>
+                    {dataDocente?.persona?.usuario?.correo}
                   </Link>
                 }
                 avatarProps={{
-                  src: "https://avatars.githubusercontent.com/u/30373425?v=4",
+                  src: dataDocente?.persona?.foto,
                 }}
               />
             </CardHeader>
@@ -163,7 +185,7 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Cedúla de Identidad
                     </p>
-                    <p>1850435171</p>
+                    <p>{dataDocente?.persona?.cedula}</p>
                   </div>
                 </div>
 
@@ -175,7 +197,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Campus
                     </p>
-                    <p>La Matríz</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.campus?.nombre}
+                    </p>
                   </div>
                 </div>
 
@@ -187,7 +211,11 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Título Académico
                     </p>
-                    <p>Ingeniero en Software</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.docente?.DETALLEDOCENTETITULO?.at(
+                        -1
+                      )?.TITULO.titulo.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -199,7 +227,7 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Años de Experiencia
                     </p>
-                    <p>2</p>
+                    <p>{dataDocente?.persona?.docente?.tiempoExperiencia}</p>
                   </div>
                 </div>
 
@@ -211,7 +239,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Nacionalidad
                     </p>
-                    <p>Ecuatoriano</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.nacionalidad.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -223,7 +253,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Género
                     </p>
-                    <p>Masculino</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.sexo.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -235,7 +267,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Provincia
                     </p>
-                    <p>Tungurahua</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.parroquia?.CANTON?.PROVINCIA?.provincia.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -247,7 +281,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Cantón
                     </p>
-                    <p>Pelileo</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.parroquia?.CANTON?.canton.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -259,7 +295,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Parroquia
                     </p>
-                    <p>Garcia Moreno</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.parroquia?.parroquia.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -271,7 +309,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Direccion
                     </p>
-                    <p>Calle 23 de Octubre</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.direccion.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -283,7 +323,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Télefono
                     </p>
-                    <p>0998595903</p>
+                    <p className="capitalize">
+                      {dataDocente?.persona?.telefono.toLowerCase()}
+                    </p>
                   </div>
                 </div>
 
@@ -295,7 +337,9 @@ function Docente() {
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
                       Fecha de Nacimiento
                     </p>
-                    <p>24/01/1999</p>
+                    <p className="capitalize">
+                      {formatDateWithAge(dataDocente?.persona?.fechaNacimiento)}
+                    </p>
                   </div>
                 </div>
               </div>
