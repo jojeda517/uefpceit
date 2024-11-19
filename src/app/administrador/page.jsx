@@ -1,22 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
-import { useSession } from "next-auth/react";
 import CircularProgress from "@/app/components/CircularProgress";
 import {
   Card,
   CardHeader,
   CardBody,
   CardFooter,
-  Tabs,
-  Tab,
   Link,
   User,
 } from "@nextui-org/react";
 import {
+  UserGroupIcon,
+  UsersIcon,
   BookOpenIcon,
-  UserIcon,
-  StarIcon,
+  PuzzlePieceIcon,
   IdentificationIcon,
   BuildingOfficeIcon,
   AcademicCapIcon,
@@ -97,11 +95,11 @@ function Adinistrador() {
           {dataDocente?.persona?.apellido}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8  mx-10 my-8">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mb-8  mx-10 my-8">
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-4 flex flex-row items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
               Total de Estudiantes
-              <BookOpenIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+              <UsersIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
 
             <CardBody className="p-4">
@@ -121,7 +119,7 @@ function Adinistrador() {
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-4 flex flex-row items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
               Total de Docentes
-              <UserIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+              <UserGroupIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
@@ -129,20 +127,18 @@ function Adinistrador() {
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
-              <p className="text-sm text-muted-foreground">
-                Matriculados
-              </p>
+              <p className="text-sm text-muted-foreground">Matriculados</p>
             </CardFooter>
           </Card>
 
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-4 flex flex-row items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
               Total de Cursos
-              <StarIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+              <BookOpenIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                contar
+                {dataDocente?.estadisticas?.countCursos}
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
@@ -155,11 +151,11 @@ function Adinistrador() {
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-4 flex flex-row items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
               Total de Especialidades
-              <StarIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+              <PuzzlePieceIcon className="text-blue-900 dark:text-white h-6 w-6 " />
             </CardHeader>
             <CardBody className="p-4">
               <p className="text-3xl font-extrabold">
-                contar...
+                {dataDocente?.estadisticas?.countEspecialidades}
               </p>
             </CardBody>
             <CardFooter className="px-4 pb-4 pt-0">
