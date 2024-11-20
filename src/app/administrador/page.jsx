@@ -318,7 +318,7 @@ function Adinistrador() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-100">
-                      Direccion
+                      Dirección
                     </p>
                     <p className="capitalize">
                       {dataDocente?.persona?.direccion.toLowerCase()}

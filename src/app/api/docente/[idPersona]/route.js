@@ -33,6 +33,11 @@ export async function GET(request, { params }) {
                   },
                 },
                 MATRICULA: {
+                  where: {
+                    PERIODO: {
+                      estado: true, // Filtrar donde el PERIODO tenga estado = true
+                    },
+                  },
                   select: {
                     PERIODO: {
                       select: {
@@ -70,7 +75,12 @@ export async function GET(request, { params }) {
 
     // Consultar las matrículas relacionadas con el docente
     const data = await prisma.mATRICULA.findMany({
-      where: { idDocentePertenece: docente.id },
+      where: {
+        idDocentePertenece: docente.id,
+        PERIODO: {
+          estado: true, // Filtrar donde el PERIODO tenga estado = true
+        },
+      },
       include: {
         DETALLEMATERIA: {
           include: {

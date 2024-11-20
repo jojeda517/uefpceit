@@ -33,6 +33,11 @@ export async function GET(request, { params }) {
                   },
                 },
                 MATRICULA: {
+                  where: {
+                    PERIODO: {
+                      estado: true, // Filtrar donde el PERIODO tenga estado = true
+                    },
+                  },
                   select: {
                     PERIODO: {
                       select: {
@@ -70,16 +75,31 @@ export async function GET(request, { params }) {
 
     // Contar estudiantes únicos (sin duplicados)
     const countEstudiantes = await prisma.mATRICULA.findMany({
+      where: {
+        PERIODO: {
+          estado: true, // Filtrar donde el PERIODO tenga estado = true
+        },
+      },
       distinct: ["idEstudiantePertenece"],
     });
 
     // Contar docentes únicos (sin duplicados)
     const countDocentes = await prisma.mATRICULA.findMany({
+      where: {
+        PERIODO: {
+          estado: true, // Filtrar donde el PERIODO tenga estado = true
+        },
+      },
       distinct: ["idDocentePertenece"],
     });
 
     // Contar los cursos con estudiantes matriculados
     const cursosConEstudiantes = await prisma.mATRICULA.findMany({
+      where: {
+        PERIODO: {
+          estado: true, // Filtrar donde el PERIODO tenga estado = true
+        },
+      },
       select: {
         DETALLEMATERIA: {
           select: {
