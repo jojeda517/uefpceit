@@ -8,35 +8,17 @@ import CircularProgress from "@/app/components/CircularProgress";
 function Header() {
   const { data: session } = useSession();
   const roles = session?.user?.roles || [];
-  const idPersonaPertenece = session?.user?.idPersonaPertenece || null;
   const correo = session?.user?.correo || null;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [persona, setPersona] = useState(null);
+  const [nombre, setNombre] = useState(localStorage.getItem("nombre"));
+  const [apellido, setApellido] = useState(localStorage.getItem("apellido"));
+  const [foto, setFoto] = useState(localStorage.getItem("foto"));
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = () => {
     setIsLoading(true);
     signOut({ callbackUrl: "/" });
   };
-
-  const fetchPersona = useCallback(async () => {
-    if (!idPersonaPertenece) return;
-
-    try {
-      const response = await fetch(`/api/persona/${idPersonaPertenece}`);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      setPersona(data);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  }, [idPersonaPertenece]);
-
-  useEffect(() => {
-    fetchPersona();
-  }, [fetchPersona]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -142,7 +124,7 @@ function Header() {
             onClick={toggleDropdown}
             className="w-10 h-10 rounded-full cursor-pointer"
             /* src="/logo.png" */
-            src={persona?.foto || "/logo.png"}
+            src={foto || "/logo.png"}
             alt="User dropdown"
           />
 
@@ -154,7 +136,7 @@ function Header() {
           >
             <div className="px-4 py-3 text-sm text-white">
               <div className="font-bold">
-                {persona?.nombre} {persona?.apellido}
+                {nombre} {apellido}
               </div>
               <div className="font-medium truncate">{correo}</div>
             </div>

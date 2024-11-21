@@ -56,6 +56,11 @@ export default function Login() {
           res.json()
         );
         localStorage.setItem("idPersona", session.user.idPersonaPertenece);
+        localStorage.setItem("correo", session.user.correo);
+        localStorage.setItem("telefono", session.user.telefono);
+        localStorage.setItem("foto", session.user.foto);
+        localStorage.setItem("nombre", session.user.nombre);
+        localStorage.setItem("apellido", session.user.apellido);
         const roles = session.user?.roles || [];
         const roleRoutes = {
           administrador: "/administrador",

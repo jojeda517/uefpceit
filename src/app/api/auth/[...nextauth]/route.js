@@ -30,6 +30,14 @@ export const authOptions = {
                 ROL: true,
               },
             },
+            PERSONA: {
+              select: {
+                telefono: true,
+                foto: true,
+                nombre: true,
+                apellido: true,
+              },
+            },
           },
         });
 
@@ -54,6 +62,10 @@ export const authOptions = {
         return {
           id: user.id,
           correo: user.correo,
+          telefono: user.PERSONA.telefono,
+          foto: user.PERSONA.foto,
+          nombre: user.PERSONA.nombre,
+          apellido: user.PERSONA.apellido,
           roles: user.DETALLE_ROL.map((detail) => detail.ROL.rol), // Obtener los roles del usuario
           idPersonaPertenece: user.idPersonaPertenece,
         };
@@ -70,6 +82,10 @@ export const authOptions = {
         session.user.correo = token.correo;
         session.user.roles = token.roles;
         session.user.idPersonaPertenece = token.idPersonaPertenece;
+        session.user.telefono = token.telefono;
+        session.user.foto = token.foto;
+        session.user.nombre = token.nombre;
+        session.user.apellido = token.apellido;
       }
       return session;
     },
@@ -78,7 +94,11 @@ export const authOptions = {
       if (user) {
         token.correo = user.correo;
         token.roles = user.roles;
+        token.telefono = user.telefono;
         token.idPersonaPertenece = user.idPersonaPertenece;
+        token.foto = user.foto;
+        token.nombre = user.nombre;
+        token.apellido = user.apellido;
       }
       return token;
     },
