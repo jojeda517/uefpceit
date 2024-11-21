@@ -10,10 +10,21 @@ function Header() {
   const roles = session?.user?.roles || [];
   const correo = session?.user?.correo || null;
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [nombre, setNombre] = useState(localStorage.getItem("nombre"));
-  const [apellido, setApellido] = useState(localStorage.getItem("apellido"));
-  const [foto, setFoto] = useState(localStorage.getItem("foto"));
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [foto, setFoto] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Solo se ejecuta en el cliente después de que el componente se monta
+    const storedNombre = localStorage.getItem("nombre");
+    const storedApellido = localStorage.getItem("apellido");
+    const storedFoto = localStorage.getItem("foto");
+
+    setNombre(storedNombre || ""); // Asignar valor de localStorage o vacío si es null
+    setApellido(storedApellido || "");
+    setFoto(storedFoto || "");
+  }, []); // El array vacío asegura que solo se ejecute una vez al montar
 
   const handleSignOut = () => {
     setIsLoading(true);

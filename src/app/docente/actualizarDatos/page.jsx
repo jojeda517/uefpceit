@@ -1,11 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
   CardBody,
   CardFooter,
-  User,
   Avatar,
   Input,
   Button,
@@ -17,25 +16,84 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import Notification from "@/app/components/Notification";
+import CircularProgress from "@/app/components/CircularProgress";
 
 function ActualizarDatos() {
-  const [correo, setCorreo] = useState(localStorage.getItem("correo"));
-  const [celular, setCelular] = useState(localStorage.getItem("telefono"));
-  const [foto, setFoto] = useState(localStorage.getItem("foto"));
-  const [nombre, setNombre] = useState(localStorage.getItem("nombre"));
-  const [apellido, setApellido] = useState(localStorage.getItem("apellido"));
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [correo, setCorreo] = useState("");
+  const [celular, setCelular] = useState("");
+  const [foto, setFoto] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isVisiblePass, setIsVisiblePass] = useState(false);
   const [isVisiblePassConfirm, setIsVisiblePassConfirm] = useState(false);
+  const [notificacion, setNotificacion] = useState({ message: "", type: "" });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
+  useEffect(() => {
+    // Cargar datos de localStorage cuando el componente se monta
+    const storedCorreo = localStorage.getItem("correo");
+    const storedCelular = localStorage.getItem("telefono");
+    const storedFoto = localStorage.getItem("foto");
+    const storedNombre = localStorage.getItem("nombre");
+    const storedApellido = localStorage.getItem("apellido");
+
+    setCorreo(storedCorreo || ""); // Asigna el valor de localStorage o vacío si es null
+    setCelular(storedCelular || "");
+    setFoto(storedFoto || "");
+    setNombre(storedNombre || "");
+    setApellido(storedApellido || "");
+  }, []); // Solo se ejecuta una vez al montar
+
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      if (password !== confirmPassword) {
+        setNotificacion({
+          message: "Las contraseñas no coinciden",
+          type: "error",
+        });
+        return;
+      }
+
+      const body = {
+        correo,
+        celular,
+        password,
+        idPersona: localStorage.getItem("idPersona"),
+      };
+
+      const response = await fetch("/api/actualizarDatos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNotificacion({
+          message: data.message,
+          type: "success",
+        });
+      } else {
+        setNotificacion({
+          message: data.message,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      setNotificacion({
+        message: "Error de red o de servidor",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    alert("Datos actualizados correctamente");
   };
 
   const toggleVisibilityPass = () => setIsVisiblePass(!isVisiblePass);
@@ -44,6 +102,12 @@ function ActualizarDatos() {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
+      <Notification
+        message={notificacion.message}
+        type={notificacion.type}
+        onClose={() => setNotificacion({ message: "", type: "" })}
+      />
+      {isLoading && <CircularProgress />}
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
@@ -57,19 +121,16 @@ function ActualizarDatos() {
       <div className="flex flex-col items-center">
         <Card className="max-w-md w-full shadow-lg dark:bg-gray-700">
           <CardHeader className="flex flex-col items-center text-center py-5">
-            <Avatar
-              src={foto}
-              className="w-28 h-28 text-large"
-            />
+            <Avatar src={foto} className="w-28 h-28 text-large" />
             <p className="dark:text-white font-bold text-2xl">
               {nombre} {apellido}
             </p>
             <p className="text-base text-blue-900 dark:text-white font-extralight">
-              {correo}
+              DOCENTE
             </p>
           </CardHeader>
           <CardBody className="px-5">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form className="space-y-6">
               <div>
                 <div align="center" className="space-x-2">
                   <Input
@@ -86,7 +147,7 @@ function ActualizarDatos() {
                     fullWidth
                     placeholder="Ingresa tu correo"
                     value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
+                    onValueChange={setCorreo}
                     classNames={{
                       base: "",
                       input: "text-gray-900 dark:text-black",
@@ -107,7 +168,7 @@ function ActualizarDatos() {
                     label="Número de Celular"
                     placeholder="Ingresa tu celular"
                     value={celular}
-                    onChange={(e) => setCelular(e.target.value)}
+                    onValueChange={setCelular}
                     classNames={{
                       base: "",
                       input: "text-gray-900 dark:text-black",
@@ -141,7 +202,7 @@ function ActualizarDatos() {
                     label="Nueva Contraseña"
                     placeholder="Contraseña"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onValueChange={setPassword}
                     classNames={{
                       base: "",
                       input: "text-gray-900 dark:text-black",
@@ -175,7 +236,7 @@ function ActualizarDatos() {
                     label="Confirmar Nueva Contraseña"
                     placeholder="Confirma tu contraseña"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onValueChange={setConfirmPassword}
                     classNames={{
                       base: "",
                       input: "text-gray-900 dark:text-black",
@@ -190,7 +251,7 @@ function ActualizarDatos() {
           <CardFooter className="flex justify-center py-5">
             <Button
               type="submit"
-              onClick={handleSubmit}
+              onPress={handleSubmit}
               className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
             >
               Actualizar Datos
