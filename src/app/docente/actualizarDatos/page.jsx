@@ -20,7 +20,7 @@ import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
 
 function ActualizarDatos() {
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false);
   const [correo, setCorreo] = useState("");
   const [celular, setCelular] = useState("");
   const [foto, setFoto] = useState("");
@@ -30,60 +30,58 @@ function ActualizarDatos() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isVisiblePass, setIsVisiblePass] = useState(false);
   const [isVisiblePassConfirm, setIsVisiblePassConfirm] = useState(false);
-  const [passwordError, setPasswordError] = useState(null); // Error para nueva contraseña
-  const [confirmPasswordError, setConfirmPasswordError] = useState(null); // Error para confirmación
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
 
   useEffect(() => {
-    // Cargar datos de localStorage cuando el componente se monta
+    // Cargar datos de localStorage al montar el componente
     const storedCorreo = localStorage.getItem("correo");
     const storedCelular = localStorage.getItem("telefono");
     const storedFoto = localStorage.getItem("foto");
     const storedNombre = localStorage.getItem("nombre");
     const storedApellido = localStorage.getItem("apellido");
 
-    setCorreo(storedCorreo || ""); // Asigna el valor de localStorage o vacío si es null
+    setCorreo(storedCorreo || "");
     setCelular(storedCelular || "");
     setFoto(storedFoto || "");
     setNombre(storedNombre || "");
     setApellido(storedApellido || "");
-  }, []); // Solo se ejecuta una vez al montar
+  }, []);
+
+  const validateCorreo = (correo) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(correo) ? null : "Correo electrónico inválido.";
+  };
+
+  const validateCelular = (celular) => {
+    const regex = /^09\d{8}$/;
+    return regex.test(celular)
+      ? null
+      : "El número de celular debe tener 10 dígitos y comenzar con 09.";
+  };
 
   const validatePassword = (password) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,16}$/;
-    if (!regex.test(password)) {
-      return "La contraseña debe tener entre 8 y 16 caracteres, incluir al menos una mayúscula, una minúscula, un número y un carácter especial.";
-    }
-    return null;
+    return regex.test(password)
+      ? null
+      : "La contraseña debe tener entre 8 y 16 caracteres, incluir al menos una mayúscula, una minúscula, un número y un carácter especial.";
   };
-
-  const handlePasswordChange = (value) => {
-    setPassword(value);
-    const error = validatePassword(value);
-    setPasswordError(error);
-    if (confirmPassword) {
-      setConfirmPasswordError(
-        value !== confirmPassword ? "Las contraseñas no coinciden" : null
-      );
-    }
-  };
-
-  const handleConfirmPasswordChange = (value) => {
-    setConfirmPassword(value);
-    setConfirmPasswordError(
-      value !== password ? "Las contraseñas no coinciden" : null
-    );
-  };
-
-  const toggleVisibilityPass = () => setIsVisiblePass(!isVisiblePass);
-  const toggleVisibilityPassConfirm = () =>
-    setIsVisiblePassConfirm(!isVisiblePassConfirm);
 
   const handleSubmit = async () => {
-    const passwordValidationError = validatePassword(password);
-    if (passwordValidationError) {
+    if (!correo || !celular || !password || !confirmPassword) {
       setNotificacion({
-        message: passwordValidationError,
+        message: "Todos los campos son obligatorios.",
+        type: "error",
+      });
+      return;
+    }
+
+    const correoError = validateCorreo(correo);
+    const celularError = validateCelular(celular);
+    const passwordError = validatePassword(password);
+
+    if (correoError || celularError || passwordError) {
+      setNotificacion({
+        message: correoError || celularError || passwordError,
         type: "error",
       });
       return;
@@ -91,7 +89,7 @@ function ActualizarDatos() {
 
     if (password !== confirmPassword) {
       setNotificacion({
-        message: "Las contraseñas no coinciden",
+        message: "Las contraseñas no coinciden.",
         type: "error",
       });
       return;
@@ -129,7 +127,7 @@ function ActualizarDatos() {
       }
     } catch (error) {
       setNotificacion({
-        message: "Error de red o de servidor",
+        message: "Error de red o de servidor.",
         type: "error",
       });
     } finally {
@@ -171,30 +169,23 @@ function ActualizarDatos() {
                 startContent={
                   <AtSymbolIcon className="text-blue-900 dark:text-black h-5 w-5" />
                 }
-                label={
-                  <label className="text-blue-900 dark:text-black">
-                    Correo Electrónico
-                  </label>
-                }
-                variant="bordered"
-                clearable
-                fullWidth
+                label="Correo Electrónico"
                 placeholder="Ingresa tu correo"
                 value={correo}
                 onValueChange={setCorreo}
               />
+
               {/* Input de teléfono */}
               <Input
                 startContent={
                   <PhoneIcon className="text-blue-900 dark:text-black h-5 w-5" />
                 }
-                clearable
-                fullWidth
                 label="Número de Celular"
                 placeholder="Ingresa tu celular"
                 value={celular}
                 onValueChange={setCelular}
               />
+
               {/* Input de nueva contraseña */}
               <Input
                 startContent={
@@ -205,7 +196,7 @@ function ActualizarDatos() {
                   <button
                     className="focus:outline-none"
                     type="button"
-                    onClick={toggleVisibilityPass}
+                    onClick={() => setIsVisiblePass(!isVisiblePass)}
                     aria-label="toggle password visibility"
                   >
                     {isVisiblePass ? (
@@ -218,11 +209,9 @@ function ActualizarDatos() {
                 label="Nueva Contraseña"
                 placeholder="Contraseña"
                 value={password}
-                onValueChange={handlePasswordChange}
+                onValueChange={setPassword}
               />
-              {passwordError && (
-                <p className="text-red-500 text-sm">{passwordError}</p>
-              )}
+
               {/* Input de confirmar contraseña */}
               <Input
                 startContent={
@@ -233,7 +222,9 @@ function ActualizarDatos() {
                   <button
                     className="focus:outline-none"
                     type="button"
-                    onClick={toggleVisibilityPassConfirm}
+                    onClick={() =>
+                      setIsVisiblePassConfirm(!isVisiblePassConfirm)
+                    }
                     aria-label="toggle password visibility"
                   >
                     {isVisiblePassConfirm ? (
@@ -246,11 +237,8 @@ function ActualizarDatos() {
                 label="Confirmar Nueva Contraseña"
                 placeholder="Confirma tu contraseña"
                 value={confirmPassword}
-                onValueChange={handleConfirmPasswordChange}
+                onValueChange={setConfirmPassword}
               />
-              {confirmPasswordError && (
-                <p className="text-red-500 text-sm">{confirmPasswordError}</p>
-              )}
             </form>
           </CardBody>
           <CardFooter className="flex justify-center py-5">
