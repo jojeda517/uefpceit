@@ -155,7 +155,7 @@ function ActualizarDatos() {
       {isLoading && <CircularProgress />}
       <div className="grid grid-cols-1 gap-2 pb-5">
         <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
-          Información del Estudiante
+          Información del Docente
         </h2>
         <p className="font-light text-lg text-black dark:text-white">
           Actualiza tus datos personales

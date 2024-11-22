@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, memo } from "react";
 import Sidebar from "../components/Sidebar";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
@@ -16,15 +16,15 @@ function Header() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Solo se ejecuta en el cliente después de que el componente se monta
+    // Cargar datos desde localStorage
     const storedNombre = localStorage.getItem("nombre");
     const storedApellido = localStorage.getItem("apellido");
     const storedFoto = localStorage.getItem("foto");
 
-    setNombre(storedNombre || ""); // Asignar valor de localStorage o vacío si es null
+    setNombre(storedNombre || "");
     setApellido(storedApellido || "");
     setFoto(storedFoto || "");
-  }, []); // El array vacío asegura que solo se ejecute una vez al montar
+  }, []);
 
   const handleSignOut = () => {
     setIsLoading(true);
@@ -32,25 +32,22 @@ function Header() {
     signOut({ callbackUrl: "/" });
   };
 
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        !event.target.closest("#userDropdown") &&
-        !event.target.closest("#avatarButton")
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleOutsideClick);
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, []);
-
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
   };
+
+  // Configuración de rutas por rol
+  const roleRoutes = {
+    administrador: "/administrador",
+    docente: "/docente",
+    estudiante: "/estudiante",
+  };
+
+  // Determinar la ruta del perfil según el primer rol válido
+  const perfilRoute =
+    roles
+      .map((role) => roleRoutes[role.toLowerCase()])
+      .find((route) => route) || "/unauthorized"; // Redirigir a una página de no autorizado si no tiene un rol válido
 
   return (
     <div className="z-30 fixed bg-blue-900 dark:bg-gray-900 w-full h-12 flex justify-between items-center">
@@ -60,6 +57,7 @@ function Header() {
       </div>
 
       <div className="p-2 flex justify-between items-center">
+        {/* Iconos de redes sociales */}
         <div className="flex justify-between items-center gap-x-4 mr-4">
           <Link href="https://www.facebook.com/profile.php?id=100010771740584&mibextid=qi2Omg&rdid=grpIwSbydv7Djnp2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F3umHxfAy8UdkN2oQ%2F%3Fmibextid%3Dqi2Omg">
             <svg
@@ -129,17 +127,16 @@ function Header() {
           </Link>
         </div>
 
+        {/* Dropdown del usuario */}
         <div className="relative">
           <img
             id="avatarButton"
             type="button"
             onClick={toggleDropdown}
             className="w-10 h-10 rounded-full cursor-pointer"
-            /* src="/logo.png" */
             src={foto || "/logo.png"}
             alt="User dropdown"
           />
-
           <div
             id="userDropdown"
             className={`absolute right-0 mt-2 w-44 bg-blue-900 dark:bg-gray-900 divide-y divide-gray-100 rounded-lg shadow ${
@@ -147,38 +144,38 @@ function Header() {
             }`}
           >
             <div className="px-4 py-3 text-sm text-white">
-              <div className="font-bold">
-                {nombre} {apellido}
+              <div className="font-bold capitalize">
+                {nombre.toLocaleLowerCase()} {apellido.toLocaleLowerCase()}
               </div>
-              <div className="font-medium truncate">{correo}</div>
+              <div className="font-medium truncate">
+                {correo.toLocaleLowerCase()}
+              </div>
             </div>
             <ul
               className="py-2 text-sm text-white"
               aria-labelledby="avatarButton"
             >
               <li>
-                <a
-                  href="#"
+                <Link
+                  href={perfilRoute}
                   className="block px-4 py-2 hover:bg-blue-gray-100 hover:text-black"
                 >
                   Perfil
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/administrador/datos"
+                <Link
+                  href={
+                    roles.includes("Administrador") || roles.includes("Docente")
+                      ? "/docente/actualizarDatos"
+                      : roles.includes("Estudiante")
+                      ? "/estudiante/actualizarDatos"
+                      : "/unauthorized" // Redirigir a una página de no autorizado si no tiene un rol válido
+                  }
                   className="block px-4 py-2 hover:bg-blue-gray-100 hover:text-black"
                 >
-                  Settings
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 hover:bg-blue-gray-100 hover:text-black"
-                >
-                  Earnings
-                </a>
+                  Configuración
+                </Link>
               </li>
             </ul>
             <div className="py-1">
