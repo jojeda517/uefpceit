@@ -79,6 +79,7 @@ function Sidebar({ roles }) {
 
   const handleSignOut = () => {
     setIsLoading(true);
+    localStorage.clear(); // Limpiar todo el localStorage
     signOut({ callbackUrl: "/" });
   };
 

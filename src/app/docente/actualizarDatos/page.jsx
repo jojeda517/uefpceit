@@ -18,6 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Notification from "@/app/components/Notification";
 import CircularProgress from "@/app/components/CircularProgress";
+import { signOut } from "next-auth/react";
 
 function ActualizarDatos() {
   const [isLoading, setIsLoading] = useState(false);
@@ -119,6 +120,8 @@ function ActualizarDatos() {
           message: data.message,
           type: "success",
         });
+        // cerrar sesión si se actualiza la contraseña
+        handleSignOut();
       } else {
         setNotificacion({
           message: data.message,
@@ -126,6 +129,7 @@ function ActualizarDatos() {
         });
       }
     } catch (error) {
+      console.error("Error al actualizar los datos:", error);
       setNotificacion({
         message: "Error de red o de servidor.",
         type: "error",
@@ -133,6 +137,12 @@ function ActualizarDatos() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSignOut = () => {
+    localStorage.clear(); // Limpiar todo el localStorage
+    setIsLoading(true);
+    signOut({ callbackUrl: "/" });
   };
 
   return (

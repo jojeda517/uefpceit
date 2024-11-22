@@ -28,6 +28,7 @@ function Header() {
 
   const handleSignOut = () => {
     setIsLoading(true);
+    localStorage.clear(); // Limpiar todo el localStorage
     signOut({ callbackUrl: "/" });
   };
 
