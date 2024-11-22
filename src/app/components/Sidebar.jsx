@@ -29,7 +29,9 @@ import {
   BuildingOffice2Icon,
   BarsArrowUpIcon,
   SquaresPlusIcon,
-  SparklesIcon
+  SparklesIcon,
+  Cog8ToothIcon,
+  PresentationChartLineIcon,
 } from "@heroicons/react/24/solid";
 import {
   ChevronDownIcon,
@@ -128,6 +130,16 @@ function Sidebar({ roles }) {
               {/* OPCIONES DEL ROL DE ADMINISTRADOR */}
               {hasRole("Administrador") && (
                 <>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/administrador")}
+                  >
+                    <ListItemPrefix>
+                      <UserCircleIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Perfil administrador
+                  </ListItem>
+
                   <Accordion
                     open={open === 1}
                     icon={
@@ -305,37 +317,80 @@ function Sidebar({ roles }) {
 
               {/* OPCIONES DEL ROL DOCENTE */}
               {hasRole("Docente") && (
-                <ListItem
-                  className="text-white cursor-pointer"
-                  onClick={() => handleNavigation("/docente/paralelosDocente")}
-                >
-                  <ListItemPrefix>
-                    <SparklesIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  Calificar
-                </ListItem>
+                <>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/docente")}
+                  >
+                    <ListItemPrefix>
+                      <UserCircleIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Perfil docente
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigation("/docente/paralelosDocente")
+                    }
+                  >
+                    <ListItemPrefix>
+                      <SparklesIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Calificar
+                  </ListItem>
+
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/docente/actualizarDatos")}
+                  >
+                    <ListItemPrefix>
+                      <Cog8ToothIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Configuración
+                  </ListItem>
+                </>
               )}
 
               {/* OPCIONES DEL ROL ESTUDIANTE */}
               {hasRole("Estudiante") && (
                 <>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() => handleNavigation("/estudiante")}
+                  >
+                    <ListItemPrefix>
+                      <UserCircleIcon className="h-5 w-5" />
+                    </ListItemPrefix>
+                    Perfil
+                  </ListItem>
+
                   <ListItem>
                     <ListItemPrefix>
-                      <LockClosedIcon className="h-5 w-5" />
+                      <PresentationChartLineIcon className="h-5 w-5" />
                     </ListItemPrefix>
                     Notas actuales
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigation("/estudiante/actualizarDatos")
+                    }
+                  >
                     <ListItemPrefix>
-                      <LockClosedIcon className="h-5 w-5" />
+                      <Cog8ToothIcon className="h-5 w-5" />
                     </ListItemPrefix>
-                    Horario
+                    Configuración
                   </ListItem>
                 </>
               )}
 
-              <hr className="my-2 border-blue-gray-50" />
+              {(hasRole("Administrador") || hasRole("Docente")) && (
+                <>
+                  <hr className="my-2 border-blue-gray-50" />
+                </>
+              )}
               <Accordion
                 open={open === 1}
                 icon={
@@ -480,16 +535,6 @@ function Sidebar({ roles }) {
                                 />
                               </ListItemPrefix>
                               Alumnos
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <CheckBadgeIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Materias
                             </ListItem>
                           </>
                         )}

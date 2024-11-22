@@ -95,8 +95,8 @@ function Docente() {
       <Header />
       <div className="min-h-screen bg-gray-100 dark:bg-gray-800">
         <h2 className="pt-24 px-10 font-extrabold text-3xl text-blue-900 dark:text-white capitalize">
-          Bienvenido, {dataDocente?.persona?.nombre}{" "}
-          {dataDocente?.persona?.apellido}
+          Bienvenido, {dataDocente?.persona?.nombre.toLowerCase()}{" "}
+          {dataDocente?.persona?.apellido.toLowerCase()}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8  mx-10 my-8">
@@ -161,9 +161,9 @@ function Docente() {
           <Card className="dark:bg-gray-700 dark:text-white">
             <CardHeader className="p-5 dark:bg-default-900 bg-gray-100">
               <User
-                name={dataDocente?.persona?.nombre}
+                name={dataDocente?.persona?.nombre.toLowerCase()}
                 classNames={{
-                  name: "text-lg",
+                  name: "text-lg capitalize",
                 }}
                 description={
                   <Link href="" size="md" isExternal>

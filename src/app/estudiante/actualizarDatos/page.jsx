@@ -169,7 +169,7 @@ function ActualizarDatos() {
               {nombre} {apellido}
             </p>
             <p className="text-base text-blue-900 dark:text-white font-extralight">
-              DOCENTE
+              ESTUDIANTE
             </p>
           </CardHeader>
           <CardBody className="px-5">
