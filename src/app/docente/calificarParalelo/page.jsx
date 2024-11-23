@@ -116,6 +116,10 @@ function CalificarParalelo() {
   }, [idPersona]);
 
   useEffect(() => {
+    console.log(estudiantes);
+  }, [estudiantes]);
+
+  useEffect(() => {
     if (parcialSeleccionado === "supletorio") {
       // Calcular el promedio de los parciales anteriores
       const nuevasCalificaciones = estudiantes.map((estudiante) => {
@@ -197,45 +201,35 @@ function CalificarParalelo() {
     setCalificacionesFiltradas((prevCalificaciones) =>
       prevCalificaciones.map((estudiante) => {
         if (estudiante.id === idEstudiante) {
-          // Verificar que 'calificacion' esté definido
-          if (!estudiante.calificacion) {
-            estudiante.calificacion = { APORTE: [], EXAMEN: [] }; // Inicializar si no existe
-          }
+          const calificacionParcial = estudiante.MATRICULA[0].CALIFICACION.find(
+            (calif) => String(calif.idParcial) === parcialSeleccionado
+          );
 
-          // Verificar que 'APORTE' esté definido
-          if (!estudiante.calificacion.APORTE) {
-            estudiante.calificacion.APORTE = []; // Inicializar si no existe
-          }
-
-          // Asegurarse de que el índice exista en 'APORTE'
-          if (!estudiante.calificacion.APORTE[index]) {
-            estudiante.calificacion.APORTE[index] = { aporte: 0 }; // Inicializa el objeto si no existe
-          }
-
-          // Actualizar el valor de aporte
-          if (tipo === "aportes") {
-            estudiante.calificacion.APORTE[index] = {
-              ...estudiante.calificacion.APORTE[index],
-              aporte: parseFloat(valor) || 0,
-            };
-          }
-
-          // Verificar que 'EXAMEN' esté definido
-          if (!estudiante.calificacion.EXAMEN) {
-            estudiante.calificacion.EXAMEN = []; // Inicializar si no existe
-          }
-
-          // Asegurarse de que el índice exista en 'EXAMEN'
-          if (!estudiante.calificacion.EXAMEN[index]) {
-            estudiante.calificacion.EXAMEN[index] = { nota: 0 }; // Inicializa el objeto si no existe
-          }
-
-          // Actualizar el valor de examen
-          if (tipo === "examenes") {
-            estudiante.calificacion.EXAMEN[index] = {
-              ...estudiante.calificacion.EXAMEN[index],
-              nota: parseFloat(valor) || 0,
-            };
+          if (calificacionParcial) {
+            // Actualiza el valor basado en el tipo
+            if (tipo.startsWith("aporte")) {
+              const aporteIndex = parseInt(tipo.replace("aporte", "")) - 1;
+              if (!calificacionParcial.APORTE[aporteIndex]) {
+                calificacionParcial.APORTE[aporteIndex] = { aporte: 0 };
+              }
+              calificacionParcial.APORTE[aporteIndex].aporte =
+                parseFloat(valor) || 0;
+            } else if (tipo === "examen") {
+              if (!calificacionParcial.EXAMEN[0]) {
+                calificacionParcial.EXAMEN[0] = { nota: 0 };
+              }
+              calificacionParcial.EXAMEN[0].nota = parseFloat(valor) || 0;
+            } else if (tipo === "asistencia") {
+              if (!calificacionParcial.ASISTENCIA[0]) {
+                calificacionParcial.ASISTENCIA[0] = { valor: 0 };
+              }
+              calificacionParcial.ASISTENCIA[0].valor = parseFloat(valor) || 0;
+            } else if (tipo === "conducta") {
+              if (!calificacionParcial.CONDUCTA[0]) {
+                calificacionParcial.CONDUCTA[0] = { valor: 0 };
+              }
+              calificacionParcial.CONDUCTA[0].valor = parseFloat(valor) || 0;
+            }
           }
         }
         return estudiante;
@@ -681,36 +675,47 @@ function CalificarParalelo() {
               ) : (
                 <Table
                   aria-label="Tabla de calificaciones"
-                  //selectionMode="single"
                   classNames={{
-                    wrapper: "dark:bg-gray-700", // Es necesario ajustar la altura máxima de la tabla
-                    th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase", // Es la cabecera
-                    tr: "dark:text-white dark:hover:text-gray-900 text-justify", // Es la fila
+                    wrapper: "dark:bg-gray-700",
+                    th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
+                    tr: "dark:text-white dark:hover:text-gray-900 text-justify",
                   }}
                 >
                   <TableHeader>
                     <TableColumn>Estudiante</TableColumn>
-                    {Array.from({ length: maxAportes }, (_, i) => (
-                      <TableColumn key={`aporte-${i}`}>
-                        Aporte {i + 1}
-                      </TableColumn>
-                    ))}
-                    {Array.from({ length: maxExamenes }, (_, i) => (
-                      <TableColumn key={`examen-${i}`}>
-                        Examen {i + 1}
-                      </TableColumn>
-                    ))}
+                    <TableColumn>Aporte 1</TableColumn>
+                    <TableColumn>Aporte 2</TableColumn>
+                    <TableColumn>Aporte 3</TableColumn>
+                    <TableColumn>Examen</TableColumn>
+                    <TableColumn>Asistencia</TableColumn>
+                    <TableColumn>Conducta</TableColumn>
                     <TableColumn>Promedio</TableColumn>
                   </TableHeader>
 
                   <TableBody>
                     {calificacionesFiltradas.map((estudiante) => {
-                      // Verificar si existen las calificaciones, aportes y exámenes
-                      const aportes = estudiante.calificacion?.APORTE || [];
-                      const examenes = estudiante.calificacion?.EXAMEN || [];
+                      // Buscar la calificación del parcial seleccionado
+                      const calificacionParcial =
+                        estudiante.MATRICULA[0].CALIFICACION.find(
+                          (calif) =>
+                            String(calif.idParcial) === parcialSeleccionado
+                        );
+
+                      // Si no existe calificación para el parcial seleccionado, usar valores predeterminados
+                      const aportes = calificacionParcial?.APORTE || [
+                        { aporte: 0 },
+                        { aporte: 0 },
+                        { aporte: 0 },
+                      ];
+                      const examen = calificacionParcial?.EXAMEN[0]?.nota || 0;
+                      const asistencia =
+                        calificacionParcial?.ASISTENCIA[0]?.valor || 0; // Valor de ejemplo
+                      const conducta =
+                        calificacionParcial?.CONDUCTA[0]?.valor || 0; // Valor de ejemplo
 
                       return (
                         <TableRow key={estudiante.id}>
+                          {/* Estudiante */}
                           <TableCell className="capitalize">
                             <p>
                               {estudiante.PERSONA.apellido.toLowerCase()}{" "}
@@ -718,59 +723,131 @@ function CalificarParalelo() {
                             </p>
                           </TableCell>
 
-                          {Array.from({ length: maxAportes }, (_, i) => (
-                            <TableCell key={`aporte-${i}`}>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.01"
-                                value={aportes[i]?.aporte || 0}
-                                onChange={(e) =>
-                                  handleCalificacionChange(
-                                    estudiante.id,
-                                    "aportes",
-                                    i,
-                                    e.target.value
-                                  )
-                                }
-                                //isDisabled={!etapaAnteriorCompleta}
-                                disabled={
-                                  !estudiante?.calificacion?.PARCIAL
-                                    ?.CIERREFASE[0]?.estado
-                                }
-                                size="sm"
-                              />
-                            </TableCell>
-                          ))}
-
-                          {Array.from({ length: maxExamenes }, (_, i) => (
-                            <TableCell key={`examen-${i}`}>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.01"
-                                value={examenes[i]?.nota || 0}
-                                onChange={(e) =>
-                                  handleCalificacionChange(
-                                    estudiante.id,
-                                    "examenes",
-                                    i,
-                                    e.target.value
-                                  )
-                                }
-                                disabled={
-                                  !estudiante?.calificacion?.PARCIAL
-                                    ?.CIERREFASE[0]?.estado
-                                }
-                                size="sm"
-                              />
-                            </TableCell>
-                          ))}
-
+                          {/* Aporte 1 */}
                           <TableCell>
-                            {calcularPromedio(aportes, examenes)}
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={aportes[0]?.aporte || 0}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "aporte1",
+                                  0,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Aporte 2 */}
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={aportes[1]?.aporte || 0}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "aporte2",
+                                  1,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Aporte 3 */}
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={aportes[2]?.aporte || 0}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "aporte3",
+                                  2,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Examen */}
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={examen}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "examen",
+                                  0,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Asistencia */}
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={asistencia}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "asistencia",
+                                  0,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Conducta */}
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.01"
+                              value={conducta}
+                              onChange={(e) =>
+                                handleCalificacionChange(
+                                  estudiante.id,
+                                  "conducta",
+                                  0,
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                            />
+                          </TableCell>
+
+                          {/* Promedio */}
+                          <TableCell>
+                            <p>
+                              {calcularPromedio(aportes, [{ nota: examen }])}
+                            </p>
                           </TableCell>
                         </TableRow>
                       );
