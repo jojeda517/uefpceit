@@ -365,7 +365,12 @@ function Sidebar({ roles }) {
                     Perfil
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigation("/estudiante/notasActuales")
+                    }
+                  >
                     <ListItemPrefix>
                       <PresentationChartLineIcon className="h-5 w-5" />
                     </ListItemPrefix>

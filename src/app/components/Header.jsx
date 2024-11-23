@@ -148,7 +148,7 @@ function Header() {
                 {nombre.toLocaleLowerCase()} {apellido.toLocaleLowerCase()}
               </div>
               <div className="font-medium truncate">
-                {correo.toLocaleLowerCase()}
+                {correo?.toLocaleLowerCase()}
               </div>
             </div>
             <ul

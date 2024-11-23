@@ -325,15 +325,17 @@ model PARCIAL {
 }
 
 model CALIFICACION {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   idMatricula Int
   idParcial   Int
   promedio    Float
   estado      String // "APROBADO", "SUPLETORIO", "REPROBADO"
-  PARCIAL     PARCIAL   @relation(fields: [idParcial], references: [id])
-  APORTE      APORTE[]
-  EXAMEN      EXAMEN[]
-  MATRICULA   MATRICULA @relation(fields: [idMatricula], references: [id])
+  PARCIAL     PARCIAL      @relation(fields: [idParcial], references: [id])
+  APORTE      APORTE[] // Relación para los aportes
+  EXAMEN      EXAMEN[] // Relación para los exámenes
+  MATRICULA   MATRICULA    @relation(fields: [idMatricula], references: [id])
+  ASISTENCIA  ASISTENCIA[]
+  CONDUCTA    CONDUCTA[]
 }
 
 model APORTE {
@@ -347,6 +349,20 @@ model EXAMEN {
   id             Int          @id @default(autoincrement())
   idCalificacion Int
   nota           Float // Nota del examen
+  CALIFICACION   CALIFICACION @relation(fields: [idCalificacion], references: [id])
+}
+
+model ASISTENCIA {
+  id             Int          @id @default(autoincrement())
+  idCalificacion Int // Relación con calificaciones
+  porcentaje     Float // Porcentaje de asistencia
+  CALIFICACION   CALIFICACION @relation(fields: [idCalificacion], references: [id])
+}
+
+model CONDUCTA {
+  id             Int          @id @default(autoincrement())
+  idCalificacion Int // Relación con calificaciones
+  puntaje        Float // Nota o puntuación de la conducta
   CALIFICACION   CALIFICACION @relation(fields: [idCalificacion], references: [id])
 }
 
