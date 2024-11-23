@@ -675,19 +675,37 @@ function CalificarParalelo() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-blue-900 dark:text-white">Plantilla</label>
-              <Button
-                //onClick={descargarPlantilla}
-                onClick={generarCSV}
-                variant="shadow"
-                color="success"
-                size="md"
-                className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
-                disabled={parcialSeleccionado === "supletorio"}
-              >
-                Descargar Plantilla
-              </Button>
+            <div className="grid grid-cols-2 space-x-2">
+              <div className="grid grid-cols-1">
+                <label className="text-blue-900 dark:text-white">
+                  Descargar calificaciones
+                </label>
+                <Button
+                  //onClick={generarCSV}
+                  variant="shadow"
+                  color="success"
+                  size="md"
+                  className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
+                  disabled={parcialSeleccionado === "supletorio"}
+                >
+                  Calificaciones
+                </Button>
+              </div>
+              <div className="grid grid-cols-1">
+                <label className="text-blue-900 dark:text-white">
+                  Plantilla
+                </label>
+                <Button
+                  //onClick={generarCSV}
+                  variant="shadow"
+                  color="success"
+                  size="md"
+                  className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
+                  disabled={parcialSeleccionado === "supletorio"}
+                >
+                  Plantilla
+                </Button>
+              </div>
             </div>
           </CardBody>
         </Card>
@@ -721,13 +739,15 @@ function CalificarParalelo() {
                     <TableColumn>Promedio</TableColumn>
                     <TableColumn>Estado</TableColumn>
                     <TableColumn>Calificación</TableColumn>
+                    <TableColumn>Promedio Final</TableColumn>
                   </TableHeader>
 
                   <TableBody>
                     {calificacionesFiltradas.map((estudiante) => {
                       const promedio = calcularPromedioSupletorio(
                         estudiante.MATRICULA[0].CALIFICACION
-                      );
+                      ); //
+
                       const supletorioHabilitado =
                         parcialSeleccionado === "supletorio" &&
                         parciales
@@ -739,13 +759,19 @@ function CalificarParalelo() {
                         promedio >= 4 &&
                         promedio < 7;
 
+                      // Calcula el promedio final dinámicamente
+                      const supletorioNota =
+                        estudiante.MATRICULA[0]?.SUPLETORIO?.nota || null;
+
                       return (
                         <TableRow key={estudiante.id}>
                           <TableCell>
                             {estudiante.PERSONA.apellido.toLowerCase()}{" "}
                             {estudiante.PERSONA.nombre.toLowerCase()}
                           </TableCell>
-                          <TableCell>{promedio}</TableCell>
+                          <TableCell>
+                            {parseFloat(promedio).toFixed(2)}
+                          </TableCell>
                           <TableCell>
                             {promedio >= 7
                               ? "APROBADO"
@@ -762,11 +788,7 @@ function CalificarParalelo() {
                                 min="0"
                                 max="10"
                                 step="0.01"
-                                //disabled={!supletorioHabilitado}
-                                value={
-                                  estudiante.MATRICULA[0]?.SUPLETORIO?.nota ||
-                                  ""
-                                }
+                                value={supletorioNota || ""}
                                 onChange={(e) =>
                                   handleSupletorioChange(
                                     estudiante.id,
@@ -775,6 +797,18 @@ function CalificarParalelo() {
                                 }
                               />
                             )}
+                          </TableCell>
+                          <TableCell>
+                            <p>
+                              {parseFloat(
+                                supletorioNota !== null &&
+                                  supletorioNota !== undefined
+                                  ? (parseFloat(promedio || 0) +
+                                      parseFloat(supletorioNota)) /
+                                      2
+                                  : parseFloat(promedio || 0)
+                              ).toFixed(2)}
+                            </p>
                           </TableCell>
                         </TableRow>
                       );
