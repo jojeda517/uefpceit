@@ -80,6 +80,8 @@ export async function GET(request, { params }) {
                   },
                 },
                 EXAMEN: true,
+                ASISTENCIA: true,
+                CONDUCTA: true,
                 PARCIAL: {
                   include: {
                     CIERREFASE: true,
