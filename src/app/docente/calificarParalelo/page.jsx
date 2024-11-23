@@ -504,6 +504,7 @@ function CalificarParalelo() {
   };
 
   const isParcialCerrado = () => {
+    if (parcialSeleccionado === "supletorio") return false;
     const parcial = parciales.find((p) => String(p.id) === parcialSeleccionado);
     return !parcial?.CIERREFASE[0]?.estado || false; // Retorna false si no hay información del estado
   };
