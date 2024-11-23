@@ -511,6 +511,17 @@ function CalificarParalelo() {
 
   const parcialCerrado = isParcialCerrado();
 
+  const calcularPromedioSupletorio = (calificacionesParciales) => {
+    const totalParciales = parciales.length - 1; // Total de parciales existentes menos el supletorio
+    const sumaNotas = parciales.reduce((suma, parcial) => {
+      const calificacion = calificacionesParciales.find(
+        (c) => c.idParcial === parcial.id
+      );
+      return suma + (calificacion?.promedio || 0);
+    }, 0);
+    return (sumaNotas / totalParciales).toFixed(2); // Redondeado a 2 decimales
+  };
+
   return (
     // <div className="container mx-auto px-4 py-8"> *
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -690,25 +701,61 @@ function CalificarParalelo() {
                   </TableHeader>
 
                   <TableBody>
-                    {calificacionesFiltradas.map((estudiante) => (
-                      <TableRow key={estudiante.id}>
-                        <TableCell className="capitalize">
-                          {estudiante.PERSONA.apellido.toLowerCase()}{" "}
-                          {estudiante.PERSONA.nombre.toLowerCase()}
-                        </TableCell>
-                        <TableCell>promedio...</TableCell>
-                        <TableCell>estado...</TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.01"
-                            size="sm"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {calificacionesFiltradas.map((estudiante) => {
+                      const promedio = calcularPromedioSupletorio(
+                        estudiante.MATRICULA[0].CALIFICACION
+                      );
+                      const supletorioHabilitado =
+                        parcialSeleccionado === "supletorio" &&
+                        parciales
+                          .filter(
+                            (parcial) =>
+                              parcial.parcial.toLowerCase() !== "supletorio"
+                          )
+                          .every((parcial) => !parcial.CIERREFASE[0].estado) &&
+                        promedio >= 4 &&
+                        promedio < 7;
+
+                      return (
+                        <TableRow key={estudiante.id}>
+                          <TableCell>
+                            {estudiante.PERSONA.apellido.toLowerCase()}{" "}
+                            {estudiante.PERSONA.nombre.toLowerCase()}
+                          </TableCell>
+                          <TableCell>{promedio}</TableCell>
+                          <TableCell>
+                            {promedio >= 7
+                              ? "APROBADO"
+                              : promedio < 4
+                              ? "REPROBADO"
+                              : "SUPLETORIO"}
+                          </TableCell>
+                          <TableCell>
+                            {!supletorioHabilitado ? (
+                              <p>No habilitado</p>
+                            ) : (
+                              <Input
+                                type="number"
+                                min="0"
+                                max="10"
+                                step="0.01"
+                                //disabled={!supletorioHabilitado}
+                                value={
+                                  estudiante.MATRICULA[0]?.SUPLETORIO?.nota ||
+                                  ""
+                                }
+                                onChange={(e) =>
+                                  handleSupletorioChange(
+                                    estudiante.id,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               ) : (
