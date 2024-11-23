@@ -194,9 +194,6 @@ function CalificarParalelo() {
     }
   }, [parcialSeleccionado, estudiantes]);
 
-  const agregarAporte = () => setMaxAportes((prev) => prev + 1);
-  const eliminarAporte = () => setMaxAportes((prev) => Math.max(1, prev - 1));
-
   const handleCalificacionChange = (idEstudiante, tipo, index, valor) => {
     setCalificacionesFiltradas((prevCalificaciones) =>
       prevCalificaciones.map((estudiante) => {
@@ -221,14 +218,14 @@ function CalificarParalelo() {
               calificacionParcial.EXAMEN[0].nota = parseFloat(valor) || 0;
             } else if (tipo === "asistencia") {
               if (!calificacionParcial.ASISTENCIA[0]) {
-                calificacionParcial.ASISTENCIA[0] = { valor: 0 };
+                calificacionParcial.ASISTENCIA[0] = { porcentaje: 0 };
               }
-              calificacionParcial.ASISTENCIA[0].valor = parseFloat(valor) || 0;
+              calificacionParcial.ASISTENCIA[0].porcentaje = parseFloat(valor) || 0;
             } else if (tipo === "conducta") {
               if (!calificacionParcial.CONDUCTA[0]) {
-                calificacionParcial.CONDUCTA[0] = { valor: 0 };
+                calificacionParcial.CONDUCTA[0] = { puntaje: 0 };
               }
-              calificacionParcial.CONDUCTA[0].valor = parseFloat(valor) || 0;
+              calificacionParcial.CONDUCTA[0].puntaje = parseFloat(valor) || 0;
             }
           }
         }
@@ -266,38 +263,51 @@ function CalificarParalelo() {
         calificaciones: calificacionesFiltradas.map((estudiante) => {
           const aportes = estudiante.calificacion.APORTE || [];
           const examenes = estudiante.calificacion.EXAMEN || [];
+          const asistencia = estudiante.calificacion.ASISTENCIA || [];
+          const conducta = estudiante.calificacion.CONDUCTA || [];
 
           // Determina la cantidad de aportes necesaria
-          const cantidadDeAportes = Math.max(aportes.length, maxAportes);
+          const cantidadDeAportes = 3; // Número fijo de aportes
 
           // Maneja la nota del examen correctamente o establece 0 si no está definida
-          const cantidadDeExamenes =
+          const examenNota =
             examenes.length > 0 && examenes[0]?.nota !== undefined
               ? examenes[0].nota
               : 0;
 
-          // Ajusta los aportes al número máximo de columnas, reemplazando valores faltantes con 0
+          // Ajusta los aportes al número fijo de columnas, reemplazando valores faltantes con 0
           const aportesAjustados = Array(cantidadDeAportes)
             .fill(0)
             .map((_, index) => aportes[index]?.aporte || 0);
 
-          // Calcula el promedio de los aportes (ajusta la división para el promedio)
+          // Ajusta asistencia y conducta, reemplazando valores faltantes con 0
+          const asistenciaAjustada =
+            asistencia.length > 0 && asistencia[0]?.valor !== undefined
+              ? asistencia[0]?.valor
+              : 0;
+
+          const conductaAjustada =
+            conducta.length > 0 && conducta[0]?.valor !== undefined
+              ? conducta[0]?.valor
+              : 0;
+
+          // Calcula el promedio de los aportes
           const promedioAportes =
-            aportesAjustados.reduce((sum, val) => sum + val, 0) / maxAportes; // evita dividir por 0
+            aportesAjustados.reduce((sum, val) => sum + val, 0) /
+            cantidadDeAportes;
 
-          // Calcula el promedio del examen directamente o usa 0 si no existe
-          const promedioExamenes = cantidadDeExamenes || 0;
-
-          // Cálculo final del promedio, ponderando aportes y exámenes
+          // Calcula el promedio final (ponderado)
           const promedio = parseFloat(
-            (promedioAportes * 0.7 + promedioExamenes * 0.3).toFixed(2)
+            (promedioAportes * 0.7 + examenNota * 0.3).toFixed(2)
           );
 
           return {
             idEstudiante: estudiante.id,
             aportes: aportesAjustados,
-            examenes: cantidadDeExamenes,
-            promedio, // Añadimos el promedio aquí
+            examenes: examenNota,
+            asistencia: asistenciaAjustada,
+            conducta: conductaAjustada,
+            promedio, // Incluye el promedio calculado
           };
         }),
       };
@@ -324,6 +334,10 @@ function CalificarParalelo() {
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
+      setNotificacion({
+        message: "Error en la solicitud, intente nuevamente.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -340,6 +354,8 @@ function CalificarParalelo() {
         "Aporte 2",
         "Aporte 3",
         "Examen",
+        "Asistencia",
+        "Conducta",
       ];
 
       // Datos de los estudiantes formateados
@@ -349,6 +365,8 @@ function CalificarParalelo() {
         "", // Aporte 1 vacío
         "", // Aporte 2 vacío
         "", // Aporte 3 vacío
+        "", // Asistencia
+        "", // Conducta
         "", // Examen vacío
       ]);
 
@@ -709,9 +727,9 @@ function CalificarParalelo() {
                       ];
                       const examen = calificacionParcial?.EXAMEN[0]?.nota || 0;
                       const asistencia =
-                        calificacionParcial?.ASISTENCIA[0]?.valor || 0; // Valor de ejemplo
+                        calificacionParcial?.ASISTENCIA[0]?.porcentaje || 0; // Valor de ejemplo
                       const conducta =
-                        calificacionParcial?.CONDUCTA[0]?.valor || 0; // Valor de ejemplo
+                        calificacionParcial?.CONDUCTA[0]?.puntaje || 0; // Valor de ejemplo
 
                       return (
                         <TableRow key={estudiante.id}>
@@ -808,8 +826,8 @@ function CalificarParalelo() {
                             <Input
                               type="number"
                               min="0"
-                              max="10"
-                              step="0.01"
+                              max="100"
+                              step="0.1"
                               value={asistencia}
                               onChange={(e) =>
                                 handleCalificacionChange(

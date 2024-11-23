@@ -12,10 +12,9 @@ export async function POST(request) {
       calificaciones,
     } = data;
 
-    // Esperamos a que todas las promesas se resuelvan con Promise.all
+    // Procesar las calificaciones
     const calificacionesData = await Promise.all(
       calificaciones.map(async (calificacion) => {
-        // Obtiene todas las matrículas correspondientes
         const matriculas = await prisma.mATRICULA.findMany({
           where: {
             idDocentePertenece: idDocentePertenece,
@@ -30,20 +29,19 @@ export async function POST(request) {
             id: true,
             ESTUDIANTE: {
               select: {
-                id: true, // Selecciona solo el ID del estudiante
+                id: true,
               },
             },
           },
         });
 
-        // Encontrar la matrícula correspondiente al estudiante
         const matricula = matriculas.find(
           (m) => m.ESTUDIANTE.id === calificacion.idEstudiante
         );
 
         if (!matricula) {
           throw new Error(
-          `Matrícula no encontrada para el estudiante ${calificacion.idEstudiante}`
+            `Matrícula no encontrada para el estudiante ${calificacion.idEstudiante}`
           );
         }
 
@@ -53,13 +51,15 @@ export async function POST(request) {
           promedio: calificacion.promedio,
           aportes: calificacion.aportes,
           examen: calificacion.examenes,
+          asistencia: calificacion.asistencia || 0, // Asistencia (0 por defecto si no se envía)
+          conducta: calificacion.conducta || 0, // Conducta (0 por defecto si no se envía)
         };
       })
     );
 
     console.log(calificacionesData);
 
-    // Eliminar los registros de calificaciones, aportes y exámenes de ese parcial si ya existen
+    // Eliminar registros previos de calificaciones, aportes, exámenes, asistencias y conductas del parcial seleccionado
     for (const calificacion of calificacionesData) {
       await prisma.eXAMEN.deleteMany({
         where: {
@@ -79,6 +79,24 @@ export async function POST(request) {
         },
       });
 
+      await prisma.aSISTENCIA.deleteMany({
+        where: {
+          CALIFICACION: {
+            idMatricula: calificacion.idMatriculaPertenece,
+            idParcial: parseInt(idParcial),
+          },
+        },
+      });
+
+      await prisma.cONDUCTA.deleteMany({
+        where: {
+          CALIFICACION: {
+            idMatricula: calificacion.idMatriculaPertenece,
+            idParcial: parseInt(idParcial),
+          },
+        },
+      });
+
       await prisma.cALIFICACION.deleteMany({
         where: {
           idMatricula: calificacion.idMatriculaPertenece,
@@ -87,7 +105,7 @@ export async function POST(request) {
       });
     }
 
-    // Crear las calificaciones, los aportes y exámenes para cada matrícula
+    // Crear las calificaciones, los aportes, exámenes, asistencias y conductas para cada matrícula
     for (const calificacion of calificacionesData) {
       const cal = await prisma.cALIFICACION.create({
         data: {
@@ -121,6 +139,26 @@ export async function POST(request) {
         data: {
           idCalificacion: cal.id,
           nota: calificacion.examen === 0 ? 0 : parseFloat(calificacion.examen),
+        },
+      });
+
+      // Crear la asistencia para la calificación
+      await prisma.aSISTENCIA.create({
+        data: {
+          idCalificacion: cal.id,
+          porcentaje:
+            calificacion.asistencia === 0
+              ? 0
+              : parseFloat(calificacion.asistencia),
+        },
+      });
+
+      // Crear la conducta para la calificación
+      await prisma.cONDUCTA.create({
+        data: {
+          idCalificacion: cal.id,
+          puntaje:
+            calificacion.conducta === 0 ? 0 : parseFloat(calificacion.conducta),
         },
       });
     }
