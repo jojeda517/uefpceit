@@ -220,7 +220,8 @@ function CalificarParalelo() {
               if (!calificacionParcial.ASISTENCIA[0]) {
                 calificacionParcial.ASISTENCIA[0] = { porcentaje: 0 };
               }
-              calificacionParcial.ASISTENCIA[0].porcentaje = parseFloat(valor) || 0;
+              calificacionParcial.ASISTENCIA[0].porcentaje =
+                parseFloat(valor) || 0;
             } else if (tipo === "conducta") {
               if (!calificacionParcial.CONDUCTA[0]) {
                 calificacionParcial.CONDUCTA[0] = { puntaje: 0 };
@@ -415,28 +416,32 @@ function CalificarParalelo() {
             const parsedData = result.data;
 
             // Función para validar y formatear la calificación
-            const validateCalificacion = (value) => {
-              // Reemplaza la coma por punto para manejar el decimal
-              const normalizedValue = value.replace(",", ".");
+            const validateCalificacion = (value, max = 10) => {
+              const normalizedValue = value?.replace(",", ".") || "0";
               const num = parseFloat(normalizedValue);
-
-              if (isNaN(num)) return 0; // Si no es un número, se asigna 0
-              if (num < 0) return 0; // Si el número es menor que 0, se asigna 0
-              if (num > 10) return 10; // Si el número es mayor que 10, se asigna 10
-              return Math.round(num * 100) / 100; // Limita a 2 decimales
+              if (isNaN(num)) return 0;
+              if (num < 0) return 0;
+              if (num > max) return max;
+              return Math.round(num * 100) / 100;
             };
 
             // Procesa el CSV y actualiza calificacionesFiltradas
-            const updatedCalificaciones = estudiantes.map((estudiante) => {
-              const estudianteData = parsedData.find(
-                (row) => row.Cedula === estudiante.PERSONA.cedula
-              );
+            const updatedCalificaciones = calificacionesFiltradas.map(
+              (estudiante) => {
+                const estudianteData = parsedData.find(
+                  (row) => row.Cedula === estudiante.PERSONA.cedula
+                );
 
-              if (estudianteData) {
-                return {
-                  ...estudiante,
-                  calificacion: {
-                    APORTE: [
+                if (estudianteData) {
+                  // Encuentra la calificación para el parcial seleccionado
+                  const calificacionParcial =
+                    estudiante.MATRICULA[0].CALIFICACION.find(
+                      (calif) => String(calif.idParcial) === parcialSeleccionado
+                    );
+
+                  if (calificacionParcial) {
+                    // Actualiza o crea las propiedades necesarias
+                    calificacionParcial.APORTE = [
                       {
                         aporte: validateCalificacion(
                           estudianteData["Aporte 1"]
@@ -452,15 +457,36 @@ function CalificarParalelo() {
                           estudianteData["Aporte 3"]
                         ),
                       },
-                    ],
-                    EXAMEN: [
-                      { nota: validateCalificacion(estudianteData["Examen"]) },
-                    ],
-                  },
-                };
+                    ];
+
+                    calificacionParcial.EXAMEN = [
+                      {
+                        nota: validateCalificacion(estudianteData["Examen"]),
+                      },
+                    ];
+
+                    calificacionParcial.ASISTENCIA = [
+                      {
+                        porcentaje: validateCalificacion(
+                          estudianteData["Asistencia"],
+                          100
+                        ),
+                      },
+                    ];
+
+                    calificacionParcial.CONDUCTA = [
+                      {
+                        puntaje: validateCalificacion(
+                          estudianteData["Conducta"]
+                        ),
+                      },
+                    ];
+                  }
+                }
+
+                return estudiante;
               }
-              return estudiante;
-            });
+            );
 
             // Actualizar el estado
             setCalificacionesFiltradas(updatedCalificaciones);
@@ -600,24 +626,12 @@ function CalificarParalelo() {
                   startContent={
                     <PaperClipIcon className="text-blue-900 dark:text-white h-6 w-6" />
                   }
-                  title="Subir archivo CSV"
                   classNames={{
                     base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-black dark:text-white",
                     input: "text-black dark:text-white",
                   }}
                 />
-                <Button
-                  variant="shadow"
-                  color="primary"
-                  size="md"
-                  disabled={parcialSeleccionado === "supletorio" || isLoading}
-                  /* startContent={
-                    <ArrowUpTrayIcon className="text-blue-900 dark:text-white h-96 w-96" /> 
-                  } */
-                  className="text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white"
-                >
-                  Subir
-                </Button>
+                
               </div>
             </div>
             <div className="space-y-2">
@@ -829,6 +843,7 @@ function CalificarParalelo() {
                               max="100"
                               step="0.1"
                               value={asistencia}
+                              endContent="%"
                               onChange={(e) =>
                                 handleCalificacionChange(
                                   estudiante.id,
