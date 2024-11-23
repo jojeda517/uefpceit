@@ -503,6 +503,13 @@ function CalificarParalelo() {
     }
   };
 
+  const isParcialCerrado = () => {
+    const parcial = parciales.find((p) => String(p.id) === parcialSeleccionado);
+    return !parcial?.CIERREFASE[0]?.estado || false; // Retorna false si no hay información del estado
+  };
+
+  const parcialCerrado = isParcialCerrado();
+
   return (
     // <div className="container mx-auto px-4 py-8"> *
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -631,7 +638,6 @@ function CalificarParalelo() {
                     input: "text-black dark:text-white",
                   }}
                 />
-                
               </div>
             </div>
             <div className="space-y-2">
@@ -762,6 +768,7 @@ function CalificarParalelo() {
                               min="0"
                               max="10"
                               step="0.01"
+                              disabled={parcialCerrado}
                               value={aportes[0]?.aporte || 0}
                               onChange={(e) =>
                                 handleCalificacionChange(
@@ -782,6 +789,7 @@ function CalificarParalelo() {
                               min="0"
                               max="10"
                               step="0.01"
+                              disabled={parcialCerrado}
                               value={aportes[1]?.aporte || 0}
                               onChange={(e) =>
                                 handleCalificacionChange(
@@ -802,6 +810,7 @@ function CalificarParalelo() {
                               min="0"
                               max="10"
                               step="0.01"
+                              disabled={parcialCerrado}
                               value={aportes[2]?.aporte || 0}
                               onChange={(e) =>
                                 handleCalificacionChange(
@@ -822,6 +831,7 @@ function CalificarParalelo() {
                               min="0"
                               max="10"
                               step="0.01"
+                              disabled={parcialCerrado}
                               value={examen}
                               onChange={(e) =>
                                 handleCalificacionChange(
@@ -842,6 +852,7 @@ function CalificarParalelo() {
                               min="0"
                               max="100"
                               step="0.1"
+                              disabled={parcialCerrado}
                               value={asistencia}
                               endContent="%"
                               onChange={(e) =>
@@ -863,6 +874,7 @@ function CalificarParalelo() {
                               min="0"
                               max="10"
                               step="0.01"
+                              disabled={parcialCerrado}
                               value={conducta}
                               onChange={(e) =>
                                 handleCalificacionChange(

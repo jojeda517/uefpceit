@@ -9,6 +9,13 @@ export async function GET(request, { params }) {
       where: {
         idEvaluacionPertenece: parseInt(idEvaluacion),
       },
+      include: {
+        CIERREFASE: {
+          select: {
+            estado: true,
+          },
+        },
+      },
       orderBy: {
         id: "asc",
       },
