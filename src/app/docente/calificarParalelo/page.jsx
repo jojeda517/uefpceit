@@ -522,6 +522,29 @@ function CalificarParalelo() {
     return (sumaNotas / totalParciales).toFixed(2); // Redondeado a 2 decimales
   };
 
+  const handleSupletorioChange = (idEstudiante, valor) => {
+    const nota = parseFloat(valor);
+    if (isNaN(nota) || nota < 0 || nota > 10) {
+      return; // Si la nota no es válida, no hace nada
+    }
+
+    setCalificacionesFiltradas((prevCalificaciones) =>
+      prevCalificaciones.map((estudiante) => {
+        if (estudiante.id === idEstudiante) {
+          if (estudiante.MATRICULA[0]?.SUPLETORIO) {
+            estudiante.MATRICULA[0].SUPLETORIO.nota = nota;
+          } else {
+            estudiante.MATRICULA[0].SUPLETORIO = {
+              nota: nota,
+              fecha: new Date().toISOString(),
+            };
+          }
+        }
+        return estudiante;
+      })
+    );
+  };
+
   return (
     // <div className="container mx-auto px-4 py-8"> *
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
