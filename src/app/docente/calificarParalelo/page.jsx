@@ -7,6 +7,7 @@ import {
   CardHeader,
   Select,
   CardBody,
+  CardFooter,
   SelectItem,
   Button,
   Input,
@@ -16,12 +17,6 @@ import {
   TableBody,
   TableColumn,
   TableCell,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalContent,
-  useDisclosure,
 } from "@nextui-org/react";
 
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
@@ -545,6 +540,114 @@ function CalificarParalelo() {
     );
   };
 
+  const descargarCalificaciones = async () => {
+    setIsLoading(true);
+
+    try {
+      // Refrescar los datos desde el backend
+      const response = await fetch(
+        `/api/estudiantesParalelo/${localStorage.getItem("idPersona")}/${
+          paraleloData.PERIODO.id
+        }/${paraleloData.DETALLEMATERIA.MATERIA.id}/${
+          paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.id
+        }/${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.id}/${
+          paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD
+            .CAMPUS.id
+        }/${
+          paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.CAMPUSESPECIALIDAD
+            .ESPECIALIDAD.id
+        }`
+      );
+      const estudiantesActualizados = await response.json();
+      console.log(estudiantesActualizados);
+
+      // 1. Generar CSV
+      const encabezados = [
+        "Cédula",
+        "Nombre",
+        "Apellido",
+        "Aporte 1",
+        "Aporte 2",
+        "Aporte 3",
+        "Examen",
+        "Asistencia",
+        "Conducta",
+        "Promedio",
+      ];
+
+      const filas = estudiantesActualizados.map((estudiante) => [
+        estudiante.PERSONA.cedula,
+        estudiante.PERSONA.nombre,
+        estudiante.PERSONA.apellido,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.APORTE[0]?.aporte || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.APORTE[1]?.aporte || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.APORTE[2]?.aporte || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.EXAMEN[0]?.nota || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.ASISTENCIA[0]?.porcentaje || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.CONDUCTA[0]?.puntaje || 0,
+        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+          // Busca la calificación del parcial seleccionado
+          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+        )?.promedio || 0,
+      ]);
+
+      const csvContent = [encabezados, ...filas]
+        .map((row) => row.join(";"))
+        .join("\n");
+
+      const csvBlob = new Blob(["\uFEFF" + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+
+      const csvUrl = URL.createObjectURL(csvBlob);
+
+      // Descargar el archivo CSV
+      const csvLink = document.createElement("a");
+      csvLink.href = csvUrl;
+      csvLink.download = "calificaciones.csv";
+      csvLink.click();
+      URL.revokeObjectURL(csvUrl);
+
+      // 2. Generar PDF
+      const jsPDF = (await import("jspdf")).default;
+      const doc = new jsPDF();
+
+      doc.text("Reporte de Calificaciones", 10, 10);
+      doc.autoTable({
+        head: [encabezados],
+        body: filas,
+      });
+
+      doc.save("calificaciones.pdf");
+    } catch (error) {
+      console.error("Error al descargar las calificaciones:", error);
+      setNotificacion({
+        message: "Error al descargar las calificaciones.",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     // <div className="container mx-auto px-4 py-8"> *
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -624,33 +727,7 @@ function CalificarParalelo() {
                 ))}
               </Select>
             </div>
-            {/* <div className="space-y-2  w-1/4">
-              <label>Estructura de Evaluación</label>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span>Aportes: {maxAportes}</span>
-                  <div>
-                    <Button
-                      // Deshabilitado cuando el número de aportes es 5 o más
-                      isDisabled={maxAportes >= 5}
-                      onClick={agregarAporte}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <PlusCircleIcon className="h-7 w-7 text-green-600" />
-                    </Button>
-                    <Button
-                      onClick={eliminarAporte}
-                      variant="outline"
-                      size="sm"
-                      isDisabled={maxAportes <= 3}
-                    >
-                      <MinusCircleIcon className="h-7 w-7 text-red-600" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div> */}
+
             <div className="space-y-2">
               <div className="flex items-end space-x-1">
                 <Input
@@ -678,30 +755,29 @@ function CalificarParalelo() {
             <div className="grid grid-cols-2 space-x-2">
               <div className="grid grid-cols-1">
                 <label className="text-blue-900 dark:text-white">
-                  Descargar calificaciones
+                  Descargar
                 </label>
                 <Button
-                  //onClick={generarCSV}
                   variant="shadow"
                   color="success"
                   size="md"
                   className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
-                  disabled={parcialSeleccionado === "supletorio"}
+                  onClick={descargarCalificaciones}
                 >
                   Calificaciones
                 </Button>
               </div>
               <div className="grid grid-cols-1">
                 <label className="text-blue-900 dark:text-white">
-                  Plantilla
+                  Descargar
                 </label>
                 <Button
-                  //onClick={generarCSV}
+                  onClick={generarCSV}
                   variant="shadow"
                   color="success"
                   size="md"
                   className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
-                  disabled={parcialSeleccionado === "supletorio"}
+                  disabled={parcialSeleccionado.toLowerCase() === "supletorio"}
                 >
                   Plantilla
                 </Button>
@@ -1006,18 +1082,31 @@ function CalificarParalelo() {
                 </Table>
               )}
             </div>
-            <div className="mt-4 flex justify-end">
-              <Button
-                className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg"
-                onClick={handleSubmitCalificaciones}
-                //isDisabled={calificacionesPublicadas || !etapaAnteriorCompleta}
-              >
-                {calificacionesPublicadas
-                  ? "Calificaciones Publicadas"
-                  : "Publicar Calificaciones"}
-              </Button>
-            </div>
           </CardBody>
+          <CardFooter>
+            <div className="mt-4 flex justify-end">
+              {parcialSeleccionado === "supletorio" ? (
+                <Button
+                  variant="shadow"
+                  color="success"
+                  size="lg"
+                  className="w-full text-lg"
+                  //onClick={handleSubmitCalificaciones}
+                  disabled={isLoading}
+                >
+                  Publicar Supletorio
+                </Button>
+              ) : (
+                <Button
+                  className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg disabled:cursor-not-allowed"
+                  onClick={handleSubmitCalificaciones}
+                  disabled={parcialCerrado || isLoading}
+                >
+                  Publicar Calificaciones
+                </Button>
+              )}
+            </div>
+          </CardFooter>
         </Card>
       </div>
     </div>
