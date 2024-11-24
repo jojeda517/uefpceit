@@ -555,7 +555,6 @@ function CalificarParalelo() {
     setIsLoading(true);
 
     try {
-      // Refrescar los datos desde el backend
       const response = await fetch(
         `/api/estudiantesParalelo/${localStorage.getItem("idPersona")}/${
           paraleloData.PERIODO.id
@@ -573,6 +572,192 @@ function CalificarParalelo() {
       const estudiantesActualizados = await response.json();
 
       if (parcialSeleccionado.toLowerCase() === "supletorio") {
+        const parcialesSinSupletorio = parciales.filter(
+          (parcial) => parcial.parcial.toLowerCase() !== "supletorio"
+        );
+
+        const encabezados = [
+          [
+            { content: "Estudiante", rowSpan: 2 },
+            ...parcialesSinSupletorio.map((parcial) => ({
+              content: parcial.parcial.toUpperCase(),
+              colSpan: 6,
+            })),
+            { content: "General", colSpan: 4 }, // Promedio, Supletorio, Total, Estado
+          ],
+          [
+            ...parcialesSinSupletorio.flatMap(() => [
+              "A1",
+              "A2",
+              "A3",
+              "Examen",
+              "Asis.",
+              "Prom.",
+            ]),
+            "Promedio",
+            "Supletorio",
+            "Total",
+            "Estado",
+          ],
+        ];
+
+        const filas = estudiantesActualizados.map((estudiante) => {
+          const calificaciones = estudiante.MATRICULA[0]?.CALIFICACION || [];
+          const supletorioNota =
+            estudiante.MATRICULA[0]?.SUPLETORIO?.nota !== undefined
+              ? estudiante.MATRICULA[0]?.SUPLETORIO?.nota
+              : null;
+
+          let totalPromedios = 0;
+          let totalParciales = 0;
+
+          const fila = [
+            `${estudiante.PERSONA.apellido.toUpperCase()} ${estudiante.PERSONA.nombre.toUpperCase()}`,
+            ...parcialesSinSupletorio.flatMap((parcial) => {
+              const calificacion =
+                calificaciones.find((c) => c.idParcial === parcial.id) || {};
+
+              const promedioParcial = calificacion.promedio || 0;
+              totalPromedios += promedioParcial;
+              totalParciales += 1;
+
+              return [
+                calificacion?.APORTE?.[0]?.aporte || 0,
+                calificacion?.APORTE?.[1]?.aporte || 0,
+                calificacion?.APORTE?.[2]?.aporte || 0,
+                calificacion?.EXAMEN?.[0]?.nota || 0,
+                calificacion?.ASISTENCIA?.[0]?.porcentaje || 0,
+                promedioParcial.toFixed(2),
+              ];
+            }),
+          ];
+
+          // Calcular promedio entre parciales
+          const promedioParciales =
+            totalParciales > 0
+              ? (totalPromedios / totalParciales).toFixed(2)
+              : 0;
+
+          // Determinar si aplica al supletorio
+          const aplicaSupletorio =
+            promedioParciales >= 4 && promedioParciales < 7;
+
+          const supletorio = aplicaSupletorio
+            ? supletorioNota !== null
+              ? supletorioNota
+              : 0
+            : "-";
+
+          // Calcular promedio final
+          const promedioFinal =
+            aplicaSupletorio && supletorio !== "-"
+              ? (
+                  (parseFloat(promedioParciales) + parseFloat(supletorio)) /
+                  2
+                ).toFixed(2)
+              : promedioParciales;
+
+          // Determinar estado
+          const estado =
+            promedioFinal >= 7
+              ? "Aprobado"
+              : promedioFinal >= 5
+              ? "Supletorio"
+              : "Reprobado";
+
+          return [
+            ...fila,
+            promedioParciales, // Promedio de parciales
+            supletorio, // Nota supletorio
+            promedioFinal, // Total
+            estado, // Estado
+          ];
+        });
+
+        const jsPDF = (await import("jspdf")).default;
+        require("jspdf-autotable");
+
+        const doc = new jsPDF("landscape");
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        const logoLeft = "/logo.png";
+        const logoRight = "/logoEcuador.png";
+        const logoWidth = 15;
+        const logoHeight = 15;
+
+        doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
+        doc.addImage(
+          logoRight,
+          "PNG",
+          pageWidth - 25,
+          10,
+          logoWidth,
+          logoHeight
+        );
+
+        const centerX = pageWidth / 2;
+        let headerY = 15;
+
+        doc.setFontSize(16);
+        doc.setTextColor(0, 128, 0);
+        doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
+          align: "center",
+        });
+
+        headerY += 6;
+        doc.setFontSize(14);
+        doc.setTextColor(255, 0, 0);
+        doc.text("INFORME GENERAL DE CALIFICACIONES", centerX, headerY, {
+          align: "center",
+        });
+
+        headerY += 5;
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(
+          `PERIODO LECTIVO ${paraleloData.PERIODO.nombre.toUpperCase()}`,
+          centerX,
+          headerY,
+          { align: "center" }
+        );
+
+        headerY += 10;
+        doc.text(
+          `NIVEL: ${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.nivel.toUpperCase()}`,
+          20,
+          headerY
+        );
+        headerY += 7;
+        doc.text(
+          `ASIGNATURA: ${paraleloData.DETALLEMATERIA.MATERIA.nombre.toUpperCase()}`,
+          20,
+          headerY
+        );
+        headerY += 7;
+        doc.text(
+          `PARALELO: "${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo.toUpperCase()}"`,
+          20,
+          headerY
+        );
+        headerY += 7;
+        doc.text(
+          `DOCENTE: ${nombre.toUpperCase()} ${apellido.toUpperCase()}`,
+          20,
+          headerY
+        );
+
+        doc.autoTable({
+          startY: headerY + 10,
+          head: encabezados,
+          body: filas,
+          theme: "grid",
+          headStyles: { fillColor: [0, 102, 204], halign: "center" },
+          bodyStyles: { fontSize: 9, halign: "center" },
+          columnStyles: { 0: { halign: "left" } },
+        });
+
+        doc.save("reporte_general_calificaciones.pdf");
       } else {
         const encabezados = [
           "Estudiante",
