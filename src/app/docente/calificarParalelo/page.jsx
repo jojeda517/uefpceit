@@ -572,165 +572,182 @@ function CalificarParalelo() {
 
       const estudiantesActualizados = await response.json();
 
-      const encabezados = [
-        "Estudiante",
-        "Ap. 1",
-        "Ap. 2",
-        "Ap. 3",
-        "Examen",
-        "Asistencia",
-        "Conducta",
-        "Promedio",
-      ];
+      if (parcialSeleccionado.toLowerCase() === "supletorio") {
+      } else {
+        const encabezados = [
+          "Estudiante",
+          "Ap. 1",
+          "Ap. 2",
+          "Ap. 3",
+          "Examen",
+          "Asistencia",
+          "Conducta",
+          "Promedio",
+        ];
 
-      const filas = estudiantesActualizados.map((estudiante) => [
-        `${estudiante.PERSONA.apellido.toUpperCase()} ${estudiante.PERSONA.nombre.toUpperCase()}`,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.APORTE[0]?.aporte || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.APORTE[1]?.aporte || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.APORTE[2]?.aporte || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.EXAMEN[0]?.nota || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.ASISTENCIA[0]?.porcentaje || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.CONDUCTA[0]?.puntaje || 0,
-        estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          (calif) => calif.idParcial === parseInt(parcialSeleccionado)
-        )?.promedio || 0,
-      ]);
+        const filas = estudiantesActualizados.map((estudiante) => [
+          `${estudiante.PERSONA.apellido.toUpperCase()} ${estudiante.PERSONA.nombre.toUpperCase()}`,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.APORTE[0]?.aporte || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.APORTE[1]?.aporte || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.APORTE[2]?.aporte || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.EXAMEN[0]?.nota || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.ASISTENCIA[0]?.porcentaje || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.CONDUCTA[0]?.puntaje || 0,
+          estudiante?.MATRICULA[0]?.CALIFICACION?.find(
+            (calif) => calif.idParcial === parseInt(parcialSeleccionado)
+          )?.promedio || 0,
+        ]);
 
-      const promedioCurso =
-        filas.reduce((acc, fila) => acc + parseFloat(fila[7]), 0) /
-        filas.length;
+        const promedioCurso =
+          filas.reduce((acc, fila) => acc + parseFloat(fila[7]), 0) /
+          filas.length;
 
-      // Crear PDF con orientación vertical
-      const jsPDF = (await import("jspdf")).default;
-      require("jspdf-autotable");
+        // Crear PDF con orientación vertical
+        const jsPDF = (await import("jspdf")).default;
+        require("jspdf-autotable");
 
-      const doc = new jsPDF("portrait"); // Cambiamos a 'portrait' para orientación vertical
+        const doc = new jsPDF("portrait"); // Cambiamos a 'portrait' para orientación vertical
 
-      const pageWidth = doc.internal.pageSize.getWidth();
+        const pageWidth = doc.internal.pageSize.getWidth();
 
-      // Agregar el logo izquierdo
-      const logoLeft = "/logo.png";
-      const logoRight = "/logoEcuador.png";
-      const logoWidth = 15;
-      const logoHeight = 15;
+        // Agregar el logo izquierdo
+        const logoLeft = "/logo.png";
+        const logoRight = "/logoEcuador.png";
+        const logoWidth = 15;
+        const logoHeight = 15;
 
-      doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
+        doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
 
-      // Agregar el logo derecho
-      doc.addImage(logoRight, "PNG", pageWidth - 25, 10, logoWidth, logoHeight);
+        // Agregar el logo derecho
+        doc.addImage(
+          logoRight,
+          "PNG",
+          pageWidth - 25,
+          10,
+          logoWidth,
+          logoHeight
+        );
 
-      // Agregar el texto del encabezado con líneas compactas
-      const centerX = pageWidth / 2;
-      let headerY = 15; // Coordenada inicial Y para el texto
+        // Agregar el texto del encabezado con líneas compactas
+        const centerX = pageWidth / 2;
+        let headerY = 15; // Coordenada inicial Y para el texto
 
-      doc.setFontSize(16);
-      doc.setTextColor(0, 128, 0);
-      doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
-        align: "center",
-      });
-
-      headerY += 6; // Reducir el espacio entre líneas
-      doc.setFontSize(14);
-      doc.setTextColor(255, 0, 0);
-      doc.text(
-        `INFORME DE CALIFICACIONES ${parciales
-          .find((p) => p.id === parseInt(parcialSeleccionado))
-          .parcial.toUpperCase()}`,
-        centerX,
-        headerY,
-        {
+        doc.setFontSize(16);
+        doc.setTextColor(0, 128, 0);
+        doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
           align: "center",
-        }
-      );
+        });
 
-      headerY += 5; // Reducir aún más el espacio
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `PERIODO LECTIVO ${paraleloData.PERIODO.nombre.toUpperCase()}`,
-        centerX,
-        headerY,
-        {
-          align: "center",
-        }
-      );
+        headerY += 6; // Reducir el espacio entre líneas
+        doc.setFontSize(14);
+        doc.setTextColor(255, 0, 0);
+        doc.text(
+          `INFORME DE CALIFICACIONES ${parciales
+            .find((p) => p.id === parseInt(parcialSeleccionado))
+            .parcial.toUpperCase()}`,
+          centerX,
+          headerY,
+          {
+            align: "center",
+          }
+        );
 
-      // Después del encabezado y antes de la tabla
-      headerY += 10; // Espacio después del último texto del encabezado
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0); // Negro
+        headerY += 5; // Reducir aún más el espacio
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(
+          `PERIODO LECTIVO ${paraleloData.PERIODO.nombre.toUpperCase()}`,
+          centerX,
+          headerY,
+          {
+            align: "center",
+          }
+        );
 
-      doc.text(
-        `NIVEL: ${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.nivel.toUpperCase()}`,
-        20,
-        headerY
-      );
-      headerY += 7; // Espacio entre líneas
-      doc.text(
-        `ASIGNATURA: ${paraleloData.DETALLEMATERIA.MATERIA.nombre.toUpperCase()}`,
-        20,
-        headerY
-      );
-      headerY += 7; // Espacio entre líneas
-      doc.text(
-        `PARALELO: "${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo.toUpperCase()}"`,
-        20,
-        headerY
-      );
-      headerY += 7; // Más espacio
-      doc.text(
-        `DOCENTE: ${nombre.toUpperCase()} ${apellido.toUpperCase()}`,
-        20,
-        headerY
-      );
+        // Después del encabezado y antes de la tabla
+        headerY += 10; // Espacio después del último texto del encabezado
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0); // Negro
 
-      // Agregar la tabla al PDF
-      doc.autoTable({
-        startY: headerY + 10,
-        head: [encabezados],
-        body: filas,
-        foot: [
-          [
-            "Promedio General",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            promedioCurso.toFixed(2),
+        doc.text(
+          `NIVEL: ${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.nivel.toUpperCase()}`,
+          20,
+          headerY
+        );
+        headerY += 7; // Espacio entre líneas
+        doc.text(
+          `ASIGNATURA: ${paraleloData.DETALLEMATERIA.MATERIA.nombre.toUpperCase()}`,
+          20,
+          headerY
+        );
+        headerY += 7; // Espacio entre líneas
+        doc.text(
+          `PARALELO: "${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo.toUpperCase()}"`,
+          20,
+          headerY
+        );
+        headerY += 7; // Más espacio
+        doc.text(
+          `DOCENTE: ${nombre.toUpperCase()} ${apellido.toUpperCase()}`,
+          20,
+          headerY
+        );
+
+        // Agregar la tabla al PDF
+        doc.autoTable({
+          startY: headerY + 10,
+          head: [encabezados],
+          body: filas,
+          foot: [
+            [
+              "Promedio General",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              promedioCurso.toFixed(2),
+            ],
           ],
-        ],
-        theme: "grid",
-        headStyles: { fillColor: [0, 102, 204], fontSize: 9, halign: "center"},
-        bodyStyles: { fontSize: 9 },
-        footStyles: { fillColor: [0, 102, 204], fontSize: 9, halign: "center"}, // centrar el texto
-        columnStyles: {
-          1: { halign: "center" }, // Centrar Aporte 1
-          2: { halign: "center" }, // Centrar Aporte 2
-          3: { halign: "center" }, // Centrar Aporte 3
-          4: { halign: "center" }, // Centrar Examen
-          5: { halign: "center" }, // Centrar Asistencia
-          6: { halign: "center" }, // Centrar Conducta
-          7: { halign: "center" }, // Centrar Promedio
-        },
+          theme: "grid",
+          headStyles: {
+            fillColor: [0, 102, 204],
+            fontSize: 9,
+            halign: "center",
+          },
+          bodyStyles: { fontSize: 9 },
+          footStyles: {
+            fillColor: [0, 102, 204],
+            fontSize: 9,
+            halign: "center",
+          }, // centrar el texto
+          columnStyles: {
+            1: { halign: "center" }, // Centrar Aporte 1
+            2: { halign: "center" }, // Centrar Aporte 2
+            3: { halign: "center" }, // Centrar Aporte 3
+            4: { halign: "center" }, // Centrar Examen
+            5: { halign: "center" }, // Centrar Asistencia
+            6: { halign: "center" }, // Centrar Conducta
+            7: { halign: "center" }, // Centrar Promedio
+          },
+        });
 
-      });
-
-      // Descargar PDF
-      doc.save("calificaciones.pdf");
+        // Descargar PDF
+        doc.save("calificaciones.pdf");
+      }
     } catch (error) {
       console.error("Error al descargar las calificaciones:", error);
       setNotificacion({
