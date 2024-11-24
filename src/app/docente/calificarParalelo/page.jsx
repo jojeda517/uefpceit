@@ -49,6 +49,17 @@ function CalificarParalelo() {
   const [estudiantes, setEstudiantes] = useState([]);
   const [maxAportes, setMaxAportes] = useState(3);
   const [maxExamenes, setMaxExamenes] = useState(1);
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+
+  useEffect(() => {
+    // Cargar datos de localStorage al montar el componente
+    const storedNombre = localStorage.getItem("nombre");
+    const storedApellido = localStorage.getItem("apellido");
+
+    setNombre(storedNombre || "");
+    setApellido(storedApellido || "");
+  }, []);
 
   // Cargar datos iniciales de estudiantes y parciales una vez
   useEffect(() => {
@@ -558,14 +569,11 @@ function CalificarParalelo() {
             .ESPECIALIDAD.id
         }`
       );
-      const estudiantesActualizados = await response.json();
-      console.log(estudiantesActualizados);
 
-      // 1. Generar CSV
+      const estudiantesActualizados = await response.json();
+
       const encabezados = [
-        "Cédula",
-        "Nombre",
-        "Apellido",
+        "Estudiante",
         "Aporte 1",
         "Aporte 2",
         "Aporte 3",
@@ -576,72 +584,142 @@ function CalificarParalelo() {
       ];
 
       const filas = estudiantesActualizados.map((estudiante) => [
-        estudiante.PERSONA.cedula,
-        estudiante.PERSONA.nombre,
-        estudiante.PERSONA.apellido,
+        `${estudiante.PERSONA.apellido.toUpperCase()} ${estudiante.PERSONA.nombre.toUpperCase()}`,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.APORTE[0]?.aporte || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.APORTE[1]?.aporte || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.APORTE[2]?.aporte || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.EXAMEN[0]?.nota || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.ASISTENCIA[0]?.porcentaje || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.CONDUCTA[0]?.puntaje || 0,
         estudiante?.MATRICULA[0]?.CALIFICACION?.find(
-          // Busca la calificación del parcial seleccionado
           (calif) => calif.idParcial === parseInt(parcialSeleccionado)
         )?.promedio || 0,
       ]);
 
-      const csvContent = [encabezados, ...filas]
-        .map((row) => row.join(";"))
-        .join("\n");
+      const promedioCurso =
+        filas.reduce((acc, fila) => acc + parseFloat(fila[7]), 0) /
+        filas.length;
 
-      const csvBlob = new Blob(["\uFEFF" + csvContent], {
-        type: "text/csv;charset=utf-8;",
+      // Crear PDF con la cabecera ajustada
+      const jsPDF = (await import("jspdf")).default;
+      require("jspdf-autotable");
+
+      const doc = new jsPDF("landscape");
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      // Agregar el logo izquierdo
+      const logoLeft = "/logo.png";
+      const logoRight = "/logoEcuador.png";
+      const logoWidth = 15;
+      const logoHeight = 15;
+
+      doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
+
+      // Agregar el logo derecho
+      doc.addImage(logoRight, "PNG", pageWidth - 25, 10, logoWidth, logoHeight);
+
+      // Agregar el texto del encabezado con líneas compactas
+      const centerX = pageWidth / 2;
+      let headerY = 15; // Coordenada inicial Y para el texto
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 128, 0);
+      doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
+        align: "center",
       });
 
-      const csvUrl = URL.createObjectURL(csvBlob);
+      headerY += 6; // Reducir el espacio entre líneas
+      doc.setFontSize(14);
+      doc.setTextColor(255, 0, 0);
+      doc.text(
+        `INFORME DE CALIFICACIONES ${parciales
+          .find((p) => p.id === parseInt(parcialSeleccionado))
+          .parcial.toUpperCase()}`,
+        centerX,
+        headerY,
+        {
+          align: "center",
+        }
+      );
 
-      // Descargar el archivo CSV
-      const csvLink = document.createElement("a");
-      csvLink.href = csvUrl;
-      csvLink.download = "calificaciones.csv";
-      csvLink.click();
-      URL.revokeObjectURL(csvUrl);
+      headerY += 5; // Reducir aún más el espacio
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(
+        `PERIODO LECTIVO ${paraleloData.PERIODO.nombre.toUpperCase()}`,
+        centerX,
+        headerY,
+        {
+          align: "center",
+        }
+      );
 
-      // 2. Generar PDF
-      const jsPDF = (await import("jspdf")).default;
-      require("jspdf-autotable"); // Importar el plugin de tablas
+      // Después del encabezado y antes de la tabla
+      headerY += 10; // Espacio después del último texto del encabezado
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0); // Negro
 
-      const doc = new jsPDF();
-
-      // Agregar el título al PDF
-      doc.text("Reporte de Calificaciones", 10, 10);
+      doc.text(
+        `NIVEL: ${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.NIVEL.nivel.toUpperCase()}`,
+        20,
+        headerY
+      );
+      headerY += 7; // Espacio entre líneas
+      doc.text(
+        `ASIGNATURA: ${paraleloData.DETALLEMATERIA.MATERIA.nombre.toUpperCase()}`,
+        20,
+        headerY
+      );
+      headerY += 7; // Espacio entre líneas
+      doc.text(
+        `PARALELO: "${paraleloData.DETALLEMATERIA.DETALLENIVELPARALELO.PARALELO.paralelo.toUpperCase()}"`,
+        20,
+        headerY
+      );
+      headerY += 7; // Más espacio
+      doc.text(
+        `DOCENTE: ${nombre.toLocaleUpperCase()} ${apellido.toUpperCase()}`,
+        20,
+        headerY
+      );
 
       // Agregar la tabla al PDF
       doc.autoTable({
+        startY: headerY + 10,
         head: [encabezados],
         body: filas,
+        foot: [
+          [
+            "Promedio General",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            promedioCurso.toFixed(2),
+          ],
+        ],
+        theme: "grid",
+        headStyles: { fillColor: [0, 102, 204] },
+        bodyStyles: { fontSize: 10 },
+        footStyles: { fillColor: [0, 102, 204] },
       });
 
-      // Descargar el archivo PDF
+      // Descargar PDF
       doc.save("calificaciones.pdf");
     } catch (error) {
       console.error("Error al descargar las calificaciones:", error);
