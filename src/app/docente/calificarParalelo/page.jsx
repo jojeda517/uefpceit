@@ -574,9 +574,9 @@ function CalificarParalelo() {
 
       const encabezados = [
         "Estudiante",
-        "Aporte 1",
-        "Aporte 2",
-        "Aporte 3",
+        "Ap. 1",
+        "Ap. 2",
+        "Ap. 3",
         "Examen",
         "Asistencia",
         "Conducta",
@@ -612,11 +612,11 @@ function CalificarParalelo() {
         filas.reduce((acc, fila) => acc + parseFloat(fila[7]), 0) /
         filas.length;
 
-      // Crear PDF con la cabecera ajustada
+      // Crear PDF con orientación vertical
       const jsPDF = (await import("jspdf")).default;
       require("jspdf-autotable");
 
-      const doc = new jsPDF("landscape");
+      const doc = new jsPDF("portrait"); // Cambiamos a 'portrait' para orientación vertical
 
       const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -691,7 +691,7 @@ function CalificarParalelo() {
       );
       headerY += 7; // Más espacio
       doc.text(
-        `DOCENTE: ${nombre.toLocaleUpperCase()} ${apellido.toUpperCase()}`,
+        `DOCENTE: ${nombre.toUpperCase()} ${apellido.toUpperCase()}`,
         20,
         headerY
       );
@@ -714,9 +714,19 @@ function CalificarParalelo() {
           ],
         ],
         theme: "grid",
-        headStyles: { fillColor: [0, 102, 204] },
-        bodyStyles: { fontSize: 10 },
-        footStyles: { fillColor: [0, 102, 204] },
+        headStyles: { fillColor: [0, 102, 204], fontSize: 9, halign: "center"},
+        bodyStyles: { fontSize: 9 },
+        footStyles: { fillColor: [0, 102, 204], fontSize: 9, halign: "center"}, // centrar el texto
+        columnStyles: {
+          1: { halign: "center" }, // Centrar Aporte 1
+          2: { halign: "center" }, // Centrar Aporte 2
+          3: { halign: "center" }, // Centrar Aporte 3
+          4: { halign: "center" }, // Centrar Examen
+          5: { halign: "center" }, // Centrar Asistencia
+          6: { halign: "center" }, // Centrar Conducta
+          7: { halign: "center" }, // Centrar Promedio
+        },
+
       });
 
       // Descargar PDF
