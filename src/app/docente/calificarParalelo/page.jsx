@@ -628,14 +628,20 @@ function CalificarParalelo() {
 
       // 2. Generar PDF
       const jsPDF = (await import("jspdf")).default;
+      require("jspdf-autotable"); // Importar el plugin de tablas
+
       const doc = new jsPDF();
 
+      // Agregar el título al PDF
       doc.text("Reporte de Calificaciones", 10, 10);
+
+      // Agregar la tabla al PDF
       doc.autoTable({
         head: [encabezados],
         body: filas,
       });
 
+      // Descargar el archivo PDF
       doc.save("calificaciones.pdf");
     } catch (error) {
       console.error("Error al descargar las calificaciones:", error);
