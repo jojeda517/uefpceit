@@ -8,13 +8,23 @@ import {
   Button,
   Accordion,
   AccordionItem,
+  Select,
+  SelectItem,
+  Chip,
+  Table,
+  TableHeader,
+  TableRow,
+  TableColumn,
+  TableCell,
+  TableBody,
 } from "@nextui-org/react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 
 // Datos de ejemplo (en una aplicación real, estos datos vendrían de una API)
-const periodos = [
-  { id: 1, nombre: "Primer Quimestre" },
-  { id: 2, nombre: "Segundo Quimestre" },
+const parciales = [
+  { id: 1, parcial: "Primer Quimestre" },
+  { id: 2, parcial: "Segundo Quimestre" },
+  { id: 3, parcial: "Supletorio" },
 ];
 
 const materias = [
@@ -44,7 +54,7 @@ const calificaciones = {
 
 function NotasActuales() {
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState(
-    periodos[0].id
+    parciales[0].id
   );
 
   const calcularPromedio = (materiaId) => {
@@ -82,27 +92,64 @@ function NotasActuales() {
       </div>
 
       <Card className="dark:bg-gray-700 dark:text-white">
-        <CardHeader className="p-4 flex flex-row items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
-          Resumen Académico
-          <select
-            className="border border-gray-300 rounded-lg p-2"
-            value={periodoSeleccionado}
-            onChange={(e) => setPeriodoSeleccionado(parseInt(e.target.value))}
-          >
-            {periodos.map((periodo) => (
-              <option key={periodo.id} value={periodo.id}>
-                {periodo.nombre}
-              </option>
-            ))}
-          </select>
+        <CardHeader className="p-4 grid grid-cols-1 gap-5 items-center justify-between text-base font-semibold dark:bg-default-900 bg-gray-100">
+          <p className="font-semibold text-lg text-blue-900 dark:text-white">
+            Resumen Académico
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+            {/* Selector de Parcial */}
+            <div className="w-full sm:w-3/4">
+              <Select
+                id="parcial"
+                labelPlacement="outside"
+                label={
+                  <label className="text-blue-900 dark:text-white">
+                    Parcial
+                  </label>
+                }
+                startContent={
+                  <DocumentTextIcon className="text-blue-900 dark:text-white h-6 w-6 " />
+                }
+                placeholder="Seleccione el parcial"
+                variant="bordered"
+                classNames={{
+                  base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black w-full",
+                  selectorIcon: "text-blue-900 dark:text-black", // Icono de la flecha del selector de opciones
+                  popoverContent:
+                    "bg-white dark:bg-gray-700 border border-blue-900 dark:border-black dark:text-white",
+                  value: "text-black dark:text-white",
+                }}
+              >
+                {parciales.map((parcial) => (
+                  <SelectItem key={parcial.id} className="capitalize">
+                    {parcial.parcial}
+                  </SelectItem>
+                ))}
+              </Select>
+            </div>
+
+            {/* Chip con Promedio General */}
+            <div className="flex items-center justify-center sm:justify-end sm:items-end">
+              <Chip
+                color="primary"
+                variant="bordered"
+                size="lg"
+                className="w-full sm:w-auto"
+                classNames={{
+                  base: "border border-blue-900 dark:border-white dark:text-white",
+                }}
+              >
+                Promedio General: {promedioGeneral}
+              </Chip>
+            </div>
+          </div>
         </CardHeader>
         <CardBody>
-          <div className="flex justify-between items-center mb-4">
-            <Badge color="primary" variant="flat">
-              Promedio General: {promedioGeneral}
-            </Badge>
-          </div>
-          <Accordion>
+          <Accordion
+            itemClasses={{
+              title: "dark:text-white",
+            }}
+          >
             {materias.map((materia) => {
               const promedio = calcularPromedio(materia.id);
               const estado = obtenerEstado(promedio);
@@ -115,44 +162,67 @@ function NotasActuales() {
                   }
                   title={
                     <div className="flex justify-between items-center w-full">
-                      <span className="text-gray-700">{materia.nombre}</span>
-                      <Badge color={estado.color} className="ml-4">
-                        {estado.texto}
-                      </Badge>
+                      <p className="">{materia.nombre}</p>
+                      <div className="grid grid-cols-2 gap-5">
+                        <p>
+                          Promedio:{" "}
+                          <span className="font-semibold">{promedio}</span>
+                        </p>
+                        <Chip color={estado.color} className="ml-4">
+                          {estado.texto}
+                        </Chip>
+                      </div>
                     </div>
                   }
                 >
                   <div className="mt-4">
-                    <table className="table-auto w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="px-4 py-2 text-left">Tipo</th>
-                          <th className="px-4 py-2 text-left">Calificación</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <Table
+                      classNames={{
+                        wrapper: "dark:bg-gray-700",
+                        th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
+                        tr: "dark:text-white text-center",
+                        td: "text-center",
+                      }}
+                    >
+                      <TableHeader>
+                        <TableColumn className="px-4 py-2">
+                          Tipo
+                        </TableColumn>
+                        <TableColumn className="px-4 py-2">
+                          Calificación
+                        </TableColumn>
+                      </TableHeader>
+                      <TableBody>
                         {calificaciones[periodoSeleccionado][
                           materia.id
                         ].aportes.map((aporte, index) => (
-                          <tr key={`aporte-${index}`}>
-                            <td className="px-4 py-2">Aporte {index + 1}</td>
-                            <td className="px-4 py-2">{aporte.toFixed(2)}</td>
-                          </tr>
+                          <TableRow key={`aporte-${index}`}>
+                            <TableCell className="px-4 py-2">
+                              Aporte {index + 1}
+                            </TableCell>
+                            <TableCell className="px-4 py-2">
+                              {aporte.toFixed(2)}
+                            </TableCell>
+                          </TableRow>
                         ))}
-                        <tr>
-                          <td className="px-4 py-2">Examen</td>
-                          <td className="px-4 py-2">
+                        <TableRow>
+                          <TableCell className="px-4 py-2">Examen</TableCell>
+                          <TableCell className="px-4 py-2">
                             {calificaciones[periodoSeleccionado][
                               materia.id
                             ].examen.toFixed(2)}
-                          </td>
-                        </tr>
-                        <tr className="font-bold bg-gray-50">
-                          <td className="px-4 py-2">Promedio Final</td>
-                          <td className="px-4 py-2">{promedio}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow className="font-bold">
+                          <TableCell className="px-4 py-2">
+                            PROMEDIO
+                          </TableCell>
+                          <TableCell className="px-4 py-2">
+                            {promedio}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 </AccordionItem>
               );
