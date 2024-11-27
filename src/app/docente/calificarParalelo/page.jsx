@@ -350,6 +350,76 @@ function CalificarParalelo() {
     }
   };
 
+  const enviarSupletorios = async () => {
+    const datosSupletorios = calificacionesFiltradas.map((estudiante) => {
+      // Promedio de los parciales (excluyendo supletorio)
+      const parcialesSinSupletorio = parciales.filter(
+        (p) => p.id !== "supletorio"
+      );
+      const promedioParciales =
+        parcialesSinSupletorio.reduce((acc, parcial) => {
+          const calificacionParcial = estudiante.MATRICULA[0].CALIFICACION.find(
+            (c) => c.idParcial === parcial.id
+          );
+          return acc + (calificacionParcial?.promedio || 0);
+        }, 0) / parcialesSinSupletorio.length;
+
+      // Calcular promedio final con supletorio si aplica
+      let supletorioNota = estudiante.MATRICULA[0]?.SUPLETORIO?.nota || null;
+      const aplicaSupletorio = promedioParciales >= 4 && promedioParciales < 7;
+
+      // Si aplica al supletorio pero no tiene nota, asignar 0
+      if (aplicaSupletorio && supletorioNota === null) {
+        supletorioNota = 0;
+      }
+
+      const promedioFinal = aplicaSupletorio
+        ? (promedioParciales + supletorioNota) / 2
+        : promedioParciales;
+
+      // Determinar estado final (true: pasa, false: pierde)
+      const estadoFinal = promedioFinal >= 7;
+
+      return {
+        idMatricula: estudiante.MATRICULA[0].id, // ID de la matrícula
+        notaSupletorio: aplicaSupletorio ? supletorioNota : null, // Nota del supletorio si aplica
+        estado: estadoFinal, // Estado final
+      };
+    });
+
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/calificarCursoSupletorio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ supletorios: datosSupletorios }),
+      });
+
+      if (response.ok) {
+        setNotificacion({
+          message: "Datos enviados correctamente.",
+          type: "success",
+        });
+      } else {
+        const error = await response.json();
+        setNotificacion({
+          message: error.message || "Error al enviar los datos.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error al enviar los datos del supletorio:", error);
+      setNotificacion({
+        message: "Error de red al enviar los datos.",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const generarCSV = () => {
     try {
       setIsLoading(true);
@@ -1397,7 +1467,7 @@ function CalificarParalelo() {
                   color="success"
                   size="lg"
                   className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg disabled:cursor-not-allowed"
-                  //onClick={handleSubmitCalificaciones}
+                  onClick={enviarSupletorios}
                   disabled={isLoading}
                 >
                   Publicar Supletorio
