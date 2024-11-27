@@ -1038,11 +1038,14 @@ function CalificarParalelo() {
                   accept=".csv"
                   variant="bordered"
                   onChange={handleFileUpload}
+                  isDisabled={
+                    parcialSeleccionado.toLowerCase() === "supletorio"
+                  }
                   startContent={
                     <PaperClipIcon className="text-blue-900 dark:text-white h-6 w-6" />
                   }
                   classNames={{
-                    base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-black dark:text-white",
+                    base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black text-black dark:text-white disabled:cursor-not-allowed",
                     input: "text-black dark:text-white",
                   }}
                 />
@@ -1057,7 +1060,7 @@ function CalificarParalelo() {
                   variant="shadow"
                   color="success"
                   size="md"
-                  className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
+                  className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg disabled:cursor-not-allowed"
                   onClick={descargarCalificaciones}
                 >
                   Calificaciones
@@ -1072,7 +1075,7 @@ function CalificarParalelo() {
                   variant="shadow"
                   color="success"
                   size="md"
-                  className="w-full text-lg dark:bg-gray-900 shadow-lg shadow-white dark:text-white disabled:cursor-not-allowed"
+                  className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg disabled:cursor-not-allowed"
                   disabled={parcialSeleccionado.toLowerCase() === "supletorio"}
                 >
                   Plantilla
@@ -1105,7 +1108,14 @@ function CalificarParalelo() {
             <div className="overflow-x-auto dark:bg-gray-700">
               {parcialSeleccionado === "supletorio" ? (
                 // Tabla de calificaciones para el supletorio; Estudiante, promedio, estado, calificación
-                <Table aria-label="Tabla de calificaciones">
+                <Table
+                  aria-label="Tabla de calificaciones"
+                  classNames={{
+                    wrapper: "dark:bg-gray-700",
+                    th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
+                    tr: "dark:text-white dark:hover:text-gray-900 text-justify",
+                  }}
+                >
                   <TableHeader>
                     <TableColumn>Estudiante</TableColumn>
                     <TableColumn>Promedio</TableColumn>
@@ -1137,23 +1147,23 @@ function CalificarParalelo() {
 
                       return (
                         <TableRow key={estudiante.id}>
-                          <TableCell>
+                          <TableCell className="capitalize">
                             {estudiante.PERSONA.apellido.toLowerCase()}{" "}
                             {estudiante.PERSONA.nombre.toLowerCase()}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             {parseFloat(promedio).toFixed(2)}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             {promedio >= 7
                               ? "APROBADO"
                               : promedio < 4
                               ? "REPROBADO"
                               : "SUPLETORIO"}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             {!supletorioHabilitado ? (
-                              <p>No habilitado</p>
+                              <p>-</p>
                             ) : (
                               <Input
                                 type="number"
@@ -1170,7 +1180,7 @@ function CalificarParalelo() {
                               />
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-center">
                             <p>
                               {parseFloat(
                                 supletorioNota !== null &&
@@ -1379,14 +1389,14 @@ function CalificarParalelo() {
               )}
             </div>
           </CardBody>
-          <CardFooter>
+          <CardFooter className="justify-end">
             <div className="mt-4 flex justify-end">
               {parcialSeleccionado === "supletorio" ? (
                 <Button
                   variant="shadow"
                   color="success"
                   size="lg"
-                  className="w-full text-lg"
+                  className="bg-gradient-to-tr from-blue-900 to-green-500 text-white shadow-green-500 shadow-lg disabled:cursor-not-allowed"
                   //onClick={handleSubmitCalificaciones}
                   disabled={isLoading}
                 >
