@@ -26,6 +26,7 @@ function NotasActuales() {
   const [parcialSeleccionado, setParcialSeleccionado] = useState("");
   const [matriculas, setMatriculas] = useState([]);
   const [parciales, setParciales] = useState([]);
+  const [promedioParcial, setPromedioParcial] = useState(0);
 
   useEffect(() => {
     try {
@@ -71,6 +72,46 @@ function NotasActuales() {
       setIsLoading(false);
     }
   }, [matriculas]);
+
+  useEffect(() => {
+    if (matriculas.length > 0 && parciales.length > 0) {
+      setPromedioParcial(
+        calcularPromedioGeneral(matriculas, parcialSeleccionado)
+      );
+    }
+  }, [matriculas, parciales, parcialSeleccionado]);
+
+  // Función para calcular el promedio general
+  function calcularPromedioGeneral(matriculas, parcialSeleccionado) {
+    // Inicializamos el total y el número de materias con calificación
+    let sumaPromedios = 0;
+    let contadorMaterias = 0;
+
+    // Iteramos sobre las matriculas (materias)
+    matriculas.forEach((materia) => {
+      let promedioMateria = 0;
+
+      // Verificamos si la materia tiene una calificación para el parcial seleccionado
+      const calificacion = materia?.CALIFICACION?.find(
+        (cal) => cal?.idParcial === parseInt(parcialSeleccionado)
+      );
+
+      // Si no tiene calificación, asignamos 0, si tiene, tomamos el promedio calculado
+      if (calificacion) {
+        promedioMateria = calificacion.promedio ?? 0;
+      }
+
+      // Acumulamos el promedio por materia solo si tiene calificación
+      sumaPromedios += promedioMateria;
+      contadorMaterias += 1;
+    });
+
+    // Calculamos el promedio general
+    const promedioGeneral =
+      contadorMaterias > 0 ? sumaPromedios / contadorMaterias : 0;
+
+    return promedioGeneral;
+  }
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -133,10 +174,16 @@ function NotasActuales() {
                 size="lg"
                 className="w-full sm:w-auto"
                 classNames={{
-                  base: "border border-blue-900 dark:border-white dark:text-white",
+                  base: "border border-blue-900 dark:border-white dark:text-white capitalize",
                 }}
               >
-                Promedio General: 10
+                Promedio{" "}
+                {parciales
+                  .find(
+                    (parcial) => parcial.id === parseInt(parcialSeleccionado)
+                  )
+                  ?.parcial.toLowerCase()}
+                : {promedioParcial.toFixed(2)}
               </Chip>
             </div>
           </div>
@@ -170,7 +217,7 @@ function NotasActuales() {
                               (calificacion) =>
                                 calificacion?.idParcial ===
                                 parseInt(parcialSeleccionado)
-                            )?.promedio ?? (0.0).toFixed(2)}
+                            )?.promedio.toFixed(2) ?? (0.0).toFixed(2)}
                           </strong>
                         </p>
                         <Chip color="primary" className="ml-4">
