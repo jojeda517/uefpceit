@@ -29,8 +29,8 @@ function NotasActuales() {
   const [promedioParcial, setPromedioParcial] = useState(0);
 
   useEffect(() => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const idPersona = localStorage.getItem("idPersona");
       fetch(`/api/estudiante/calificaciones/${idPersona}`)
         .then((res) => {
@@ -51,6 +51,7 @@ function NotasActuales() {
   }, []);
 
   useEffect(() => {
+    setIsLoading(true);
     try {
       if (matriculas.length > 0 && matriculas[0]?.PERIODO?.evaluacion?.id) {
         fetch(`/api/parcial/${matriculas[0].PERIODO.evaluacion.id}`)
@@ -59,6 +60,8 @@ function NotasActuales() {
             return res.json();
           })
           .then((data) => {
+            // Agregar el parcial general
+            data.push({ id: "general", parcial: "General" });
             setParciales(data);
             setParcialSeleccionado(String(data[0].id));
           })
@@ -74,10 +77,17 @@ function NotasActuales() {
   }, [matriculas]);
 
   useEffect(() => {
-    if (matriculas.length > 0 && parciales.length > 0) {
-      setPromedioParcial(
-        calcularPromedioGeneral(matriculas, parcialSeleccionado)
-      );
+    setIsLoading(true);
+    try {
+      if (matriculas.length > 0 && parciales.length > 0) {
+        setPromedioParcial(
+          calcularPromedioGeneral(matriculas, parcialSeleccionado)
+        );
+      }
+    } catch (error) {
+      console.error("Error al calcular promedio general:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [matriculas, parciales, parcialSeleccionado]);
 
@@ -228,108 +238,181 @@ function NotasActuales() {
                   }
                 >
                   <div className="mt-4">
-                    <Table
-                      classNames={{
-                        wrapper: "dark:bg-gray-700",
-                        th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
-                        tr: "dark:text-white text-center",
-                        td: "text-center",
-                      }}
-                    >
-                      <TableHeader>
-                        <TableColumn className="px-4 py-2">Tipo</TableColumn>
-                        <TableColumn className="px-4 py-2">
-                          Calificación
-                        </TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell>Aporte 1</TableCell>
-                          <TableCell>
-                            {materia?.CALIFICACION?.find(
-                              (calificacion) =>
-                                calificacion?.idParcial ===
-                                parseInt(parcialSeleccionado)
-                            )?.APORTE[0]?.aporte ?? (0.0).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>Aporte 2</TableCell>
-                          <TableCell>
-                            {materia?.CALIFICACION?.find(
-                              // buscar notas de un parcial específico
-                              (calificacion) =>
-                                calificacion?.idParcial ===
-                                parseInt(parcialSeleccionado)
-                            )?.APORTE[1]?.aporte ?? (0.0).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>Aporte 3</TableCell>
-                          <TableCell>
-                            {materia?.CALIFICACION?.find(
-                              // buscar notas de un parcial específico
-                              (calificacion) =>
-                                calificacion?.idParcial ===
-                                parseInt(parcialSeleccionado)
-                            )?.APORTE[2]?.aporte ?? (0.0).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>Examen</TableCell>
-                          <TableCell>
-                            {materia?.CALIFICACION?.find(
-                              // buscar notas de un parcial específico
-                              (calificacion) =>
-                                calificacion?.idParcial ===
-                                parseInt(parcialSeleccionado)
-                            )?.EXAMEN[0]?.nota ?? (0.0).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>Conducta</TableCell>
-                          <TableCell>
-                            <Chip color="success" variant="bordered">
+                    {/* si selecciona general */}
+                    {parcialSeleccionado === "general" ? (
+                      <Table
+                        classNames={{
+                          wrapper: "dark:bg-gray-700",
+                          th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
+                          tr: "dark:text-white text-center",
+                          td: "text-center",
+                        }}
+                      >
+                        <TableHeader>
+                          <TableColumn className="px-4 py-2">Tipo</TableColumn>
+                          <TableColumn className="px-4 py-2">
+                            Calificación
+                          </TableColumn>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>Promedio</TableCell>
+                            <TableCell>
+                              {/* promedio de los promedios de cada parcial */}
+                              {(
+                                materia?.CALIFICACION?.reduce(
+                                  (acc, calificacion) =>
+                                    acc + calificacion?.promedio ?? 0,
+                                  0
+                                ) /
+                                  (parciales.length - 1) ?? 0
+                              ).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Supletorio</TableCell>
+                            <TableCell>
+                              {materia?.SUPLETORIO?.nota ?? "-"}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-extrabold">
+                              Promedio General
+                            </TableCell>
+                            <TableCell>
+                              <Chip color="primary">
+                                {/* promedio general de la materia en caso de que SUPLETORIO no sea null */}
+                                {materia?.SUPLETORIO?.nota != null
+                                  ? // Si hay supletorio, calculamos el promedio con su nota
+                                    (
+                                      (materia?.SUPLETORIO?.nota +
+                                        // Promedio de los parciales
+                                        materia?.CALIFICACION?.reduce(
+                                          (acc, calificacion) =>
+                                            acc + (calificacion?.promedio ?? 0),
+                                          0
+                                        ) /
+                                          Math.max(parciales.length - 1, 1)) /
+                                      2
+                                    ).toFixed(2)
+                                  : // Si no hay supletorio, solo calculamos el promedio de los parciales
+                                    (
+                                      materia?.CALIFICACION?.reduce(
+                                        (acc, calificacion) =>
+                                          acc + (calificacion?.promedio ?? 0),
+                                        0
+                                      ) / Math.max(parciales.length - 1, 1)
+                                    ).toFixed(2)}
+                              </Chip>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <Table
+                        classNames={{
+                          wrapper: "dark:bg-gray-700",
+                          th: "bg-gray-200 text-black dark:bg-gray-800 dark:text-white text-center uppercase",
+                          tr: "dark:text-white text-center",
+                          td: "text-center",
+                        }}
+                      >
+                        <TableHeader>
+                          <TableColumn className="px-4 py-2">Tipo</TableColumn>
+                          <TableColumn className="px-4 py-2">
+                            Calificación
+                          </TableColumn>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>Aporte 1</TableCell>
+                            <TableCell>
+                              {materia?.CALIFICACION?.find(
+                                (calificacion) =>
+                                  calificacion?.idParcial ===
+                                  parseInt(parcialSeleccionado)
+                              )?.APORTE[0]?.aporte ?? (0.0).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Aporte 2</TableCell>
+                            <TableCell>
                               {materia?.CALIFICACION?.find(
                                 // buscar notas de un parcial específico
                                 (calificacion) =>
                                   calificacion?.idParcial ===
                                   parseInt(parcialSeleccionado)
-                              )?.CONDUCTA[0]?.puntaje ?? (0.0).toFixed(2)}
-                            </Chip>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>Asistencia</TableCell>
-                          <TableCell>
-                            <Chip color="success" variant="bordered">
+                              )?.APORTE[1]?.aporte ?? (0.0).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Aporte 3</TableCell>
+                            <TableCell>
                               {materia?.CALIFICACION?.find(
                                 // buscar notas de un parcial específico
                                 (calificacion) =>
                                   calificacion?.idParcial ===
                                   parseInt(parcialSeleccionado)
-                              )?.ASISTENCIA[0]?.porcentaje ?? (0.0).toFixed(2)}
-                              <strong>%</strong>
-                            </Chip>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-extrabold">
-                            Promedio
-                          </TableCell>
-                          <TableCell>
-                            <Chip color="primary">
+                              )?.APORTE[2]?.aporte ?? (0.0).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Examen</TableCell>
+                            <TableCell>
                               {materia?.CALIFICACION?.find(
                                 // buscar notas de un parcial específico
                                 (calificacion) =>
                                   calificacion?.idParcial ===
                                   parseInt(parcialSeleccionado)
-                              )?.promedio ?? (0.0).toFixed(2)}
-                            </Chip>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
+                              )?.EXAMEN[0]?.nota ?? (0.0).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Conducta</TableCell>
+                            <TableCell>
+                              <Chip color="success" variant="bordered">
+                                {materia?.CALIFICACION?.find(
+                                  // buscar notas de un parcial específico
+                                  (calificacion) =>
+                                    calificacion?.idParcial ===
+                                    parseInt(parcialSeleccionado)
+                                )?.CONDUCTA[0]?.puntaje ?? (0.0).toFixed(2)}
+                              </Chip>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>Asistencia</TableCell>
+                            <TableCell>
+                              <Chip color="success" variant="bordered">
+                                {materia?.CALIFICACION?.find(
+                                  // buscar notas de un parcial específico
+                                  (calificacion) =>
+                                    calificacion?.idParcial ===
+                                    parseInt(parcialSeleccionado)
+                                )?.ASISTENCIA[0]?.porcentaje ??
+                                  (0.0).toFixed(2)}
+                                <strong>%</strong>
+                              </Chip>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-extrabold">
+                              Promedio
+                            </TableCell>
+                            <TableCell>
+                              <Chip color="primary">
+                                {materia?.CALIFICACION?.find(
+                                  // buscar notas de un parcial específico
+                                  (calificacion) =>
+                                    calificacion?.idParcial ===
+                                    parseInt(parcialSeleccionado)
+                                )?.promedio ?? (0.0).toFixed(2)}
+                              </Chip>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    )}
                   </div>
                 </AccordionItem>
               );
