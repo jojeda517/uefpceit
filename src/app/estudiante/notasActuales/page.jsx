@@ -30,7 +30,7 @@ function NotasActuales() {
   const [promedioGeneralPeriodo, setPromedioGeneralPeriodo] = useState(0); // Promedio general del período
 
   useEffect(() => {
-    setIsLoading(true);
+    setIsLoading(true); // Activamos el estado de carga
     try {
       const idPersona = localStorage.getItem("idPersona");
       fetch(`/api/estudiante/calificaciones/${idPersona}`)
@@ -43,16 +43,20 @@ function NotasActuales() {
         })
         .catch((err) => {
           console.error("Error al obtener matriculas:", err);
+        })
+        .finally(() => {
+          setIsLoading(false); // Desactivamos el estado de carga después de completar la solicitud
         });
     } catch (error) {
       console.error("Error al obtener las matriculas:", error);
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Desactivamos el estado de carga en caso de error
     }
   }, []);
 
   useEffect(() => {
-    setIsLoading(true);
+    if (matriculas.length === 0) return; // Solo ejecutamos este efecto si hay matriculas
+
+    setIsLoading(true); // Activamos el estado de carga
     try {
       if (matriculas.length > 0 && matriculas[0]?.PERIODO?.evaluacion?.id) {
         fetch(`/api/parcial/${matriculas[0].PERIODO.evaluacion.id}`)
@@ -68,28 +72,30 @@ function NotasActuales() {
           })
           .catch((err) => {
             console.error("Error al obtener parciales:", err);
+          })
+          .finally(() => {
+            setIsLoading(false); // Desactivamos el estado de carga después de completar la solicitud
           });
       }
     } catch (error) {
       console.error("Error al obtener parciales:", error);
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Desactivamos el estado de carga en caso de error
     }
   }, [matriculas]);
 
   useEffect(() => {
-    setIsLoading(true);
+    if (matriculas.length === 0 || parciales.length === 0) return; // Verifica que ambos datos estén disponibles
+
+    setIsLoading(true); // Activamos el estado de carga
     try {
-      if (matriculas.length > 0 && parciales.length > 0) {
-        setPromedioParcial(
-          calcularPromedioGeneral(matriculas, parcialSeleccionado)
-        );
-        setPromedioGeneralPeriodo(calcularPromedioGeneralPeriodo(matriculas)); // Calculamos el promedio general del período
-      }
+      setPromedioParcial(
+        calcularPromedioGeneral(matriculas, parcialSeleccionado)
+      );
+      setPromedioGeneralPeriodo(calcularPromedioGeneralPeriodo(matriculas)); // Calculamos el promedio general del período
     } catch (error) {
       console.error("Error al calcular promedio general:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Desactivamos el estado de carga después de completar el cálculo
     }
   }, [matriculas, parciales, parcialSeleccionado]);
 
