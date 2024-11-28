@@ -185,40 +185,64 @@ function NotasActuales() {
                       }}
                     >
                       <TableHeader>
-                        <TableColumn className="px-4 py-2">
-                          Tipo
-                        </TableColumn>
+                        <TableColumn className="px-4 py-2">Tipo</TableColumn>
                         <TableColumn className="px-4 py-2">
                           Calificación
                         </TableColumn>
                       </TableHeader>
                       <TableBody>
-                        {calificaciones[periodoSeleccionado][
-                          materia.id
-                        ].aportes.map((aporte, index) => (
-                          <TableRow key={`aporte-${index}`}>
-                            <TableCell className="px-4 py-2">
-                              Aporte {index + 1}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                              {aporte.toFixed(2)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
                         <TableRow>
-                          <TableCell className="px-4 py-2">Examen</TableCell>
-                          <TableCell className="px-4 py-2">
-                            {calificaciones[periodoSeleccionado][
-                              materia.id
-                            ].examen.toFixed(2)}
+                          <TableCell>Aporte 1</TableCell>
+                          <TableCell>
+                            {
+                              calificaciones[periodoSeleccionado][materia.id]
+                                .aportes[0]
+                            }
                           </TableCell>
                         </TableRow>
-                        <TableRow className="font-bold">
-                          <TableCell className="px-4 py-2">
-                            PROMEDIO
+                        <TableRow>
+                          <TableCell>Aporte 2</TableCell>
+                          <TableCell>
+                            {
+                              calificaciones[periodoSeleccionado][materia.id]
+                                .aportes[1]
+                            }
                           </TableCell>
-                          <TableCell className="px-4 py-2">
-                            {promedio}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Aporte 3</TableCell>
+                          <TableCell>
+                            {
+                              calificaciones[periodoSeleccionado][materia.id]
+                                .aportes[2]
+                            }
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Examen</TableCell>
+                          <TableCell>
+                            {
+                              calificaciones[periodoSeleccionado][materia.id]
+                                .examen
+                            }
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Conducta</TableCell>
+                          <TableCell>
+                            <Chip color="success" variant="bordered">10</Chip>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Asistencia</TableCell>
+                          <TableCell>
+                            <Chip color="success" variant="bordered">10</Chip>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Promedio</TableCell>
+                          <TableCell>
+                            <Chip color="primary">{promedio}</Chip>
                           </TableCell>
                         </TableRow>
                       </TableBody>
