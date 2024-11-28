@@ -27,6 +27,7 @@ function NotasActuales() {
   const [matriculas, setMatriculas] = useState([]);
   const [parciales, setParciales] = useState([]);
   const [promedioParcial, setPromedioParcial] = useState(0);
+  const [promedioGeneralPeriodo, setPromedioGeneralPeriodo] = useState(0); // Promedio general del período
 
   useEffect(() => {
     setIsLoading(true);
@@ -83,6 +84,7 @@ function NotasActuales() {
         setPromedioParcial(
           calcularPromedioGeneral(matriculas, parcialSeleccionado)
         );
+        setPromedioGeneralPeriodo(calcularPromedioGeneralPeriodo(matriculas)); // Calculamos el promedio general del período
       }
     } catch (error) {
       console.error("Error al calcular promedio general:", error);
@@ -121,6 +123,30 @@ function NotasActuales() {
       contadorMaterias > 0 ? sumaPromedios / contadorMaterias : 0;
 
     return promedioGeneral;
+  }
+
+  // Función para calcular el promedio general del período (todos los parciales de todas las materias)
+  function calcularPromedioGeneralPeriodo(matriculas) {
+    let sumaPromedios = 0;
+    let contadorMaterias = 0;
+
+    matriculas.forEach((materia) => {
+      let promedioMateria = 0;
+
+      // Sumar el promedio de cada materia
+      if (materia?.CALIFICACION?.length > 0) {
+        const promedioMateria =
+          materia?.CALIFICACION?.reduce(
+            (acc, calificacion) => acc + (calificacion?.promedio ?? 0),
+            0
+          ) / Math.max(materia?.CALIFICACION?.length, 1);
+
+        sumaPromedios += promedioMateria;
+        contadorMaterias += 1;
+      }
+    });
+
+    return contadorMaterias > 0 ? sumaPromedios / contadorMaterias : 0;
   }
 
   return (
@@ -189,14 +215,13 @@ function NotasActuales() {
               >
                 Promedio{" "}
                 {parcialSeleccionado === "general"
-                  ? "General"
-                  : parciales
+                  ? `General: ${promedioGeneralPeriodo}`
+                  : `${parciales
                       .find(
                         (parcial) =>
                           parcial.id === parseInt(parcialSeleccionado)
                       )
-                      ?.parcial.toLowerCase()}
-                : {promedioParcial.toFixed(2)}
+                      ?.parcial.toLowerCase()} : ${promedioParcial.toFixed(2)}`}
               </Chip>
             </div>
           </div>
@@ -225,27 +250,34 @@ function NotasActuales() {
                         <p>
                           Promedio:{" "}
                           <strong>
-                            {materia?.SUPLETORIO?.nota != null
-                              ? // Si hay supletorio, calculamos el promedio con su nota
-                                (
-                                  (materia?.SUPLETORIO?.nota +
-                                    // Promedio de los parciales
+                            {parcialSeleccionado === "general"
+                              ? materia?.SUPLETORIO?.nota != null
+                                ? // Si hay supletorio, calculamos el promedio con su nota
+                                  (
+                                    (materia?.SUPLETORIO?.nota +
+                                      // Promedio de los parciales
+                                      materia?.CALIFICACION?.reduce(
+                                        (acc, calificacion) =>
+                                          acc + (calificacion?.promedio ?? 0),
+                                        0
+                                      ) /
+                                        Math.max(parciales.length - 1, 1)) /
+                                    2
+                                  ).toFixed(2)
+                                : // Si no hay supletorio, solo calculamos el promedio de los parciales
+                                  (
                                     materia?.CALIFICACION?.reduce(
                                       (acc, calificacion) =>
                                         acc + (calificacion?.promedio ?? 0),
                                       0
-                                    ) /
-                                      Math.max(parciales.length - 1, 1)) /
-                                  2
-                                ).toFixed(2)
-                              : // Si no hay supletorio, solo calculamos el promedio de los parciales
-                                (
-                                  materia?.CALIFICACION?.reduce(
-                                    (acc, calificacion) =>
-                                      acc + (calificacion?.promedio ?? 0),
-                                    0
-                                  ) / Math.max(parciales.length - 1, 1)
-                                ).toFixed(2)}
+                                    ) / Math.max(parciales.length - 1, 1)
+                                  ).toFixed(2)
+                              : materia?.CALIFICACION?.find(
+                                  // buscar notas de un parcial específico
+                                  (calificacion) =>
+                                    calificacion?.idParcial ===
+                                    parseInt(parcialSeleccionado)
+                                )?.promedio ?? (0.0).toFixed(2)}
                           </strong>
                         </p>
                         <Chip color="primary" className="ml-4">
