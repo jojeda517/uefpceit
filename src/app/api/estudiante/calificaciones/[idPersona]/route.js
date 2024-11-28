@@ -25,18 +25,34 @@ export async function GET(request, { params }) {
         },
         CALIFICACION: {
           include: {
-            APORTE: true,
+            APORTE: {
+              orderBy: {
+                id: "asc", // Ordena los aportes por 'id' de manera ascendente
+              },
+            },
             EXAMEN: true,
             ASISTENCIA: true,
             CONDUCTA: true,
           },
         },
         SUPLETORIO: true,
+        PERIODO: {
+          select: {
+            evaluacion: true,
+          },
+        },
+      },
+      orderBy: {
+        DETALLEMATERIA: {
+          MATERIA: {
+            nombre: "asc",
+          },
+        },
       },
     });
     return NextResponse.json(estudiante);
   } catch (error) {
     console.log(error);
-  } finally {
+    return NextResponse.error();
   }
 }

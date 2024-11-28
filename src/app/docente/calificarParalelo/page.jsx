@@ -122,10 +122,6 @@ function CalificarParalelo() {
   }, [idPersona]);
 
   useEffect(() => {
-    console.log(estudiantes);
-  }, [estudiantes]);
-
-  useEffect(() => {
     if (parcialSeleccionado === "supletorio") {
       // Calcular el promedio de los parciales anteriores
       const nuevasCalificaciones = estudiantes.map((estudiante) => {

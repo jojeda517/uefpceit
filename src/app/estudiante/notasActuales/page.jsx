@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -19,67 +19,62 @@ import {
   TableBody,
 } from "@nextui-org/react";
 import { ChevronDownIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
-
-// Datos de ejemplo (en una aplicación real, estos datos vendrían de una API)
-const parciales = [
-  { id: 1, parcial: "Primer Quimestre" },
-  { id: 2, parcial: "Segundo Quimestre" },
-  { id: 3, parcial: "Supletorio" },
-];
-
-const materias = [
-  { id: 1, nombre: "Matemáticas", profesor: "Dr. García" },
-  { id: 2, nombre: "Lenguaje", profesor: "Lic. Rodríguez" },
-  { id: 3, nombre: "Ciencias Naturales", profesor: "Ing. Martínez" },
-  { id: 4, nombre: "Estudios Sociales", profesor: "Lic. López" },
-  { id: 5, nombre: "Inglés", profesor: "Msc. Smith" },
-];
-
-const calificaciones = {
-  1: {
-    1: { aportes: [8.5, 9.0, 7.5], examen: 8.0 },
-    2: { aportes: [7.0, 8.5, 9.0], examen: 8.5 },
-    3: { aportes: [9.5, 9.0, 9.5], examen: 9.0 },
-    4: { aportes: [8.0, 8.5, 8.0], examen: 8.5 },
-    5: { aportes: [7.5, 8.0, 8.5], examen: 8.0 },
-  },
-  2: {
-    1: { aportes: [9.0, 8.5, 9.0], examen: 9.5 },
-    2: { aportes: [8.5, 9.0, 8.5], examen: 9.0 },
-    3: { aportes: [9.0, 9.5, 9.0], examen: 9.5 },
-    4: { aportes: [8.5, 9.0, 8.5], examen: 9.0 },
-    5: { aportes: [8.0, 8.5, 9.0], examen: 8.5 },
-  },
-};
+import CircularProgress from "@/app/components/CircularProgress";
 
 function NotasActuales() {
-  const [periodoSeleccionado, setPeriodoSeleccionado] = useState(
-    parciales[0].id
-  );
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [parcialSeleccionado, setParcialSeleccionado] = useState("");
+  const [matriculas, setMatriculas] = useState([]);
+  const [parciales, setParciales] = useState([]);
 
-  const calcularPromedio = (materiaId) => {
-    const notasMateria = calificaciones[periodoSeleccionado][materiaId];
-    const sumaAportes = notasMateria.aportes.reduce((a, b) => a + b, 0);
-    const promedioAportes = sumaAportes / notasMateria.aportes.length;
-    return (promedioAportes * 0.8 + notasMateria.examen * 0.2).toFixed(2);
-  };
+  useEffect(() => {
+    try {
+      setIsLoading(true);
+      const idPersona = localStorage.getItem("idPersona");
+      fetch(`/api/estudiante/calificaciones/${idPersona}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Error al obtener matriculas");
+          return res.json();
+        })
+        .then((data) => {
+          setMatriculas(data);
+        })
+        .catch((err) => {
+          console.error("Error al obtener matriculas:", err);
+        });
+    } catch (error) {
+      console.error("Error al obtener las matriculas:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const obtenerEstado = (promedio) => {
-    if (promedio >= 9) return { texto: "Excelente", color: "success" };
-    if (promedio >= 8) return { texto: "Muy Bueno", color: "primary" };
-    if (promedio >= 7) return { texto: "Bueno", color: "warning" };
-    return { texto: "Necesita Mejorar", color: "danger" };
-  };
-
-  const promedioGeneral = (
-    Object.keys(calificaciones[periodoSeleccionado]).reduce(
-      (sum, materiaId) => sum + parseFloat(calcularPromedio(materiaId)),
-      0
-    ) / materias.length
-  ).toFixed(2);
+  useEffect(() => {
+    try {
+      if (matriculas.length > 0 && matriculas[0]?.PERIODO?.evaluacion?.id) {
+        fetch(`/api/parcial/${matriculas[0].PERIODO.evaluacion.id}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Error al obtener parciales");
+            return res.json();
+          })
+          .then((data) => {
+            setParciales(data);
+            setParcialSeleccionado(String(data[0].id));
+          })
+          .catch((err) => {
+            console.error("Error al obtener parciales:", err);
+          });
+      }
+    } catch (error) {
+      console.error("Error al obtener parciales:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [matriculas]);
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
+      {isLoading && <CircularProgress />}
       <div className="">
         <div className="grid grid-cols-1 gap-2 pb-5">
           <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
@@ -112,6 +107,8 @@ function NotasActuales() {
                 }
                 placeholder="Seleccione el parcial"
                 variant="bordered"
+                selectedKeys={[parcialSeleccionado]}
+                onChange={(e) => setParcialSeleccionado(e.target.value)}
                 classNames={{
                   base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black w-full",
                   selectorIcon: "text-blue-900 dark:text-black", // Icono de la flecha del selector de opciones
@@ -139,7 +136,7 @@ function NotasActuales() {
                   base: "border border-blue-900 dark:border-white dark:text-white",
                 }}
               >
-                Promedio General: {promedioGeneral}
+                Promedio General: 10
               </Chip>
             </div>
           </div>
@@ -150,25 +147,33 @@ function NotasActuales() {
               title: "dark:text-white",
             }}
           >
-            {materias.map((materia) => {
-              const promedio = calcularPromedio(materia.id);
-              const estado = obtenerEstado(promedio);
+            {matriculas.map((materia) => {
+              const estado = "Necesita Mejorar";
               return (
                 <AccordionItem
                   key={materia.id}
-                  aria-label={materia.nombre}
+                  aria-label={materia?.DETALLEMATERIA?.MATERIA?.nombre}
                   startIcon={
                     <ChevronDownIcon className="h-5 w-5 text-gray-600" />
                   }
                   title={
                     <div className="flex justify-between items-center w-full">
-                      <p className="">{materia.nombre}</p>
+                      <p className="capitalize">
+                        {materia?.DETALLEMATERIA?.MATERIA?.nombre.toLowerCase()}
+                      </p>
                       <div className="grid grid-cols-2 gap-5">
                         <p>
                           Promedio:{" "}
-                          <span className="font-semibold">{promedio}</span>
+                          <strong>
+                            {materia?.CALIFICACION?.find(
+                              // buscar notas de un parcial específico
+                              (calificacion) =>
+                                calificacion?.idParcial ===
+                                parseInt(parcialSeleccionado)
+                            )?.promedio ?? (0.0).toFixed(2)}
+                          </strong>
                         </p>
-                        <Chip color={estado.color} className="ml-4">
+                        <Chip color="primary" className="ml-4">
                           {estado.texto}
                         </Chip>
                       </div>
@@ -194,55 +199,86 @@ function NotasActuales() {
                         <TableRow>
                           <TableCell>Aporte 1</TableCell>
                           <TableCell>
-                            {
-                              calificaciones[periodoSeleccionado][materia.id]
-                                .aportes[0]
-                            }
+                            {materia?.CALIFICACION?.find(
+                              (calificacion) =>
+                                calificacion?.idParcial ===
+                                parseInt(parcialSeleccionado)
+                            )?.APORTE[0]?.aporte ?? (0.0).toFixed(2)}
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>Aporte 2</TableCell>
                           <TableCell>
-                            {
-                              calificaciones[periodoSeleccionado][materia.id]
-                                .aportes[1]
-                            }
+                            {materia?.CALIFICACION?.find(
+                              // buscar notas de un parcial específico
+                              (calificacion) =>
+                                calificacion?.idParcial ===
+                                parseInt(parcialSeleccionado)
+                            )?.APORTE[1]?.aporte ?? (0.0).toFixed(2)}
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>Aporte 3</TableCell>
                           <TableCell>
-                            {
-                              calificaciones[periodoSeleccionado][materia.id]
-                                .aportes[2]
-                            }
+                            {materia?.CALIFICACION?.find(
+                              // buscar notas de un parcial específico
+                              (calificacion) =>
+                                calificacion?.idParcial ===
+                                parseInt(parcialSeleccionado)
+                            )?.APORTE[2]?.aporte ?? (0.0).toFixed(2)}
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>Examen</TableCell>
                           <TableCell>
-                            {
-                              calificaciones[periodoSeleccionado][materia.id]
-                                .examen
-                            }
+                            {materia?.CALIFICACION?.find(
+                              // buscar notas de un parcial específico
+                              (calificacion) =>
+                                calificacion?.idParcial ===
+                                parseInt(parcialSeleccionado)
+                            )?.EXAMEN[0]?.nota ?? (0.0).toFixed(2)}
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>Conducta</TableCell>
                           <TableCell>
-                            <Chip color="success" variant="bordered">10</Chip>
+                            <Chip color="success" variant="bordered">
+                              {materia?.CALIFICACION?.find(
+                                // buscar notas de un parcial específico
+                                (calificacion) =>
+                                  calificacion?.idParcial ===
+                                  parseInt(parcialSeleccionado)
+                              )?.CONDUCTA[0]?.puntaje ?? (0.0).toFixed(2)}
+                            </Chip>
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>Asistencia</TableCell>
                           <TableCell>
-                            <Chip color="success" variant="bordered">10</Chip>
+                            <Chip color="success" variant="bordered">
+                              {materia?.CALIFICACION?.find(
+                                // buscar notas de un parcial específico
+                                (calificacion) =>
+                                  calificacion?.idParcial ===
+                                  parseInt(parcialSeleccionado)
+                              )?.ASISTENCIA[0]?.porcentaje ?? (0.0).toFixed(2)}
+                              <strong>%</strong>
+                            </Chip>
                           </TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell>Promedio</TableCell>
+                          <TableCell className="font-extrabold">
+                            Promedio
+                          </TableCell>
                           <TableCell>
-                            <Chip color="primary">{promedio}</Chip>
+                            <Chip color="primary">
+                              {materia?.CALIFICACION?.find(
+                                // buscar notas de un parcial específico
+                                (calificacion) =>
+                                  calificacion?.idParcial ===
+                                  parseInt(parcialSeleccionado)
+                              )?.promedio ?? (0.0).toFixed(2)}
+                            </Chip>
                           </TableCell>
                         </TableRow>
                       </TableBody>
