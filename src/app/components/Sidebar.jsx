@@ -431,117 +431,27 @@ function Sidebar({ roles }) {
                       <List className="p-0 text-white">
                         {hasRole("Administrador") && (
                           <>
-                            <ListItem>
-                              <ListItemPrefix>
-                                <UserGroupIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Docentes
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <AcademicCapIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Estudiantes
-                            </ListItem>
-
-                            <ListItem>
+                            {/* REPORTES DEL ADMINISTRADOR */}
+                            <ListItem
+                              onClick={() =>
+                                handleNavigation(
+                                  "/administrador/reportePaseAnio"
+                                )
+                              }
+                            >
                               <ListItemPrefix>
                                 <DocumentCheckIcon
                                   strokeWidth={3}
                                   className="h-3 w-5"
                                 />
                               </ListItemPrefix>
-                              Matriculas
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <BuildingLibraryIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Cursos
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <StarIcon strokeWidth={3} className="h-3 w-5" />
-                              </ListItemPrefix>
-                              Notas
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <ExclamationTriangleIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Estudiantes perdidos
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <ArrowPathIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Estudiantes en supletorio
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <ChartBarIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Boletín
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <CheckBadgeIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Certificado de matricula
+                              Pase de Año
                             </ListItem>
                           </>
                         )}
 
                         {hasRole("Docente") && (
-                          <>
-                            <ListItem>
-                              <ListItemPrefix>
-                                <CheckBadgeIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Calificaciones
-                            </ListItem>
-
-                            <ListItem>
-                              <ListItemPrefix>
-                                <CheckBadgeIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
-                                />
-                              </ListItemPrefix>
-                              Alumnos
-                            </ListItem>
-                          </>
+                          <>{/* REPORTES DEL DOCENTE */}</>
                         )}
                       </List>
                     </AccordionBody>
