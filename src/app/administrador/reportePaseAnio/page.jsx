@@ -30,6 +30,7 @@ import { Worker, Viewer } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { saveAs } from "file-saver";
 
 function ReportePaseAnio() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
@@ -160,6 +161,8 @@ function ReportePaseAnio() {
       setNiveles([]);
       setParaleloSeleccionado("");
       setParalelos([]);
+      setReporte([]);
+      setPdfUrl(null);
       setNotificacion({
         message: "Filtros eliminados correctamente",
         type: "success",
@@ -336,6 +339,47 @@ function ReportePaseAnio() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reporte]); // Ejecuta cada vez que 'reporte' cambie
+
+  const downloadFiles = () => {
+    if (!reporte.length) {
+      setNotificacion({
+        message: "No hay datos para descargar.",
+        type: "error",
+      });
+      return;
+    }
+
+    // Reutilizar el PDF
+    if (pdfUrl) {
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = "reporte_pases_anio.pdf";
+      link.click();
+    }
+
+    // Generar CSV
+    const csvContent = generateCSV(reporte);
+    const bom = "\uFEFF"; // Byte Order Mark
+    const blob = new Blob([bom + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    saveAs(blob, "reporte_pases_anio.csv");
+  };
+
+  const generateCSV = (data) => {
+    const encabezados = [
+      "Estudiante",
+      "Promedio General",
+      "Conducta",
+      "Estado",
+    ];
+    const filas = data.map(
+      (item) =>
+        `${item.estudiante};${item.promedioGeneral};${item.conducta};${item.estado}`
+    );
+
+    return [encabezados.join(";"), ...filas].join("\n");
+  };
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -529,8 +573,10 @@ function ReportePaseAnio() {
                 <Button
                   isIconOnly
                   color="success"
+                  disabled={!paraleloSeleccionado}
                   aria-label="Generar reporte"
                   onClick={handleGenerateReport}
+                  className="disabled:cursor-not-allowed"
                 >
                   <BoltIcon className="text-white h-6 w-6" />
                 </Button>
@@ -544,8 +590,10 @@ function ReportePaseAnio() {
                 <Button
                   isIconOnly
                   color="primary"
+                  disabled={reporte.length === 0}
                   aria-label="Descargar"
-                  //onClick={handleDownloadPDF}
+                  onClick={downloadFiles}
+                  className="disabled:cursor-not-allowed"
                 >
                   <ArrowDownTrayIcon className="text-white h-6 w-6 " />
                 </Button>
@@ -566,7 +614,9 @@ function ReportePaseAnio() {
                 </div>
               </Worker>
             ) : (
-              <p className="text-white">Genera un reporte para visualizarlo.</p>
+              <p className="dark:text-white text-blue-900 text-center animate-pulse">
+                Genera un reporte para visualizarlo.
+              </p>
             )}
           </CardBody>
         </Card>
