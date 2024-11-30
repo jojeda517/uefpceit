@@ -53,14 +53,15 @@ export async function GET(_, { params }) {
 
     matriculas.forEach((matricula) => {
       const { ESTUDIANTE, CALIFICACION, SUPLETORIO, retirado } = matricula;
+      console.log("retirado", retirado);
+
       const estudianteId = ESTUDIANTE.id;
 
       if (!estudiantes[estudianteId]) {
         estudiantes[estudianteId] = {
           estudiante: `${ESTUDIANTE.PERSONA.nombre} ${ESTUDIANTE.PERSONA.apellido}`,
           promediosMaterias: [],
-          conductaTotal: 0,
-          cantidadConducta: 0,
+          conductasMaterias: [],
           retirado,
         };
       }
@@ -77,15 +78,14 @@ export async function GET(_, { params }) {
 
       estudiantes[estudianteId].promediosMaterias.push(promedioMateria);
 
-      // Sumar conducta
-      const promedioConducta =
+      // Calcular la conducta promedio de la materia
+      const conductaMateria =
         CALIFICACION.reduce(
           (acc, cal) => acc + (cal.CONDUCTA[0]?.puntaje || 0),
           0
         ) / Math.max(CALIFICACION.length, 1);
 
-      estudiantes[estudianteId].conductaTotal += promedioConducta;
-      estudiantes[estudianteId].cantidadConducta += 1;
+      estudiantes[estudianteId].conductasMaterias.push(conductaMateria);
     });
 
     // Construir el reporte consolidado
@@ -99,14 +99,15 @@ export async function GET(_, { params }) {
         };
       }
 
+      // Promedio general de todas las materias
       const promedioGeneral =
         est.promediosMaterias.reduce((acc, prom) => acc + prom, 0) /
         Math.max(est.promediosMaterias.length, 1);
 
+      // Conducta promedio de todas las materias
       const conductaPromedio =
-        est.cantidadConducta > 0
-          ? est.conductaTotal / est.cantidadConducta
-          : 0;
+        est.conductasMaterias.reduce((acc, cond) => acc + cond, 0) /
+        Math.max(est.conductasMaterias.length, 1);
 
       const estado = promedioGeneral >= 7 ? "APROBADO" : "REPROBADO";
 

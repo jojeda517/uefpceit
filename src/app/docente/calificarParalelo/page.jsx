@@ -266,8 +266,9 @@ function CalificarParalelo() {
         calificaciones: calificacionesFiltradas.map((estudiante) => {
           const aportes = estudiante.calificacion.APORTE || [];
           const examenes = estudiante.calificacion.EXAMEN || [];
-          const asistencia = estudiante.calificacion.ASISTENCIA || [];
-          const conducta = estudiante.calificacion.CONDUCTA || [];
+          const asistencia =
+            estudiante.calificacion.ASISTENCIA[0].porcentaje || 0;
+          const conducta = estudiante.calificacion.CONDUCTA[0].puntaje || 0;
 
           // Determina la cantidad de aportes necesaria
           const cantidadDeAportes = 3; // Número fijo de aportes
@@ -308,8 +309,8 @@ function CalificarParalelo() {
             idEstudiante: estudiante.id,
             aportes: aportesAjustados,
             examenes: examenNota,
-            asistencia: asistenciaAjustada,
-            conducta: conductaAjustada,
+            asistencia: asistencia,
+            conducta: conducta,
             promedio, // Incluye el promedio calculado
           };
         }),
