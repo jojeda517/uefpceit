@@ -23,17 +23,157 @@ import {
   ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import CircularProgress from "@/app/components/CircularProgress";
+import Notification from "@/app/components/Notification";
 
 function ReportePaseAnio() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [periodos, setPeriodos] = useState([]); // Estado de los periodos
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState(""); // Estado del periodo seleccionado
+  const [campus, setCampus] = useState([]); // Estado de los campus
   const [campusSeleccionado, setCampusSeleccionado] = useState(""); // Estado del campus seleccionado
+  const [especialidades, setEspecialidades] = useState([]); // Estado de las especialidades
   const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState(""); // Estado de la especialidad seleccionada
+  const [niveles, setNiveles] = useState([]); // Estado de los niveles
   const [nivelSeleccionado, setNivelSeleccionado] = useState(""); // Estado del nivel seleccionado
+  const [paralelos, setParalelos] = useState([]); // Estado de los paralelos
   const [paraleloSeleccionado, setParaleloSeleccionado] = useState(""); // Estado del paralelo seleccionado
+  const [notificacion, setNotificacion] = useState({ message: "", type: "" });
+
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [campusRes, periodosRes] = await Promise.all([
+        fetch("/api/campus"),
+        fetch("/api/periodo"),
+      ]);
+
+      const [campusData, periodosData] = await Promise.all([
+        campusRes.json(),
+        periodosRes.json(),
+      ]);
+
+      setCampus(campusData);
+      setPeriodos(periodosData);
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    if (!campusSeleccionado) {
+      setEspecialidadSeleccionada("");
+      setEspecialidades([]);
+      return;
+    } // No hacer nada si no hay campus seleccionado
+
+    const fetchEspecialidades = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/especialidad/campus/${campusSeleccionado}`
+        );
+        const data = await res.json();
+        setEspecialidades(data);
+      } catch (error) {
+        console.error("Error fetching especialidades:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEspecialidades();
+  }, [campusSeleccionado]);
+
+  useEffect(() => {
+    if (!especialidadSeleccionada) {
+      setNivelSeleccionado("");
+      setNiveles([]);
+      return;
+    } // No hacer nada si no hay especialidad seleccionada
+
+    const fetchNiveles = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/nivel/especialidad/${especialidadSeleccionada}`
+        );
+        const data = await res.json();
+        setNiveles(data);
+      } catch (error) {
+        console.error("Error fetching niveles:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNiveles();
+  }, [especialidadSeleccionada]);
+
+  useEffect(() => {
+    if (!nivelSeleccionado) {
+      setParaleloSeleccionado("");
+      setParalelos([]);
+      return;
+    } // No hacer nada si no hay nivel seleccionado
+
+    const fetchParalelos = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/paralelo/${nivelSeleccionado}/${especialidadSeleccionada}/${campusSeleccionado}`
+        );
+        const data = await res.json();
+        setParalelos(data);
+      } catch (error) {
+        console.error("Error fetching paralelos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchParalelos();
+  }, [campusSeleccionado, especialidadSeleccionada, nivelSeleccionado]);
+
+  const handleClearFilters = () => {
+    try {
+      setIsLoading(true);
+      setCampusSeleccionado("");
+      setPeriodoSeleccionado("");
+      setEspecialidadSeleccionada("");
+      setEspecialidades([]);
+      setNivelSeleccionado("");
+      setNiveles([]);
+      setParaleloSeleccionado("");
+      setParalelos([]);
+      setNotificacion({
+        message: "Filtros eliminados correctamente",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error clearing filters:", error);
+      setNotificacion({
+        message: "Error al eliminar los filtros",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
       {isLoading && <CircularProgress />}
+      <Notification
+        message={notificacion.message}
+        type={notificacion.type}
+        onClose={() => setNotificacion({ message: "", type: "" })}
+      />
       <div className="grid grid-cols-1 gap-2 pb-5">
         <h2 className="font-extrabold text-3xl text-blue-900 dark:text-white">
           Reporte
@@ -71,9 +211,11 @@ function ReportePaseAnio() {
                 value: "text-black dark:text-white",
               }}
             >
-              <SelectItem key="campus" className="capitalize">
-                Campus 1
-              </SelectItem>
+              {campus.map((campus) => (
+                <SelectItem key={campus.id} className="capitalize">
+                  {campus?.nombre.toLowerCase()}
+                </SelectItem>
+              ))}
             </Select>
 
             <Select
@@ -97,9 +239,11 @@ function ReportePaseAnio() {
                 value: "text-black dark:text-white",
               }}
             >
-              <SelectItem key="periodo1" className="capitalize">
-                Periodo 1
-              </SelectItem>
+              {periodos.map((periodo) => (
+                <SelectItem key={periodo.id} className="capitalize">
+                  {periodo?.nombre.toLowerCase()}
+                </SelectItem>
+              ))}
             </Select>
 
             <Select
@@ -125,9 +269,11 @@ function ReportePaseAnio() {
                 value: "text-black dark:text-white",
               }}
             >
-              <SelectItem key="especialidad" className="capitalize">
-                Especialidad 1
-              </SelectItem>
+              {especialidades.map((especialidad) => (
+                <SelectItem key={especialidad.id} className="capitalize">
+                  {especialidad?.especialidad.toLowerCase()}
+                </SelectItem>
+              ))}
             </Select>
 
             <Select
@@ -141,7 +287,7 @@ function ReportePaseAnio() {
               }
               placeholder="Seleccione el nivel"
               selectedKeys={[nivelSeleccionado]}
-              onChange={(e) => setCampusSeleccionado(e.target.value)}
+              onChange={(e) => setNivelSeleccionado(e.target.value)}
               variant="bordered"
               classNames={{
                 base: "border border-blue-900 dark:border-black rounded-xl focus:ring-blue-900 dark:focus:ring-black focus:border-blue-900 dark:focus:border-black",
@@ -151,9 +297,11 @@ function ReportePaseAnio() {
                 value: "text-black dark:text-white",
               }}
             >
-              <SelectItem key="nivel1" className="capitalize">
-                Nivel 1
-              </SelectItem>
+              {niveles.map((nivel) => (
+                <SelectItem key={nivel.id} className="capitalize">
+                  {nivel?.nivel.toLowerCase()}
+                </SelectItem>
+              ))}
             </Select>
 
             <Select
@@ -179,9 +327,11 @@ function ReportePaseAnio() {
                 value: "text-black dark:text-white",
               }}
             >
-              <SelectItem key="paralelo1" className="capitalize">
-                Paralelo 1
-              </SelectItem>
+              {paralelos.map((paralelo) => (
+                <SelectItem key={paralelo?.PARALELO?.id} className="capitalize">
+                  {paralelo?.PARALELO?.paralelo.toLowerCase()}
+                </SelectItem>
+              ))}
             </Select>
 
             <div className="grid grid-cols-3  w-full justify-items-center items-end">
@@ -190,7 +340,12 @@ function ReportePaseAnio() {
                 content="Eliminar filtros"
                 className="capitalize"
               >
-                <Button isIconOnly color="danger" aria-label="Eliminar filtros">
+                <Button
+                  isIconOnly
+                  color="danger"
+                  aria-label="Eliminar filtros"
+                  onClick={handleClearFilters}
+                >
                   <ArchiveBoxXMarkIcon className="text-white h-6 w-6" />
                 </Button>
               </Tooltip>
