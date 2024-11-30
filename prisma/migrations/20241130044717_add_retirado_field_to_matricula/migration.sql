@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "MATRICULA" ADD COLUMN     "retirado" BOOLEAN DEFAULT false;

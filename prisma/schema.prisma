@@ -307,6 +307,7 @@ model MATRICULA {
   idEstudiantePertenece     Int
   idDocentePertenece        Int?
   estado                    Boolean?
+  retirado                  Boolean?       @default(false) // Indica si el estudiante está retirado
   DETALLEMATERIA            DETALLEMATERIA @relation(fields: [idDetalleMateriaPertenece], references: [id])
   PERIODO                   PERIODO        @relation(fields: [idPeriodoPertenece], references: [id])
   ESTUDIANTE                ESTUDIANTE     @relation(fields: [idEstudiantePertenece], references: [id])
