@@ -38,6 +38,7 @@ function ReportePaseAnio() {
   const [paralelos, setParalelos] = useState([]); // Estado de los paralelos
   const [paraleloSeleccionado, setParaleloSeleccionado] = useState(""); // Estado del paralelo seleccionado
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
+  const [reporte, setReporte] = useState([]); // Estado del reporte
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -159,6 +160,47 @@ function ReportePaseAnio() {
       console.error("Error clearing filters:", error);
       setNotificacion({
         message: "Error al eliminar los filtros",
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    if (
+      !campusSeleccionado ||
+      !periodoSeleccionado ||
+      !especialidadSeleccionada ||
+      !nivelSeleccionado ||
+      !paraleloSeleccionado
+    ) {
+      setNotificacion({
+        message: "Por favor, seleccione todos los filtros.",
+        type: "error",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(
+        `/api/reportes/paseAnio/${campusSeleccionado}/${periodoSeleccionado}/${especialidadSeleccionada}/${nivelSeleccionado}/${paraleloSeleccionado}`
+      );
+
+      if (!res.ok) throw new Error("Error al generar el reporte");
+
+      const data = await res.json();
+      setReporte(data); // Guardar el reporte
+      setNotificacion({
+        message: "Reporte generado exitosamente.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      setNotificacion({
+        message: "Error al generar el reporte.",
         type: "error",
       });
     } finally {
@@ -355,7 +397,12 @@ function ReportePaseAnio() {
                 content="Generar reporte"
                 className="capitalize"
               >
-                <Button isIconOnly color="success" aria-label="Generar reporte">
+                <Button
+                  isIconOnly
+                  color="success"
+                  aria-label="Generar reporte"
+                  onClick={handleGenerateReport}
+                >
                   <BoltIcon className="text-white h-6 w-6" />
                 </Button>
               </Tooltip>
