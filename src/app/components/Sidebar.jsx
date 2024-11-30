@@ -447,6 +447,22 @@ function Sidebar({ roles }) {
                               </ListItemPrefix>
                               Pase de Año
                             </ListItem>
+
+                            <ListItem
+                              onClick={() =>
+                                handleNavigation(
+                                  "/administrador/reporteEstadistico"
+                                )
+                              }
+                            >
+                              <ListItemPrefix>
+                                <ChartBarIcon
+                                  strokeWidth={3}
+                                  className="h-3 w-5"
+                                />
+                              </ListItemPrefix>
+                              Lista estadística
+                            </ListItem>
                           </>
                         )}
 
