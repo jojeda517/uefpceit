@@ -24,6 +24,8 @@ import {
 } from "@heroicons/react/24/outline";
 import CircularProgress from "@/app/components/CircularProgress";
 import Notification from "@/app/components/Notification";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 function ReportePaseAnio() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
@@ -206,6 +208,115 @@ function ReportePaseAnio() {
     } finally {
       setIsLoading(false);
     }
+  };
+  const handleDownloadPDF = () => {
+    if (!reporte.length) {
+      setNotificacion({
+        message: "No hay datos para generar el PDF.",
+        type: "error",
+      });
+      return;
+    }
+
+    const doc = new jsPDF("portrait"); // Cambiado a orientación vertical
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const centerX = pageWidth / 2;
+    let headerY = 15; // Coordenada inicial Y para el texto
+
+    // Logos
+    const logoLeft = "/logo.png";
+    const logoRight = "/logoEcuador.png";
+    const logoWidth = 15;
+    const logoHeight = 15;
+
+    doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
+    doc.addImage(logoRight, "PNG", pageWidth - 25, 10, logoWidth, logoHeight);
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(0, 128, 0);
+    doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
+      align: "center",
+    });
+
+    headerY += 6;
+    doc.setFontSize(14);
+    doc.setTextColor(255, 0, 0);
+    doc.text("REPORTE DE PASES DE AÑO", centerX, headerY, { align: "center" });
+
+    headerY += 5;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(
+      `PERIODO LECTIVO ${periodos
+        .find((p) => p.id === parseInt(periodoSeleccionado))
+        ?.nombre.toUpperCase()}`,
+      centerX,
+      headerY,
+      { align: "center" }
+    );
+
+    headerY += 15;
+    doc.text(
+      `CAMPUS: ${campus
+        .find((c) => c.id === parseInt(campusSeleccionado))
+        ?.nombre.toUpperCase()}`,
+      15,
+      headerY
+    );
+
+    headerY += 7;
+    doc.text(
+      `ESPECIALIDAD: ${especialidades
+        .find((e) => e.id === parseInt(especialidadSeleccionada))
+        ?.especialidad.toUpperCase()}`,
+      15,
+      headerY
+    );
+
+    headerY += 7;
+    doc.text(
+      `NIVEL: ${niveles
+        .find((n) => n.id === parseInt(nivelSeleccionado))
+        ?.nivel.toUpperCase()}`,
+      15,
+      headerY
+    );
+
+    headerY += 7;
+    doc.text(
+      `PARALELO: ${paralelos
+        .find((p) => p.PARALELO.id === parseInt(paraleloSeleccionado))
+        ?.PARALELO.paralelo.toUpperCase()}`,
+      15,
+      headerY
+    );
+
+    // Tabla
+    const encabezados = [
+      ["Estudiante", "Promedio General", "Conducta", "Estado"],
+    ];
+    const filas = reporte.map((item) => [
+      item.estudiante,
+      item.promedioGeneral,
+      item.conducta,
+      item.estado,
+    ]);
+
+    headerY += 10;
+    doc.autoTable({
+      startY: headerY,
+      head: encabezados,
+      body: filas,
+      theme: "grid",
+      headStyles: { fillColor: [0, 102, 204], halign: "center" },
+      bodyStyles: { fontSize: 9, halign: "center" },
+      columnStyles: { 0: { halign: "left" } },
+    });
+
+    // Guardar el PDF
+    doc.save("reporte_pases_anio.pdf");
   };
 
   return (
@@ -412,7 +523,12 @@ function ReportePaseAnio() {
                 content="Descargar reportes"
                 className="capitalize"
               >
-                <Button isIconOnly color="primary" aria-label="Descargar">
+                <Button
+                  isIconOnly
+                  color="primary"
+                  aria-label="Descargar"
+                  onClick={handleDownloadPDF}
+                >
                   <ArrowDownTrayIcon className="text-white h-6 w-6 " />
                 </Button>
               </Tooltip>
