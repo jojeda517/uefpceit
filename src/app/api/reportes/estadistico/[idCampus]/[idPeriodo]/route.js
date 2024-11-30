@@ -15,6 +15,7 @@ export async function GET(_, { params }) {
     const campusId = parseInt(idCampus);
     const periodoId = parseInt(idPeriodo);
 
+    // Consulta a Prisma con orden basado en los IDs
     const estudiantesUnicos = await prisma.MATRICULA.findMany({
       where: {
         idPeriodoPertenece: periodoId,
@@ -46,11 +47,42 @@ export async function GET(_, { params }) {
           },
         },
       },
+      orderBy: [
+        {
+          DETALLEMATERIA: {
+            DETALLENIVELPARALELO: {
+              NIVEL: {
+                id: "asc", // Ordenar por ID del nivel
+              },
+            },
+          },
+        },
+        {
+          DETALLEMATERIA: {
+            DETALLENIVELPARALELO: {
+              PARALELO: {
+                id: "asc", // Ordenar por ID del paralelo
+              },
+            },
+          },
+        },
+        {
+          DETALLEMATERIA: {
+            DETALLENIVELPARALELO: {
+              CAMPUSESPECIALIDAD: {
+                ESPECIALIDAD: {
+                  id: "asc", // Ordenar por ID de la especialidad
+                },
+              },
+            },
+          },
+        },
+      ],
     });
 
+    // Procesar los resultados y estructurar el reporte
     const reporte = {};
 
-    // Procesar estudiantes únicos por curso
     estudiantesUnicos.forEach((matricula) => {
       const estudiante = matricula.ESTUDIANTE;
       const { sexo } = estudiante.PERSONA;
@@ -61,10 +93,6 @@ export async function GET(_, { params }) {
       if (!reporte[curso]) {
         reporte[curso] = {
           curso,
-          nivel: DETALLENIVELPARALELO.NIVEL.nivel.toLowerCase(),
-          paralelo: DETALLENIVELPARALELO.PARALELO.paralelo.toLowerCase(),
-          especialidad:
-            DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.ESPECIALIDAD.especialidad.toLowerCase(),
           masculinos: 0,
           femeninos: 0,
           otros: 0,
@@ -88,35 +116,14 @@ export async function GET(_, { params }) {
       }
     });
 
-    // Convertir el reporte en una lista y ordenar los resultados
-    const resultado = Object.values(reporte)
-      .map(({ estudiantes, ...datos }) => datos) // Eliminar la propiedad "estudiantes"
-      .sort((a, b) => {
-        // Ordenar por nivel, paralelo y especialidad
-        const nivelesOrden = [
-          "octavo",
-          "noveno",
-          "décimo",
-          "primero de bachillerato",
-          "segundo de bachillerato",
-          "tercero de bachillerato",
-        ];
-
-        const nivelA = nivelesOrden.indexOf(a.nivel);
-        const nivelB = nivelesOrden.indexOf(b.nivel);
-
-        if (nivelA !== nivelB) {
-          return nivelA - nivelB;
-        }
-
-        const paraleloA = a.paralelo;
-        const paraleloB = b.paralelo;
-        if (paraleloA !== paraleloB) {
-          return paraleloA.localeCompare(paraleloB);
-        }
-
-        return a.especialidad.localeCompare(b.especialidad);
-      });
+    // Convertir el reporte en una lista para enviar la respuesta
+    const resultado = Object.entries(reporte).map(([curso, datos]) => {
+      const { estudiantes, ...resto } = datos; // Remover el Set
+      return {
+        curso,
+        ...resto,
+      };
+    });
 
     return NextResponse.json(resultado, { status: 200 });
   } catch (error) {
