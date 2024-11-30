@@ -21,6 +21,8 @@
     "@nextui-org/chip": "^2.0.32",
     "@nextui-org/react": "^2.4.6",
     "@prisma/client": "^5.19.0",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
     "bcrypt": "^5.1.1",
     "framer-motion": "^11.3.21",
     "jspdf": "^2.5.2",
@@ -30,6 +32,7 @@
     "next-auth": "^4.24.7",
     "next-connect": "^1.0.0",
     "papaparse": "^5.4.1",
+    "pdfjs-dist": "^3.11.174",
     "react": "^18",
     "react-dom": "^18"
   },

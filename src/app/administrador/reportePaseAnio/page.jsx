@@ -26,6 +26,10 @@ import CircularProgress from "@/app/components/CircularProgress";
 import Notification from "@/app/components/Notification";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 
 function ReportePaseAnio() {
   const [isLoading, setIsLoading] = useState(false); // Estado de carga
@@ -41,6 +45,8 @@ function ReportePaseAnio() {
   const [paraleloSeleccionado, setParaleloSeleccionado] = useState(""); // Estado del paralelo seleccionado
   const [notificacion, setNotificacion] = useState({ message: "", type: "" });
   const [reporte, setReporte] = useState([]); // Estado del reporte
+  const [pdfUrl, setPdfUrl] = useState(null); // Estado para almacenar la URL del PDF
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -209,115 +215,127 @@ function ReportePaseAnio() {
       setIsLoading(false);
     }
   };
-  const handleDownloadPDF = () => {
-    if (!reporte.length) {
-      setNotificacion({
-        message: "No hay datos para generar el PDF.",
-        type: "error",
-      });
-      return;
+
+  useEffect(() => {
+    if (reporte.length > 0) {
+      const generatePDF = () => {
+        const doc = new jsPDF("portrait");
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const centerX = pageWidth / 2;
+        let headerY = 15;
+
+        // Logos
+        const logoLeft = "/logo.png";
+        const logoRight = "/logoEcuador.png";
+        const logoWidth = 15;
+        const logoHeight = 15;
+
+        doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
+        doc.addImage(
+          logoRight,
+          "PNG",
+          pageWidth - 25,
+          10,
+          logoWidth,
+          logoHeight
+        );
+
+        // Encabezado
+        doc.setFontSize(16);
+        doc.setTextColor(0, 128, 0);
+        doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
+          align: "center",
+        });
+
+        headerY += 6;
+        doc.setFontSize(14);
+        doc.setTextColor(255, 0, 0);
+        doc.text("REPORTE DE PASES DE AÑO", centerX, headerY, {
+          align: "center",
+        });
+
+        headerY += 5;
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(
+          `PERIODO LECTIVO ${periodos
+            .find((p) => p.id === parseInt(periodoSeleccionado))
+            ?.nombre.toUpperCase()}`,
+          centerX,
+          headerY,
+          { align: "center" }
+        );
+
+        headerY += 15;
+        doc.text(
+          `CAMPUS: ${campus
+            .find((c) => c.id === parseInt(campusSeleccionado))
+            ?.nombre.toUpperCase()}`,
+          15,
+          headerY
+        );
+
+        headerY += 7;
+        doc.text(
+          `ESPECIALIDAD: ${especialidades
+            .find((e) => e.id === parseInt(especialidadSeleccionada))
+            ?.especialidad.toUpperCase()}`,
+          15,
+          headerY
+        );
+
+        headerY += 7;
+        doc.text(
+          `NIVEL: ${niveles
+            .find((n) => n.id === parseInt(nivelSeleccionado))
+            ?.nivel.toUpperCase()}`,
+          15,
+          headerY
+        );
+
+        headerY += 7;
+        doc.text(
+          `PARALELO: ${paralelos
+            .find((p) => p.PARALELO.id === parseInt(paraleloSeleccionado))
+            ?.PARALELO.paralelo.toUpperCase()}`,
+          15,
+          headerY
+        );
+
+        // Tabla
+        const encabezados = [
+          ["Estudiante", "Promedio General", "Conducta", "Estado"],
+        ];
+        const filas = reporte.map((item) => [
+          item.estudiante,
+          item.promedioGeneral,
+          item.conducta,
+          item.estado,
+        ]);
+
+        headerY += 10;
+        doc.autoTable({
+          startY: headerY,
+          head: encabezados,
+          body: filas,
+          theme: "grid",
+          headStyles: { fillColor: [0, 102, 204], halign: "center" },
+          bodyStyles: { fontSize: 9, halign: "center" },
+          columnStyles: { 0: { halign: "left" } },
+        });
+
+        // Crear Blob y generar URL
+        const pdfBlob = doc.output("blob");
+        const pdfBlobUrl = URL.createObjectURL(pdfBlob);
+
+        setPdfUrl(pdfBlobUrl); // Actualiza el estado con la URL del PDF
+      };
+
+      generatePDF();
     }
-
-    const doc = new jsPDF("portrait"); // Cambiado a orientación vertical
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const centerX = pageWidth / 2;
-    let headerY = 15; // Coordenada inicial Y para el texto
-
-    // Logos
-    const logoLeft = "/logo.png";
-    const logoRight = "/logoEcuador.png";
-    const logoWidth = 15;
-    const logoHeight = 15;
-
-    doc.addImage(logoLeft, "PNG", 10, 10, logoWidth, logoHeight);
-    doc.addImage(logoRight, "PNG", pageWidth - 25, 10, logoWidth, logoHeight);
-
-    // Encabezado
-    doc.setFontSize(16);
-    doc.setTextColor(0, 128, 0);
-    doc.text("UNIDAD EDUCATIVA PCEI TUNGURAHUA", centerX, headerY, {
-      align: "center",
-    });
-
-    headerY += 6;
-    doc.setFontSize(14);
-    doc.setTextColor(255, 0, 0);
-    doc.text("REPORTE DE PASES DE AÑO", centerX, headerY, { align: "center" });
-
-    headerY += 5;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(
-      `PERIODO LECTIVO ${periodos
-        .find((p) => p.id === parseInt(periodoSeleccionado))
-        ?.nombre.toUpperCase()}`,
-      centerX,
-      headerY,
-      { align: "center" }
-    );
-
-    headerY += 15;
-    doc.text(
-      `CAMPUS: ${campus
-        .find((c) => c.id === parseInt(campusSeleccionado))
-        ?.nombre.toUpperCase()}`,
-      15,
-      headerY
-    );
-
-    headerY += 7;
-    doc.text(
-      `ESPECIALIDAD: ${especialidades
-        .find((e) => e.id === parseInt(especialidadSeleccionada))
-        ?.especialidad.toUpperCase()}`,
-      15,
-      headerY
-    );
-
-    headerY += 7;
-    doc.text(
-      `NIVEL: ${niveles
-        .find((n) => n.id === parseInt(nivelSeleccionado))
-        ?.nivel.toUpperCase()}`,
-      15,
-      headerY
-    );
-
-    headerY += 7;
-    doc.text(
-      `PARALELO: ${paralelos
-        .find((p) => p.PARALELO.id === parseInt(paraleloSeleccionado))
-        ?.PARALELO.paralelo.toUpperCase()}`,
-      15,
-      headerY
-    );
-
-    // Tabla
-    const encabezados = [
-      ["Estudiante", "Promedio General", "Conducta", "Estado"],
-    ];
-    const filas = reporte.map((item) => [
-      item.estudiante,
-      item.promedioGeneral,
-      item.conducta,
-      item.estado,
-    ]);
-
-    headerY += 10;
-    doc.autoTable({
-      startY: headerY,
-      head: encabezados,
-      body: filas,
-      theme: "grid",
-      headStyles: { fillColor: [0, 102, 204], halign: "center" },
-      bodyStyles: { fontSize: 9, halign: "center" },
-      columnStyles: { 0: { halign: "left" } },
-    });
-
-    // Guardar el PDF
-    doc.save("reporte_pases_anio.pdf");
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reporte]); // Ejecuta cada vez que 'reporte' cambie
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 flex flex-col gap-4 pt-24 pb-10 min-h-screen w-full px-10">
@@ -527,7 +545,7 @@ function ReportePaseAnio() {
                   isIconOnly
                   color="primary"
                   aria-label="Descargar"
-                  onClick={handleDownloadPDF}
+                  //onClick={handleDownloadPDF}
                 >
                   <ArrowDownTrayIcon className="text-white h-6 w-6 " />
                 </Button>
@@ -537,7 +555,20 @@ function ReportePaseAnio() {
         </Card>
 
         <Card className="dark:bg-gray-700">
-          <CardBody>Visor PDF</CardBody>
+          <CardBody>
+            {pdfUrl ? (
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                <div style={{ height: "750px" }}>
+                  <Viewer
+                    fileUrl={pdfUrl}
+                    plugins={[defaultLayoutPluginInstance]}
+                  />
+                </div>
+              </Worker>
+            ) : (
+              <p className="text-white">Genera un reporte para visualizarlo.</p>
+            )}
+          </CardBody>
         </Card>
       </div>
     </div>
