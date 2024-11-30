@@ -63,7 +63,8 @@ export async function GET(_, { params }) {
           curso,
           nivel: DETALLENIVELPARALELO.NIVEL.nivel.toLowerCase(),
           paralelo: DETALLENIVELPARALELO.PARALELO.paralelo.toLowerCase(),
-          especialidad: DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.ESPECIALIDAD.especialidad.toLowerCase(),
+          especialidad:
+            DETALLENIVELPARALELO.CAMPUSESPECIALIDAD.ESPECIALIDAD.especialidad.toLowerCase(),
           masculinos: 0,
           femeninos: 0,
           otros: 0,
