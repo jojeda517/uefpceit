@@ -177,8 +177,7 @@ function Sidebar({ roles }) {
                         >
                           <ListItemPrefix>
                             <BriefcaseIcon
-                              strokeWidth={3}
-                              className="h-3 w-5"
+                              className="h-4 w-4"
                             />
                           </ListItemPrefix>
                           Docentes
@@ -191,8 +190,7 @@ function Sidebar({ roles }) {
                         >
                           <ListItemPrefix>
                             <AcademicCapIcon
-                              strokeWidth={3}
-                              className="h-3 w-5"
+                              className="h-4 w-4"
                             />
                           </ListItemPrefix>
                           Estudiantes
@@ -441,8 +439,7 @@ function Sidebar({ roles }) {
                             >
                               <ListItemPrefix>
                                 <DocumentCheckIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
+                                  className="h-4 w-4"
                                 />
                               </ListItemPrefix>
                               Pase de Año
@@ -457,11 +454,25 @@ function Sidebar({ roles }) {
                             >
                               <ListItemPrefix>
                                 <ChartBarIcon
-                                  strokeWidth={3}
-                                  className="h-3 w-5"
+                                  className="h-4 w-4"
                                 />
                               </ListItemPrefix>
                               Lista estadística
+                            </ListItem>
+
+                            <ListItem
+                              onClick={() =>
+                                handleNavigation(
+                                  "/administrador/reporteListaCurso"
+                                )
+                              }
+                            >
+                              <ListItemPrefix>
+                                <UserGroupIcon
+                                  className="h-4 w-4"
+                                />
+                              </ListItemPrefix>
+                              Listado de estudiantes por curso
                             </ListItem>
                           </>
                         )}
