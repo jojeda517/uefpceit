@@ -1,3 +1,5 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const withMT = require("@material-tailwind/react/utils/withMT");
 import { nextui } from "@nextui-org/react";
 
@@ -10,7 +12,7 @@ const config = withMT({
   theme: {
     extend: {},
   },
-  darkMode: "media", 
+  darkMode: "media",
   plugins: [nextui()],
 });
 

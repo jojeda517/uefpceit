@@ -66,7 +66,7 @@ export async function POST(request) {
     }
 
     // Manejo de la foto
-    let fotoPath = body.foto || ""; // Usar el valor del formulario si está presente
+    /* let fotoPath = body.foto || ""; // Usar el valor del formulario si está presente
     if (foto) {
       const bytes = await foto.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -76,7 +76,7 @@ export async function POST(request) {
       await writeFile(filePath, buffer);
 
       fotoPath = `/img/photo/${fileName}`;
-    }
+    } */
 
     // Crear o actualizar persona
     console.log(body.id);
@@ -102,7 +102,7 @@ export async function POST(request) {
         nacionalidad: body.nacionalidad,
         telefono: body.telefono,
         sexo: body.sexo,
-        foto: fotoPath,
+        //foto: fotoPath,
       },
       create: {
         campus: {
@@ -124,7 +124,7 @@ export async function POST(request) {
         nacionalidad: body.nacionalidad,
         telefono: body.telefono,
         sexo: body.sexo,
-        foto: fotoPath,
+        //foto: fotoPath,
       },
     });
 
