@@ -71,6 +71,8 @@ export default function Login() {
           roles
             .map((role) => role.toLowerCase())
             .find((role) => roleRoutes[role]) || "/";
+        console.log("Roles:", roles);
+        console.log("Route to redirect:", route);
         router.push(route);
       }
     } catch (error) {

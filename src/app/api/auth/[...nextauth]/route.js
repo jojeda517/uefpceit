@@ -53,7 +53,7 @@ export const authOptions = {
           credentials.contrasena,
           user.contrasena
         );
-        console.log(user);
+        //console.log(user);
         if (!isMatch) {
           throw new Error("Incorrect password");
         }
