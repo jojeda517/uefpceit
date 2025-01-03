@@ -161,11 +161,88 @@ export async function POST(request) {
     }
 
     // 3. Si el estudiante ya está matriculado en el periodo, eliminar la matrícula
-    await prisma.mATRICULA.deleteMany({
+    /* await prisma.mATRICULA.deleteMany({
       where: {
         idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
         idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
       },
+    }); */
+    await prisma.$transaction(async (prisma) => {
+      // Eliminar aportes relacionados
+      await prisma.APORTE.deleteMany({
+        where: {
+          CALIFICACION: {
+            MATRICULA: {
+              idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+              idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+            },
+          },
+        },
+      });
+
+      // Wliminar examenes relacionados
+      await prisma.EXAMEN.deleteMany({
+        where: {
+          CALIFICACION: {
+            MATRICULA: {
+              idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+              idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+            },
+          },
+        },
+      });
+
+      // Eliminar asistencia relacionada
+      await prisma.ASISTENCIA.deleteMany({
+        where: {
+          CALIFICACION: {
+            MATRICULA: {
+              idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+              idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+            },
+          },
+        },
+      });
+
+      // Eliminar conducta relacionada
+      await prisma.CONDUCTA.deleteMany({
+        where: {
+          CALIFICACION: {
+            MATRICULA: {
+              idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+              idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+            },
+          },
+        },
+      });
+
+      // Eliminar calificaciones relacionadas
+      await prisma.CALIFICACION.deleteMany({
+        where: {
+          MATRICULA: {
+            idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+            idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+          },
+        },
+      });
+
+      // Eliminar supletorios relacionados
+      await prisma.SUPLETORIO.deleteMany({
+        where: {
+          MATRICULA: {
+            idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+            idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+          },
+        },
+      });
+
+      // Finalmente, eliminar la matrícula
+      await prisma.mATRICULA.deleteMany({
+        where: {
+          idEstudiantePertenece: parseInt(body.idEstudiantePertenece),
+          idPeriodoPertenece: parseInt(body.idPeriodoPertenece),
+        },
+      });
     });
 
     // 4. Crear las matrículas para cada materia, asignando el docente correspondiente
