@@ -39,6 +39,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserGroupIcon,
+  ClipboardDocumentCheckIcon as ClipboardDocumentCheckIconOutline,
   AcademicCapIcon,
   DocumentCheckIcon,
   BuildingLibraryIcon,
@@ -176,9 +177,7 @@ function Sidebar({ roles }) {
                           }
                         >
                           <ListItemPrefix>
-                            <BriefcaseIcon
-                              className="h-4 w-4"
-                            />
+                            <BriefcaseIcon className="h-4 w-4" />
                           </ListItemPrefix>
                           Docentes
                         </ListItem>
@@ -189,9 +188,7 @@ function Sidebar({ roles }) {
                           }
                         >
                           <ListItemPrefix>
-                            <AcademicCapIcon
-                              className="h-4 w-4"
-                            />
+                            <AcademicCapIcon className="h-4 w-4" />
                           </ListItemPrefix>
                           Estudiantes
                         </ListItem>
@@ -438,9 +435,7 @@ function Sidebar({ roles }) {
                               }
                             >
                               <ListItemPrefix>
-                                <DocumentCheckIcon
-                                  className="h-4 w-4"
-                                />
+                                <DocumentCheckIcon className="h-4 w-4" />
                               </ListItemPrefix>
                               Pase de Año
                             </ListItem>
@@ -453,9 +448,7 @@ function Sidebar({ roles }) {
                               }
                             >
                               <ListItemPrefix>
-                                <ChartBarIcon
-                                  className="h-4 w-4"
-                                />
+                                <ChartBarIcon className="h-4 w-4" />
                               </ListItemPrefix>
                               Lista estadística
                             </ListItem>
@@ -468,11 +461,22 @@ function Sidebar({ roles }) {
                               }
                             >
                               <ListItemPrefix>
-                                <UserGroupIcon
-                                  className="h-4 w-4"
-                                />
+                                <UserGroupIcon className="h-4 w-4" />
                               </ListItemPrefix>
                               Listado de estudiantes por curso
+                            </ListItem>
+
+                            <ListItem
+                              onClick={() =>
+                                handleNavigation(
+                                  "/administrador/reporteLibretaCurso"
+                                )
+                              }
+                            >
+                              <ListItemPrefix>
+                                <ClipboardDocumentCheckIconOutline className="h-4 w-4" />
+                              </ListItemPrefix>
+                              Libretas de calificaciones por curso
                             </ListItem>
                           </>
                         )}
