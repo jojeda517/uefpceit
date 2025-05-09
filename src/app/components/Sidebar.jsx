@@ -42,6 +42,7 @@ import {
   ClipboardDocumentCheckIcon as ClipboardDocumentCheckIconOutline,
   AcademicCapIcon,
   DocumentCheckIcon,
+  DocumentTextIcon as DocumentTextIconOutline,
   BuildingLibraryIcon,
   StarIcon,
   ExclamationTriangleIcon,
@@ -477,6 +478,19 @@ function Sidebar({ roles }) {
                                 <ClipboardDocumentCheckIconOutline className="h-4 w-4" />
                               </ListItemPrefix>
                               Libretas de calificaciones por curso
+                            </ListItem>
+
+                            <ListItem
+                              onClick={() =>
+                                handleNavigation(
+                                  "/administrador/reporteMatricula"
+                                )
+                              }
+                            >
+                              <ListItemPrefix>
+                                <DocumentTextIconOutline className="h-4 w-4" />
+                              </ListItemPrefix>
+                              Certificado de Matricula
                             </ListItem>
                           </>
                         )}

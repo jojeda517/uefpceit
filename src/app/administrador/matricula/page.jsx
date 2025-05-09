@@ -525,7 +525,7 @@ function Matricula() {
                           startContent={
                             <UserCircleIcon className="text-blue-900 dark:text-white h-6 w-6 " />
                           }
-                          defaultItems={estudiantes}
+                          clea={estudiantes}
                           defaultSelectedKey={String(idEstudiante)}
                           variant="bordered"
                           inputProps={{
