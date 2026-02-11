@@ -295,7 +295,12 @@ function Sidebar({ roles }) {
                     Tipos de matricula
                   </ListItem>
 
-                  <ListItem>
+                  <ListItem
+                    className="text-white cursor-pointer"
+                    onClick={() =>
+                      handleNavigation("/administrador/retiroCarpeta")
+                    }
+                  >
                     <ListItemPrefix>
                       <FolderArrowDownIcon className="h-5 w-5" />
                     </ListItemPrefix>
